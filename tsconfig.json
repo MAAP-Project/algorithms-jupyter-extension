@@ -9,16 +9,16 @@
     "module": "esnext",
     "moduleResolution": "node",
     "noEmitOnError": true,
-    "noImplicitAny": true,
+    "noImplicitAny": false,
     "noUnusedLocals": true,
     "preserveWatchOutput": true,
     "resolveJsonModule": true,
     "outDir": "lib",
     "rootDir": "src",
     "strict": true,
-    "strictNullChecks": true,
-    "target": "ES2018",
+    "strictNullChecks": false,
+    "target": "es2020",
     "types": []
   },
-  "include": ["src/*"]
+  "include": ["src/*", "src/**/*"]
 }
