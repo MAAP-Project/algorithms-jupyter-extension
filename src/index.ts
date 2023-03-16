@@ -1,48 +1,37 @@
-import { IStateDB } from '@jupyterlab/statedb';
 import { ILauncher } from '@jupyterlab/launcher';
-import { reactIcon } from '@jupyterlab/ui-components';
-import { ReactAppWidget } from './classes/App';
+import { treeViewIcon } from '@jupyterlab/ui-components';
+import { JUPYTER_EXT } from './constants';
+import { 
+  ReactAppWidget, 
+  RegisterReactAppWidget } from './classes/App';
 import { 
   ICommandPalette, 
   MainAreaWidget } from '@jupyterlab/apputils';
-import { 
-  EXTENSION_ID, 
-  EXTENSION_NAME, 
-  OPEN_COMMAND } from './constants';
 import {
   JupyterFrontEnd,
-  JupyterFrontEndPlugin
-} from '@jupyterlab/application';
+  JupyterFrontEndPlugin } from '@jupyterlab/application';
 
 /**
  * Initialization data for the algorithms_jupyter_extension extension.
  */
-const plugin: JupyterFrontEndPlugin<void> = {
-  id: EXTENSION_ID,
+const algo_catalog_plugin: JupyterFrontEndPlugin<void> = {
+  id: JUPYTER_EXT.VIEW_ALGORITHMS_PLUGIN_ID,
   autoStart: true,
-  optional: [ILauncher, ICommandPalette, IStateDB],
+  optional: [ILauncher, ICommandPalette],
   activate: (app: JupyterFrontEnd, launcher: ILauncher) => {
     const { commands } = app;
-    const command = OPEN_COMMAND;
+    const command = JUPYTER_EXT.VIEW_ALGORITHMS_OPEN_COMMAND;
+
     commands.addCommand(command, {
       caption: 'Algorithms',
-      label: EXTENSION_NAME,
-      // icon: (args) => (args['isPalette'] ? null : reactIcon),
+      label: JUPYTER_EXT.VIEW_ALGORITHMS_NAME,
+      icon: (args) => (args['isPalette'] ? null : treeViewIcon),
       execute: () => {
-        const content = new ReactAppWidget("username");
+        const content = new ReactAppWidget(app);
         const widget = new MainAreaWidget<ReactAppWidget>({ content });
-        widget.title.label = EXTENSION_NAME;
-        widget.title.icon = reactIcon;
+        widget.title.label = JUPYTER_EXT.VIEW_ALGORITHMS_NAME;
+        widget.title.icon = treeViewIcon;
         app.shell.add(widget, 'main');
-        // getUsernameToken(state, profileId, function (uname: string, ticket: string) {
-        //   console.log("Got username: ", uname)
-        //   const content = new ReactAppWidget(uname);
-        //   const widget = new MainAreaWidget<ReactAppWidget>({ content });
-        //   widget.title.label = EXTENSION_NAME;
-        //   widget.title.icon = reactIcon;
-        //   app.shell.add(widget, 'main');
-        // });
-
       },
     });
 
@@ -52,8 +41,38 @@ const plugin: JupyterFrontEndPlugin<void> = {
       });
     }
 
-    console.log('JupyterLab extension algorithms_jupyter_extension is activated!');
+    console.log('JupyterLab view-algorithms plugin is activated!');
   }
 };
 
-export default plugin;
+
+const algo_reg_plugin: JupyterFrontEndPlugin<void> = {
+  id: JUPYTER_EXT.REGISTER_ALGORITHM_PLUGIN_ID,
+  autoStart: true,
+  optional: [ILauncher, ICommandPalette],
+  activate: (app: JupyterFrontEnd, launcher: ILauncher, palette: ICommandPalette) => {
+    const { commands } = app;
+    const command = JUPYTER_EXT.REGISTER_ALGORITHM_OPEN_COMMAND;
+
+    commands.addCommand(command, {
+      caption: 'Register Algorithms',
+      label: 'Register Algorithms',
+      icon: (args) => (args['isPalette'] ? null : treeViewIcon),
+      execute: () => {
+        const content = new RegisterReactAppWidget("");
+        const widget = new MainAreaWidget<RegisterReactAppWidget>({ content });
+        widget.title.label = JUPYTER_EXT.REGISTER_ALGORITHM_NAME;
+        widget.title.icon = treeViewIcon;
+        app.shell.add(widget, 'main');
+      },
+    });
+
+    const category = 'Extension Examples'
+
+    palette.addItem({ command: JUPYTER_EXT.REGISTER_ALGORITHM_OPEN_COMMAND, category });
+
+    console.log('JupyterLab register-algorithm plugin is activated!');
+  }
+};
+
+export default [algo_catalog_plugin, algo_reg_plugin];

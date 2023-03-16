@@ -1,5 +1,126 @@
-/*
-    See the JupyterLab Developer Guide for useful CSS Patterns:
+:root {
+    --ADE-white: white;
+    --ADE-light-grey: #F8F9FA;
+    --ADE-dark-grey: #DEE2E6;
+    --ADE-hover: #E7F1FF;
+    --ADE-contexts-success: #198754;
+    --ADE-contexts-danger: #DC3545;
+    ;
 
-    https://jupyterlab.readthedocs.io/en/stable/developer/css.html
-*/
+    --ADE-input-width: 500px;
+}
+
+.Pane {
+    overflow: auto;
+  }
+
+.Resizer {
+    background: #000;
+    opacity: 0.2;
+    z-index: 1;
+    -moz-box-sizing: border-box;
+    -webkit-box-sizing: border-box;
+    box-sizing: border-box;
+    -moz-background-clip: padding;
+    -webkit-background-clip: padding;
+    background-clip: padding-box;
+  }
+   
+.Resizer:hover {
+    -webkit-transition: all 2s ease;
+    transition: all 2s ease;
+}
+   
+.Resizer.horizontal {
+    height: 11px;
+    margin: -5px 0;
+    border-top: 5px solid rgba(255, 255, 255, 0);
+    border-bottom: 5px solid rgba(255, 255, 255, 0);
+    cursor: row-resize;
+    width: 100%;
+}
+
+.Resizer.horizontal:hover {
+    border-top: 5px solid rgba(0, 0, 0, 0.5);
+    border-bottom: 5px solid rgba(0, 0, 0, 0.5);
+}
+
+.pagination {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    margin: 0 1rem;
+}
+
+form {
+    margin: 1rem;
+}
+
+table {
+    border: 1px solid;
+}
+
+thead td {
+    font-weight: bold;
+}
+
+thead>tr:hover {
+    background-color: var(--bs-table-bg) !important;
+}
+
+tbody tr:nth-child(even) {
+    background-color: var(--ADE-light-grey);
+}
+  
+tbody tr:nth-child(odd) {
+    background-color: var(--ADE-white);
+}
+
+tbody tr:hover {
+    background-color: var(--ADE-hover);
+}
+
+.form-table {
+    width: auto !important;
+    vertical-align: middle !important;
+}
+
+/* .form-table td {
+    padding: 0.5rem;
+} */
+
+.form-table input {
+    width: var(--ADE-input-width);
+}
+
+.content-padding {
+    padding: 1rem 0
+}
+  
+.hide-content {
+    overflow: hidden;
+    max-width: 80vw;
+    text-overflow: ellipsis;
+}
+
+svg.add-icon {
+    color: var(--ADE-contexts-success) !important;
+}
+
+svg.remove-icon {
+    color: var(--ADE-contexts-danger) !important;
+}
+
+.inputs-table > thead td {
+    padding: 0.5rem 1rem;
+}
+
+.input-row td {
+    padding: 0.5rem 1rem;
+}
+
+.input-row td:last-of-type {
+    padding: inherit;
+}
+
+

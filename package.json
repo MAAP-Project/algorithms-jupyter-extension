@@ -60,12 +60,16 @@
     "@jupyterlab/application": "^3.4.8",
     "@jupyterlab/launcher": "^3.4.8",
     "@reduxjs/toolkit": "^1.9.3",
+    "bootstrap": "^5.2.3",
     "react-bootstrap": "^2.7.2",
-    "react-bootstrap-icons": "^1.10.2",
-    "react-redux": "^8.0.5"
+    "react-icons": "^4.8.0",
+    "react-redux": "^8.0.5",
+    "react-split-pane": "^0.1.92",
+    "react-table": "^7.8.0"
   },
   "devDependencies": {
     "@jupyterlab/builder": "^3.1.0",
+    "@types/react-table": "^7.7.14",
     "@typescript-eslint/eslint-plugin": "^4.8.1",
     "@typescript-eslint/parser": "^4.8.1",
     "eslint": "^7.14.0",
