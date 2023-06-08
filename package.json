@@ -1,5 +1,5 @@
 {
-  "name": "algorithms_jupyter_extension",
+  "name": "@maap-jupyterlab/algorithms_jupyter_extension",
   "version": "0.1.0",
   "description": "A JupyterLab extension for managing algotihms on the MAAP",
   "keywords": [
