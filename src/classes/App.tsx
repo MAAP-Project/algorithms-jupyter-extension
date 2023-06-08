@@ -2,7 +2,7 @@ import React from 'react';
 import { ReactWidget } from '@jupyterlab/apputils';
 import { Provider } from 'react-redux';
 import { JUPYTER_EXT } from '../constants';
-import store from '../redux/store';
+import { store } from '../redux/store';
 import 'regenerator-runtime/runtime';
 import { AlgorithmsApp } from '../components/AlgorithmsApp';
 import { RegistrationForm } from '../components/RegistrationForm';
@@ -36,6 +36,7 @@ export class RegisterReactAppWidget extends ReactWidget {
     return (
       <Provider store={store}>
         <RegistrationForm />
+        {/* <Registering /> */}
       </Provider>
     )
   }

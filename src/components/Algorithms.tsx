@@ -60,7 +60,7 @@ function ReactTable({ columns, data }) {
 
     // Render the UI for your table
     return (<>
-        <Table {...getTableProps()}>
+        <Table {...getTableProps()} className='hover'>
             <thead>
                 {headerGroups.map(headerGroup => (
                     <tr {...headerGroup.getHeaderGroupProps()}>

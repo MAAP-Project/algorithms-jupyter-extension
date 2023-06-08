@@ -10,6 +10,10 @@
     --ADE-input-width: 500px;
 }
 
+.jl-ReactAppWidget {
+    overflow: auto;
+}
+
 .Pane {
     overflow: auto;
   }
@@ -56,8 +60,22 @@ form {
     margin: 1rem;
 }
 
+.flex {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
 table {
     border: 1px solid;
+}
+
+.hover > tbody tr:hover {
+    background-color: var(--ADE-hover);
+}
+
+td {
+    align-items: center;
 }
 
 thead td {
@@ -76,9 +94,9 @@ tbody tr:nth-child(odd) {
     background-color: var(--ADE-white);
 }
 
-tbody tr:hover {
+/* tbody tr:hover {
     background-color: var(--ADE-hover);
-}
+} */
 
 .form-table {
     width: auto !important;
@@ -93,7 +111,7 @@ tbody tr:hover {
     width: var(--ADE-input-width);
 }
 
-.content-padding {
+.content-padding, .section-padding {
     padding: 1rem 0
 }
   
@@ -103,11 +121,11 @@ tbody tr:hover {
     text-overflow: ellipsis;
 }
 
-svg.add-icon {
+.success-icon {
     color: var(--ADE-contexts-success) !important;
 }
 
-svg.remove-icon {
+.danger-icon {
     color: var(--ADE-contexts-danger) !important;
 }
 
@@ -117,10 +135,41 @@ svg.remove-icon {
 
 .input-row td {
     padding: 0.5rem 1rem;
+    vertical-align: middle;
 }
 
 .input-row td:last-of-type {
     padding: inherit;
+}
+
+.show {
+    display: inherit;
+}
+
+.hide {
+    display: none;
+}
+
+.empty-row {
+    text-align: center;
+    background-color: var(--ADE-light-grey) !important;
+}
+
+svg:hover {
+    cursor: pointer;
+}
+
+.input-types {
+    display: flex;
+}
+
+.input-types > * {
+    margin-right: 1rem;
+    margin-top: 2rem;
+}
+
+.center-align {
+    text-align: center;
 }
 
 

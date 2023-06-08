@@ -23,7 +23,7 @@ const algo_catalog_plugin: JupyterFrontEndPlugin<void> = {
     const command = JUPYTER_EXT.VIEW_ALGORITHMS_OPEN_COMMAND;
 
     commands.addCommand(command, {
-      caption: 'Algorithms',
+      caption: JUPYTER_EXT.VIEW_ALGORITHMS_NAME,
       label: JUPYTER_EXT.VIEW_ALGORITHMS_NAME,
       icon: (args) => (args['isPalette'] ? null : treeViewIcon),
       execute: () => {
@@ -38,6 +38,7 @@ const algo_catalog_plugin: JupyterFrontEndPlugin<void> = {
     if (launcher) {
       launcher.add({
         command,
+        category: "MAAP Extensions"
       });
     }
 
@@ -55,8 +56,8 @@ const algo_reg_plugin: JupyterFrontEndPlugin<void> = {
     const command = JUPYTER_EXT.REGISTER_ALGORITHM_OPEN_COMMAND;
 
     commands.addCommand(command, {
-      caption: 'Register Algorithms',
-      label: 'Register Algorithms',
+      caption: JUPYTER_EXT.REGISTER_ALGORITHM_NAME,
+      label: JUPYTER_EXT.REGISTER_ALGORITHM_NAME,
       icon: (args) => (args['isPalette'] ? null : treeViewIcon),
       execute: () => {
         const content = new RegisterReactAppWidget("");
@@ -67,7 +68,14 @@ const algo_reg_plugin: JupyterFrontEndPlugin<void> = {
       },
     });
 
-    const category = 'Extension Examples'
+    if (launcher) {
+      launcher.add({
+        command,
+        category: "MAAP Extensions"
+      });
+    }
+
+    const category = 'MAAP Extensions'
 
     palette.addItem({ command: JUPYTER_EXT.REGISTER_ALGORITHM_OPEN_COMMAND, category });
 

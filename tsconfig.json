@@ -16,7 +16,8 @@
     "resolveJsonModule": true,
     "outDir": "lib",
     "paths": {
-      "react-table": ["types/react-table/index.d.ts"]
+      "react-table": ["types/react-table/index.d.ts"],
+      "react": [ "./node_modules/@types/react" ]
     },
     "rootDir": "src",
     "skipLibCheck": true,
