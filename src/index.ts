@@ -35,12 +35,12 @@ const algo_catalog_plugin: JupyterFrontEndPlugin<void> = {
       },
     });
 
-    if (launcher) {
-      launcher.add({
-        command,
-        category: "MAAP Extensions"
-      });
-    }
+    // if (launcher) {
+    //   launcher.add({
+    //     command,
+    //     category: "MAAP Extensions"
+    //   });
+    // }
 
     console.log('JupyterLab view-algorithms plugin is activated!');
   }

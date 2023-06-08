@@ -18,7 +18,8 @@ export const RegistrationForm = () => {
 
     // Local state variables
     const [firstStep, setFirstStep] = useState(true)
-    const [validRepo, setValidRepo] = useState(false)
+    // const [validRepo, setValidRepo] = useState(false)
+    const [validRepo, setValidRepo] = useState(true)
     const [repoBranches, setRepoBranches] = useState([])
     const [firstRepoCheck, setFirstRepoCheck] = useState(true)
     const [show, setShow] = useState(false);
@@ -125,11 +126,11 @@ export const RegistrationForm = () => {
                                     <div className='flex'>
                                         <Form.Control disabled={!firstStep} onChange={handleRepoUrlChange} onKeyDown={handleKeyPress} onBlur={validateRepo} type="text" placeholder="Enter repository URL" />
                                         <div className={firstStep ? firstRepoCheck ? 'hide' : 'show' : 'hide'}>
-                                            {validRepo ? <BsFillCheckCircleFill className='success-icon' /> : <BsFillXCircleFill className='danger-icon' />}
+                                            {/* {validRepo ? <BsFillCheckCircleFill className='success-icon' /> : <BsFillXCircleFill className='danger-icon' />} */}
                                         </div>
                                     </div>
                                     <div className={firstStep ? firstRepoCheck ? 'hide' : 'show' : 'hide'}>
-                                        {validRepo ? <span className='success-icon'>Confirmed repository exists and is public.</span> : <span className='danger-icon'>Failed to confirm repository exists and is public.</span>}
+                                        {/* {validRepo ? <span className='success-icon'>Confirmed repository exists and is public.</span> : <span className='danger-icon'>Failed to confirm repository exists and is public.</span>} */}
                                     </div>
                                 </div>
                             </td>
@@ -156,7 +157,8 @@ export const RegistrationForm = () => {
                 </Table>
 
                 <span className={firstStep ? 'show' : 'hide'}>
-                    <Button disabled={!validRepo || repoRunCommand == ""} onClick={() => { validRepo ? setFirstStep(false) : "" }} >Add General Information</Button>
+                    <Button disabled={!validRepo} onClick={() => { validRepo ? setFirstStep(false) : "" }} >Add General Information</Button>
+                    {/* <Button disabled={!validRepo || repoRunCommand == ""} onClick={() => { validRepo ? setFirstStep(false) : "" }} >Add General Information</Button> */}
                 </span>
             </div>
 
