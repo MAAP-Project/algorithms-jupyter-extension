@@ -10,7 +10,9 @@ export const JUPYTER_EXT = {
 
     REGISTER_ALGORITHM_PLUGIN_ID : 'register_algorithm:plugin',
     REGISTER_ALGORITHM_NAME : 'Register Algorithm',
-    REGISTER_ALGORITHM_OPEN_COMMAND : 'register_algorithm:open'
+    REGISTER_ALGORITHM_OPEN_COMMAND : 'register_algorithm:open',
+
+    SUBMIT_JOBS_OPEN_COMMAND : 'jobs_submit:open',
 }
 
 

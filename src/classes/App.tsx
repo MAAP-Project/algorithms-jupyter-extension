@@ -26,16 +26,17 @@ export class ReactAppWidget extends ReactWidget {
 }
 
 export class RegisterReactAppWidget extends ReactWidget {
-  uname: any
-  constructor(uname: any) {
+  data: any
+  constructor(data: any) {
     super()
     this.addClass(JUPYTER_EXT.EXTENSION_CSS_CLASSNAME)
+    this.data = data
   }
 
   render(): JSX.Element {
     return (
       <Provider store={store}>
-        <RegistrationForm />
+        <RegistrationForm data={this.data} />
         {/* <Registering /> */}
       </Provider>
     )

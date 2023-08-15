@@ -1,11 +1,12 @@
 import React from 'react'
-import { Nav, Tab } from 'react-bootstrap'
+import { Nav, Tab, Table } from 'react-bootstrap'
 import { useSelector } from 'react-redux'
+import { selectRegisteredAlgorithms } from '../redux/slices/registeredAlgorithms'
 
 export const AlgorithmDetails = (): JSX.Element => {
 
     // Redux
-    //const { selectedJob } = useSelector(selectJobs)
+    const { selectedAlgorithm } = useSelector(selectRegisteredAlgorithms)
 
     return (
         <div className="job-details-container">
@@ -21,9 +22,34 @@ export const AlgorithmDetails = (): JSX.Element => {
                 </Nav>
                 <Tab.Content className="content-padding">
                     <Tab.Pane eventKey="general">
+                        
+                        {/* {selectedAlgorithm} */}
                         {/* {selectedJob ? <GeneralJobInfoTable /> : <div className='subtext'>No algorithm selected</div>} */}
                     </Tab.Pane>
                     <Tab.Pane eventKey="inputs">
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th>ID</th>
+                                    <th>Data Type</th>
+                                    <th>Default Value</th>
+                                    <th>Required?</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {selectedAlgorithm ?
+                                selectedAlgorithm.inputs.map((input) => {
+                                    console.log("iterating over inputs")
+                                    console.log(input)
+                                    return <tr>
+                                        <td>{input.id}</td>
+                                        <td>{input.dataType}</td>
+                                        <td>{input.defaultValue}</td>
+                                        <td>{input.required}</td>
+                                    </tr>
+                                }) : <i>"No algorithm selected"</i>}
+                            </tbody>
+                        </table>
                     </Tab.Pane>
                 </Tab.Content>
             </Tab.Container>

@@ -1,8 +1,8 @@
 import { createSlice } from '@reduxjs/toolkit'
-import { IAlgorithmsSlice, IInputParam } from '../../types/slices'
+import { IAlgorithmSlice } from '../../types/slices'
 import { IStore } from '../../types/store'
 
-const initialState: IAlgorithmsSlice = {
+const initialState: IAlgorithmSlice = {
   positionalData: [],
   configData: [],
   fileData: [],
@@ -19,8 +19,8 @@ const initialState: IAlgorithmsSlice = {
   registrationUrl: ""
 }
 
-export const algorithmsSlice = createSlice({
-  name: 'Algorithms',
+export const algorithmSlice = createSlice({
+  name: 'Algorithm',
   initialState,
   reducers: {
     resetValue: () => initialState,
@@ -156,9 +156,9 @@ export const algorithmsSlice = createSlice({
 })
 
 // Actions
-export const algorithmsActions = algorithmsSlice.actions
+export const algorithmActions = algorithmSlice.actions
 
 // Selector
-export const selectAlgorithms = (state: IStore): IAlgorithmsSlice => state.Algorithms
+export const selectAlgorithm = (state: IStore): IAlgorithmSlice => state.Algorithm
 
-export default algorithmsSlice.reducer
+export default algorithmSlice.reducer

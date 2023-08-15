@@ -35,12 +35,12 @@ const algo_catalog_plugin: JupyterFrontEndPlugin<void> = {
       },
     });
 
-    // if (launcher) {
-    //   launcher.add({
-    //     command,
-    //     category: "MAAP Extensions"
-    //   });
-    // }
+    if (launcher) {
+      launcher.add({
+        command,
+        category: "MAAP Extensions"
+      });
+    }
 
     console.log('JupyterLab view-algorithms plugin is activated!');
   }
@@ -59,8 +59,10 @@ const algo_reg_plugin: JupyterFrontEndPlugin<void> = {
       caption: JUPYTER_EXT.REGISTER_ALGORITHM_NAME,
       label: JUPYTER_EXT.REGISTER_ALGORITHM_NAME,
       icon: (args) => (args['isPalette'] ? null : treeViewIcon),
-      execute: () => {
-        const content = new RegisterReactAppWidget("");
+      execute: (data) => {
+        console.log("Data coming in: ")
+        console.log(data)
+        const content = new RegisterReactAppWidget(data);
         const widget = new MainAreaWidget<RegisterReactAppWidget>({ content });
         widget.title.label = JUPYTER_EXT.REGISTER_ALGORITHM_NAME;
         widget.title.icon = treeViewIcon;

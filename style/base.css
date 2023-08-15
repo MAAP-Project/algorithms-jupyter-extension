@@ -56,6 +56,15 @@
     margin: 0 1rem;
 }
 
+.pagination-footer {
+    position: absolute;
+    bottom: 10px;
+}
+
+.relative {
+    position: relative !important;
+}
+
 form {
     margin: 1rem;
 }
@@ -68,6 +77,7 @@ form {
 
 table {
     border: 1px solid;
+    --bs-table-bg: inherit !important;
 }
 
 .hover > tbody tr:hover {
@@ -152,6 +162,7 @@ tbody tr:nth-child(odd) {
 
 .empty-row {
     text-align: center;
+    font-style: italic;
     background-color: var(--ADE-light-grey) !important;
 }
 
@@ -170,6 +181,22 @@ svg:hover {
 
 .center-align {
     text-align: center;
+}
+
+.row-actions > *{
+    margin: 0 0.5rem;
+}
+
+.alert-box {
+    width: max-content;
+}
+
+.alert-box > svg {
+    margin-right: 1rem;
+}
+
+.margin-right-1 {
+    margin-right: 1rem;
 }
 
 

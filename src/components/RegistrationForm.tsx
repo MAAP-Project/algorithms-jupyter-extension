@@ -1,10 +1,10 @@
 import React, { useState, useEffect } from 'react';
-import { Button, Form, Modal, Table } from 'react-bootstrap';
-import { BsArrowRightShort } from "react-icons/bs";
+import { Alert, Button, Form, Modal, Table } from 'react-bootstrap';
+import { BsArrowRightShort, BsInfoCircleFill } from "react-icons/bs";
 import { BsFillCheckCircleFill, BsFillXCircleFill } from 'react-icons/bs';
 import { ALGO_INPUTS } from '../constants';
 import { useDispatch, useSelector } from 'react-redux';
-import { algorithmsActions, selectAlgorithms } from '../redux/slices/algorithmsSlice'
+import { algorithmActions, selectAlgorithm } from '../redux/slices/algorithmSlice'
 import { TableConfigInputs } from './TableConfigInputs';
 import { TableFileInputs } from './TableFileInputs';
 import { TablePositionalInputs } from './TablePositionalInputs';
@@ -13,8 +13,12 @@ import { INotification } from 'jupyterlab_toastify'
 import AsyncSelect from 'react-select/async';
 import { getResources } from "../utils/api";
 import { Spinner } from 'react-bootstrap';
+import { checkUrlExists } from '../utils/utils';
 
-export const RegistrationForm = () => {
+export const RegistrationForm = ({ data }) => {
+
+    console.log("Data from form")
+    console.log(data)
 
     // Local state variables
     const [firstStep, setFirstStep] = useState(true)
@@ -28,7 +32,7 @@ export const RegistrationForm = () => {
     // Redux
     const dispatch = useDispatch()
 
-    const { registrationUrl, repoRunCommand, algoResource } = useSelector(selectAlgorithms)
+    const { registrationUrl, repoRunCommand, algoResource } = useSelector(selectAlgorithm)
 
     const { setAlgoDesc,
             setAlgoDiskSpace,
@@ -38,7 +42,7 @@ export const RegistrationForm = () => {
             setRepoBranch,
             setRepoRunCommand,
             setRepoBuildCommand,
-            setRepoUrl } = algorithmsActions
+            setRepoUrl } = algorithmActions
 
 
     // useEffect(() => {
@@ -48,11 +52,7 @@ export const RegistrationForm = () => {
     // }, [registrationUrl]);
 
     const validateRepo = (e) => {
-        // document.body.style.cursor = 'wait'
-        e.target.value.length == 0 ? setValidRepo(false) : setValidRepo(true);
-        //let branches = getRepoInfo()
-        //branches.length == 0 ? setValidRepo(false) : setValidRepo(true); setRepoBranches(branches);
-        //setRepoUrl(e.target.value)
+        checkUrlExists(e.target.value) ? setValidRepo(true) : setValidRepo(false)
         setFirstRepoCheck(false)
     }
 
@@ -115,8 +115,9 @@ export const RegistrationForm = () => {
         <>
         <Form onSubmit={submitHandler}>
             <div className='section-padding'>
-                <h2>Repository Information</h2>
-                <span className={firstStep ? 'show content-padding' : 'hide content-padding'}>To register an algorithm to the MAAP, your code must be committed to a public code repository.</span>
+                <h2>Register Algorithm</h2>
+                <Alert variant="primary" className="alert-box">To register an algorithm to the MAAP, your code must be committed to a public code repository.<br/><br/>Need more tips and tricks? Documentation may be found <a href="">here</a>.</Alert>
+                <h3>Repository Information</h3>
                 <Table className="form-table">
                     <tbody>
                         <tr>
@@ -124,9 +125,9 @@ export const RegistrationForm = () => {
                             <td className='flex'>
                                 <div>
                                     <div className='flex'>
-                                        <Form.Control disabled={!firstStep} onChange={handleRepoUrlChange} onKeyDown={handleKeyPress} onBlur={validateRepo} type="text" placeholder="Enter repository URL" />
-                                        <div className={firstStep ? firstRepoCheck ? 'hide' : 'show' : 'hide'}>
-                                            {/* {validRepo ? <BsFillCheckCircleFill className='success-icon' /> : <BsFillXCircleFill className='danger-icon' />} */}
+                                        <Form.Control onChange={handleRepoUrlChange} onKeyDown={handleKeyPress} onBlur={validateRepo} type="text" placeholder="Enter repository URL" />
+                                        <div className={firstRepoCheck ? 'hide' : 'show'}>
+                                            {validRepo ? <BsFillCheckCircleFill className='success-icon' /> : <BsFillXCircleFill className='danger-icon' />}
                                         </div>
                                     </div>
                                     <div className={firstStep ? firstRepoCheck ? 'hide' : 'show' : 'hide'}>
@@ -138,32 +139,27 @@ export const RegistrationForm = () => {
                         <tr>
                             <td>Repository Branch</td>
                             <td>
-                                <Form.Control disabled={!firstStep} type="text" placeholder="Enter repository branch..." onChange={handleBranchChange} />
+                                <Form.Control type="text" placeholder="Enter repository branch" onChange={handleBranchChange} />
                             </td>
                         </tr>
                         <tr>
                             <td>Run Command</td>
                             <td>
-                                <Form.Control disabled={!firstStep} type="text" placeholder="Enter run command..." onChange={handleRunCmdChange} />
+                                <Form.Control type="text" placeholder="Enter run command" onChange={handleRunCmdChange} />
                             </td>
                         </tr>
                         <tr>
                             <td>Build Command</td>
                             <td>
-                                <Form.Control disabled={!firstStep} type="text" placeholder="Enter build command..." onChange={handleBuildCmdChange} />
+                                <Form.Control type="text" placeholder="Enter build command" onChange={handleBuildCmdChange} />
                             </td>
                         </tr>
                     </tbody>
                 </Table>
-
-                <span className={firstStep ? 'show' : 'hide'}>
-                    <Button disabled={!validRepo} onClick={() => { validRepo ? setFirstStep(false) : "" }} >Add General Information</Button>
-                    {/* <Button disabled={!validRepo || repoRunCommand == ""} onClick={() => { validRepo ? setFirstStep(false) : "" }} >Add General Information</Button> */}
-                </span>
             </div>
 
-            <div className={firstStep ? 'hide section-padding' : 'show section-padding'}>
-                <h2>General Information</h2>
+            <div className='section-padding'>
+                <h3>General Information</h3>
                 <Table className="form-table">
                     <tbody>
                         <tr>
@@ -210,7 +206,7 @@ export const RegistrationForm = () => {
                 </Table>
 
                 <div className='section-padding'>
-                    <h2>Input Types</h2>
+                    <h3>Inputs</h3>
                     {/* <TableConfigInputs /> */}
                     <TableFileInputs />
                     <TablePositionalInputs />

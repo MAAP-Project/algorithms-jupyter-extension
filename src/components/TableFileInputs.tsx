@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { OverlayTrigger, Row, Table, Tooltip } from 'react-bootstrap';
 import { BsPlusCircleFill, BsInfoCircle, BsFillInfoCircleFill } from 'react-icons/bs';
 import { useDispatch, useSelector } from 'react-redux';
-import { algorithmsActions, selectAlgorithms } from '../redux/slices/algorithmsSlice'
+import { algorithmActions, selectAlgorithm } from '../redux/slices/algorithmSlice'
 import { ALGO_INPUTS, ALGO_INPUTS_DESC, ALGO_INPUT_FIELDS } from '../constants';
 import { InputRow } from './InputRow';
 import { EmptyRow } from './EmptyRow';
@@ -13,8 +13,8 @@ export const TableFileInputs = () => {
     // Redux
     const dispatch = useDispatch()
 
-    const { fileData, inputId } = useSelector(selectAlgorithms)
-    const { addFileData, updateFileData, removeFileData, incrementInputId } = algorithmsActions
+    const { fileData, inputId } = useSelector(selectAlgorithm)
+    const { addFileData, updateFileData, removeFileData, incrementInputId } = algorithmActions
 
     const addRow = () => {
         dispatch(addFileData({[ALGO_INPUT_FIELDS.INPUT_NAME]: "", 
@@ -64,7 +64,6 @@ export const TableFileInputs = () => {
                     </tr>
                 </thead>
                 <tbody>
-                    {console.log(fileData)}
                     {fileData.length == 0 ? <EmptyRow text="No inputs specified"/> : Object.entries(fileData).map(([key, data]) => {
                     return <InputRow row={data} handleRemoveRow={handleRemoveRow} handleDataChange={handleDataChange}/>
                 })}

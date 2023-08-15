@@ -1,5 +1,7 @@
-import { IAlgorithmsSlice } from "./slices"
+import { IAlgorithmSlice, IRegisteredAlgorithmsSlice, ISplitPaneSlice } from "./slices"
 
 export interface IStore {
-  Algorithms: IAlgorithmsSlice
+  Algorithm: IAlgorithmSlice
+  SplitPane: ISplitPaneSlice
+  RegisteredAlgorithms: IRegisteredAlgorithmsSlice
 }

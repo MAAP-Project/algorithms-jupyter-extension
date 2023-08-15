@@ -4,12 +4,12 @@ import { algorithm_config_template } from "../templates/algorithm_config";
 import { IAlgorithmConfig } from "../types/index";
 import { IInputParam } from "src/types/slices";
 import {registerUsingFile } from "./api";
-import { algorithmsSlice } from "../redux/slices/algorithmsSlice";
+import { algorithmSlice } from "../redux/slices/algorithmSlice";
 
 
 export async function registerAlgorithm() {
     const state = store.getState();
-    const storeData = state.Algorithms
+    const storeData = state.Algorithm
 
     // Populate algorithm config yaml template with data pulled from store
     let data: IAlgorithmConfig = yaml.load(algorithm_config_template) as IAlgorithmConfig
@@ -38,7 +38,7 @@ export async function registerAlgorithm() {
 
     console.log(response)
     // update state
-    store.dispatch(algorithmsSlice.actions.setRegistrationUrl(response))
+    store.dispatch(algorithmSlice.actions.setRegistrationUrl(response))
 
     return true
 }

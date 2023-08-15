@@ -1,9 +1,13 @@
 import { configureStore } from '@reduxjs/toolkit'
-import algorithmsReducer from './slices/algorithmsSlice'
+import algorithmReducer from './slices/algorithmSlice'
+import registeredAlgorithms from './slices/registeredAlgorithms'
+import splitPaneReducer from './slices/splitPaneSlice'
 
 export const store = configureStore({
   reducer: {
-    Algorithms: algorithmsReducer
+    Algorithm: algorithmReducer,
+    RegisteredAlgorithms: registeredAlgorithms,
+    SplitPane: splitPaneReducer
   },
   devTools: true,
 })

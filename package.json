@@ -1,5 +1,5 @@
 {
-  "name": "@maap-jupyterlab/algorithms_jupyter_extension",
+  "name": "algorithms_jupyter_extension",
   "version": "0.1.1",
   "description": "A JupyterLab extension for managing algotihms on the MAAP",
   "keywords": [
@@ -69,7 +69,7 @@
     "react-icons": "^4.8.0",
     "react-redux": "^8.0.2",
     "react-select": "^5.7.3",
-    "react-split-pane": "^0.1.92",
+    "react-split-pane": "^2.0.0",
     "react-table": "^7.8.0",
     "react-tooltip": "^5.13.1"
   },

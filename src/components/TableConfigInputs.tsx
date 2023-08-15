@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { OverlayTrigger, Row, Table, Tooltip } from 'react-bootstrap';
 import { BsPlusCircleFill, BsInfoCircle } from 'react-icons/bs';
 import { useDispatch, useSelector } from 'react-redux';
-import { algorithmsActions, selectAlgorithms } from '../redux/slices/algorithmsSlice'
+import { algorithmActions, selectAlgorithm } from '../redux/slices/algorithmSlice'
 import { ALGO_INPUTS, ALGO_INPUTS_DESC, ALGO_INPUT_FIELDS } from '../constants';
 import { InputRow } from './InputRow';
 import { EmptyRow } from './EmptyRow';
@@ -13,8 +13,8 @@ export const TableConfigInputs = () => {
     // Redux
     const dispatch = useDispatch()
 
-    const { configData, inputId } = useSelector(selectAlgorithms)
-    const { addConfigData, updateConfigData, removeConfigData, incrementInputId } = algorithmsActions
+    const { configData, inputId } = useSelector(selectAlgorithm)
+    const { addConfigData, updateConfigData, removeConfigData, incrementInputId } = algorithmActions
 
     const addRow = () => {
         dispatch(addConfigData({[ALGO_INPUT_FIELDS.INPUT_NAME]: "", 
