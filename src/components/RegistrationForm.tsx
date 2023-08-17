@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import "../../style/form.css";
 import { Alert, Button, Form, Modal, Table } from 'react-bootstrap';
 import { BsArrowRightShort, BsInfoCircleFill } from "react-icons/bs";
 import { BsFillCheckCircleFill, BsFillXCircleFill } from 'react-icons/bs';
@@ -113,10 +114,10 @@ export const RegistrationForm = ({ data }) => {
 
     return (
         <>
-        <Form onSubmit={submitHandler}>
+        <Form onSubmit={submitHandler} className="form">
             <div className='section-padding'>
                 <h2>Register Algorithm</h2>
-                <Alert variant="primary" className="alert-box">To register an algorithm to the MAAP, your code must be committed to a public code repository.<br/><br/>Need more tips and tricks? Documentation may be found <a href="">here</a>.</Alert>
+                <Alert variant="primary" className="alert-box">To register an algorithm to the MAAP, your code must be committed to a public code repository.<br/>Need more tips and tricks? Documentation may be found <a href="">here</a>.</Alert>
                 <h3>Repository Information</h3>
                 <Table className="form-table">
                     <tbody>

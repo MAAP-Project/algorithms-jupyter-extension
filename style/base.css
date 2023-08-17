@@ -199,4 +199,8 @@ svg:hover {
     margin-right: 1rem;
 }
 
+tbody > tr:hover {
+    --bs-table-bg: inherit !important;
+}
+
 

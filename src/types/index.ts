@@ -3,11 +3,11 @@ export type IAlgorithm = {
 }
 
 export type IAlgorithmConfig = {
-    algorithm_name: string,
-    algorithm_version: string,
+    algo_name: string,
+    version: string,
     repository_url: string,
-    docker_container_url: string,
-    algorithm_description: string,
+    docker_url: string,
+    description: string,
     run_command: string,
     build_command: string,
     queue: string,

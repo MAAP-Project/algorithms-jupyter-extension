@@ -255,3 +255,20 @@ export async function unregisterAlgorithm(algo_id: string) {
   // return data
   return ""
 }
+
+
+export async function buildOGCPackage(algo_config: any) {
+  var requestUrl = new URL(PageConfig.getBaseUrl() + 'jupyter-server-extension/buildOGCPackage');
+  var body: any = {}
+
+  requestUrl.searchParams.append("data", JSON.stringify(algo_config));
+
+  await fetch(requestUrl.href, {
+    headers: { 'Content-Type': 'application/json' }
+  }).then((response) => response.json())
+    .then((data) => {
+      body = JSON.parse(data["response"])
+      return body
+    })
+  return body
+}

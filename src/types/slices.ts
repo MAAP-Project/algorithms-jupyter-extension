@@ -31,7 +31,7 @@ export interface IInputParam {
   [ALGO_INPUT_FIELDS.INPUT_NAME] : string,
   [ALGO_INPUT_FIELDS.INPUT_DEFAULT]: string,
   [ALGO_INPUT_FIELDS.INPUT_DESC]: string,
-  [ALGO_INPUT_FIELDS.IS_REQUIRED]: boolean,
+  [ALGO_INPUT_FIELDS.IS_REQUIRED]: boolean | string,
   [ALGO_INPUT_FIELDS.INPUT_ID]: number
 }
 
