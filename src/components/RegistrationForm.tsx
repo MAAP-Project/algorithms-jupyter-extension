@@ -11,14 +11,11 @@ import { TablePositionalInputs } from './TablePositionalInputs';
 import { registerAlgorithm } from '../utils/algoConfig';
 import { INotification } from 'jupyterlab_toastify'
 import AsyncSelect from 'react-select/async';
-import { getResources } from "../utils/api";
+import { getResources, getWorkspaceContainer } from "../utils/api";
 import { Spinner } from 'react-bootstrap';
 import { checkUrlExists } from '../utils/utils';
 
 export const RegistrationForm = ({ data }) => {
-
-    console.log("Data from form")
-    console.log(data)
 
     // Local state variables
     const [firstStep, setFirstStep] = useState(true)
@@ -31,9 +28,7 @@ export const RegistrationForm = ({ data }) => {
 
     // Redux
     const dispatch = useDispatch()
-
-    const { registrationUrl, repoRunCommand, algoResource } = useSelector(selectAlgorithm)
-
+    const { registrationUrl, repoRunCommand, algoResource, algoContainer } = useSelector(selectAlgorithm)
     const { setAlgoDesc,
             setAlgoDiskSpace,
             setAlgoName,
@@ -45,11 +40,7 @@ export const RegistrationForm = ({ data }) => {
             setRepoUrl } = algorithmActions
 
 
-    // useEffect(() => {
-    //     if (!show) {
-    //         handleModalShow()
-    //     }
-    // }, [registrationUrl]);
+    
 
     const validateRepo = (e) => {
         checkUrlExists(e.target.value) ? setValidRepo(true) : setValidRepo(false)
@@ -110,6 +101,14 @@ export const RegistrationForm = ({ data }) => {
             handleModalShow()
         }
     }
+
+    useEffect(() => {
+        // The container from which the workspace is running will be the default container for algorithm registration.
+        getWorkspaceContainer().then((param) => {
+            let container = param["DOCKERIMAGE_PATH"]
+            if (container != null) { dispatch(setAlgoContainerURL(container)) }
+        })
+    }, []);
 
     return (
         <>
@@ -199,7 +198,7 @@ export const RegistrationForm = ({ data }) => {
                         <tr>
                             <td>Container URL</td>
                             <td>
-                                <Form.Control type="text" placeholder="Enter container URL" onChange={handleContainerURLChange} />
+                                <Form.Control type="text" defaultValue={algoContainer} placeholder="Enter container URL" onChange={handleContainerURLChange} />
                             </td>
                         </tr>
                     </tbody>
