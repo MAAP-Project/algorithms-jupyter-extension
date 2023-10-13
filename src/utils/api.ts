@@ -255,3 +255,29 @@ export async function unregisterAlgorithm(algo_id: string) {
   // return data
   return ""
 }
+
+
+export async function getWorkspaceContainer() {
+  var requestUrl = new URL(PageConfig.getBaseUrl() + 'jupyter-server-extension/getWorkspaceContainer');
+  console.log(requestUrl.href)
+
+  try {
+    const response: any = await fetch(requestUrl.href, {
+      headers: {
+        'Content-Type': 'application/json'
+      }
+    })
+
+    if (!response.ok) {
+      throw new Error('Request failed');
+    }
+
+    console.log("resolved")
+    const r_data = await response.json();
+    console.log(r_data)
+    return r_data
+  } catch (error) {
+    console.log("error in new endpoint")
+    console.log(error)
+  }
+}
