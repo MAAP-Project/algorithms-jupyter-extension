@@ -59,6 +59,7 @@
   "dependencies": {
     "@jupyterlab/application": "^3.4.8",
     "@jupyterlab/launcher": "^3.4.8",
+    "@jupyterlab/mainmenu": "^3.6.3",
     "@maap-jupyterlab/user-workspace-management-jupyter-extension": "^0.0.3",
     "@reduxjs/toolkit": "^1.9.3",
     "@types/js-yaml": "^4.0.5",

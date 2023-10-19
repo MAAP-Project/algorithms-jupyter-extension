@@ -8,7 +8,7 @@ import { AlgorithmsApp } from '../components/AlgorithmsApp';
 import { RegistrationForm } from '../components/RegistrationForm';
 import { JupyterFrontEnd } from '@jupyterlab/application';
 
-export class ReactAppWidget extends ReactWidget {
+export class AlgorithmCatalogWidget extends ReactWidget {
   jupyterApp: JupyterFrontEnd
   constructor(jupyterApp: JupyterFrontEnd) {
     super()
@@ -25,7 +25,7 @@ export class ReactAppWidget extends ReactWidget {
   }
 }
 
-export class RegisterReactAppWidget extends ReactWidget {
+export class RegisterAlgorithmsWidget extends ReactWidget {
   data: any
   constructor(data: any) {
     super()
