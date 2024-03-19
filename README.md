@@ -1,4 +1,4 @@
-# algorithms_jupyter_extension
+# maap_algorithms_jupyter_extension
 
 [![Github Actions Status](https://github.com/github_username/algorithms_jupyter_extension/workflows/Build/badge.svg)](https://github.com/github_username/algorithms_jupyter_extension/actions/workflows/build.yml)
 A JupyterLab extension.
@@ -12,7 +12,7 @@ A JupyterLab extension.
 To install the extension, execute:
 
 ```bash
-pip install algorithms_jupyter_extension
+pip install maap_algorithms_jupyter_extension
 ```
 
 ## Uninstall
@@ -20,7 +20,7 @@ pip install algorithms_jupyter_extension
 To remove the extension, execute:
 
 ```bash
-pip uninstall algorithms_jupyter_extension
+pip uninstall maap_algorithms_jupyter_extension
 ```
 
 ## Contributing
@@ -64,7 +64,7 @@ jupyter lab build --minimize=False
 ### Development uninstall
 
 ```bash
-pip uninstall algorithms_jupyter_extension
+pip uninstall maap_algorithms_jupyter_extension
 ```
 
 In development mode, you will also need to remove the symlink created by `jupyter labextension develop`
