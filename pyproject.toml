@@ -3,7 +3,7 @@ requires = ["hatchling>=1.4.0", "jupyterlab>=3.4.7,<4.0.0", "hatch-nodejs-versio
 build-backend = "hatchling.build"
 
 [project]
-name = "algorithms_jupyter_extension"
+name = "maap_algorithms_jupyter_extension"
 readme = "README.md"
 license = { file = "LICENSE" }
 requires-python = ">=3.7"
@@ -33,24 +33,24 @@ source = "nodejs"
 fields = ["description", "authors", "urls"]
 
 [tool.hatch.build.targets.sdist]
-artifacts = ["algorithms_jupyter_extension/labextension"]
+artifacts = ["maap_algorithms_jupyter_extension/labextension"]
 exclude = [".github", "binder"]
 
 [tool.hatch.build.targets.wheel.shared-data]
-"algorithms_jupyter_extension/labextension" = "share/jupyter/labextensions/algorithms_jupyter_extension"
-"install.json" = "share/jupyter/labextensions/algorithms_jupyter_extension/install.json"
+"maap_algorithms_jupyter_extension/labextension" = "share/jupyter/labextensions/maap_algorithms_jupyter_extension"
+"install.json" = "share/jupyter/labextensions/maap_algorithms_jupyter_extension/install.json"
 
 [tool.hatch.build.hooks.version]
-path = "algorithms_jupyter_extension/_version.py"
+path = "maap_algorithms_jupyter_extension/_version.py"
 
 [tool.hatch.build.hooks.jupyter-builder]
 dependencies = ["hatch-jupyter-builder>=0.5"]
 build-function = "hatch_jupyter_builder.npm_builder"
 ensured-targets = [
-    "algorithms_jupyter_extension/labextension/static/style.js",
-    "algorithms_jupyter_extension/labextension/package.json",
+    "maap_algorithms_jupyter_extension/labextension/static/style.js",
+    "maap_algorithms_jupyter_extension/labextension/package.json",
 ]
-skip-if-exists = ["algorithms_jupyter_extension/labextension/static/style.js"]
+skip-if-exists = ["maap_algorithms_jupyter_extension/labextension/static/style.js"]
 
 [tool.hatch.build.hooks.jupyter-builder.build-kwargs]
 build_cmd = "build:prod"
@@ -60,7 +60,7 @@ npm = ["jlpm"]
 build_cmd = "install:extension"
 npm = ["jlpm"]
 source_dir = "src"
-build_dir = "algorithms_jupyter_extension/labextension"
+build_dir = "maap_algorithms_jupyter_extension/labextension"
 
 [tool.jupyter-releaser.options]
 version_cmd = "hatch version"

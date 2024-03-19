@@ -4,7 +4,8 @@ import {
     useTable,
     useGlobalFilter,
     usePagination,
-    useFilters
+    useFilters,
+    Column
 } from 'react-table';
 import {
     Button,
@@ -30,7 +31,7 @@ function DefaultColumnFilter({
         <input
             value={filterValue || ''}
             onChange={e => {
-                setFilter(e.target.value || undefined) // Set undefined to remove the filter entirely
+                setFilter(e.target.value || undefined) 
             }}
             placeholder={`Search...`}
         />
@@ -78,9 +79,8 @@ function ReactTable({ columns, data, jupyterApp }) {
 
     const handleClose = () => setShow(false);
 
-    const defaultColumn = React.useMemo(
+    const defaultColumn = React.useMemo<any>(
         () => ({
-            // Let's set up our default Filter UI
             Filter: DefaultColumnFilter,
         }),
         []
@@ -102,7 +102,6 @@ function ReactTable({ columns, data, jupyterApp }) {
         describeAllAlgorithms().finally(() => setShowSpinner(false))
       }, [algorithmsList]);
 
-    // Use the state and functions returned from useTable to build your UI
     const {
         getTableProps,
         getTableBodyProps,
@@ -125,7 +124,6 @@ function ReactTable({ columns, data, jupyterApp }) {
         initialState: { pageIndex: 0, pageSize: rowCount }
     }, useFilters, usePagination)
 
-    // Render the UI for your table
     return (<>
         <Table {...getTableProps()} className='hover'>
             <thead>
