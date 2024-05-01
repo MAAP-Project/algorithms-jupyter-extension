@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { ActionBar } from './ActionBar';
 import { Algorithms } from './Algorithms';
 import 'bootstrap/dist/css/bootstrap.min.css';
-import SplitPane from 'react-split-pane';
+import SplitPane, { Props } from 'react-split-pane';
 import Pane from 'react-split-pane';
 import { AlgorithmDetails } from './AlgorithmDetails';
 import { useDispatch } from 'react-redux';
@@ -31,10 +31,18 @@ export const AlgorithmsApp = ({ jupyterApp }): JSX.Element => {
       dispatch(updateSize(newSize))
   }
 
+  let splitPaneProps: Props = {
+    split: "horizontal",
+    defaultSize: 200,
+    primary: "first",
+    onChange: (size: any) => handleDragFinish(size),
+    pane1Style: {"position": "relative"}
+  }
+
   return (
-    <SplitPane split="horizontal" defaultSize={200} primary="first" onChange={(size: any) => handleDragFinish(size)}>
-      <Pane className="relative">
-        <Algorithms jupyterApp={jupyterApp} />
+    <SplitPane {...splitPaneProps}>
+      <Pane>
+        <Algorithms jupyterApp={jupyterApp}/>
       </Pane>
       <Pane>
         <AlgorithmDetails />

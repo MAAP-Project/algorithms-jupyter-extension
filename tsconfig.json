@@ -23,7 +23,7 @@
     "skipLibCheck": true,
     "strict": true,
     "strictNullChecks": false,
-    "target": "es2020",
+    "target": "ES2022",
     "types": [],
     "typeRoots" : ["./node_modules/@types", "./src/types"]
   },

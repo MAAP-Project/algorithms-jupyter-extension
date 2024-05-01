@@ -1,11 +1,13 @@
-# maap_algorithms_jupyter_extension
-
-[![Github Actions Status](https://github.com/github_username/algorithms_jupyter_extension/workflows/Build/badge.svg)](https://github.com/github_username/algorithms_jupyter_extension/actions/workflows/build.yml)
-A JupyterLab extension.
+# MAAP Algorithms Jupyter Extension
 
 ## Requirements
 
-- JupyterLab >= 3.0
+| Package | Version |
+|---------|---------|
+| JupyterLab | v4.1.6 |
+| NodeJS | v18 |
+
+These are the recommended versions. Others may be suitable, but are not actively supported.
 
 ## Install
 
@@ -36,6 +38,8 @@ The `jlpm` command is JupyterLab's pinned version of
 ```bash
 # Clone the repo to your local environment
 # Change directory to the algorithms_jupyter_extension directory
+# Install dependencies
+yarn install
 # Install package in development mode
 pip install -e "."
 # Link your development version of the extension with JupyterLab
@@ -71,6 +75,10 @@ In development mode, you will also need to remove the symlink created by `jupyte
 command. To find its location, you can run `jupyter labextension list` to figure out where the `labextensions`
 folder is located. Then you can remove the symlink named `algorithms_jupyter_extension` within that folder.
 
-### Packaging the extension
+## Release
 
 See [RELEASE](RELEASE.md)
+
+## Contribute
+
+See [CONTRIBUTING](CONTRIBUTING.md)
