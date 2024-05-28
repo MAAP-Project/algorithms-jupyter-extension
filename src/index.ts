@@ -87,7 +87,7 @@ const algorithm_catalog_plugin: JupyterFrontEndPlugin<void> = {
     //   });
     // }
 
-    console.log('JupyterLab algorithms catalog plugin is activated!');
+    console.log('JupyterLab MAAP Algorithms Registration extension is activated!');
   }
 };
 
