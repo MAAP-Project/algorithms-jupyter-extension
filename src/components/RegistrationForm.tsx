@@ -14,6 +14,7 @@ import AsyncSelect from 'react-select/async';
 import { getResources, getWorkspaceContainer } from "../utils/api";
 import { Spinner } from 'react-bootstrap';
 import { checkUrlExists } from '../utils/utils';
+import { SUBMITTED_ALGORITHM_SUCCESS, SUBMITTED_ALGORITHM_ELEMENT_ID } from "../constants";
 
 export const RegistrationForm = ({ data }) => {
 
@@ -28,7 +29,7 @@ export const RegistrationForm = ({ data }) => {
 
     // Redux
     const dispatch = useDispatch()
-    const { registrationUrl, repoRunCommand, algoResource, algoContainer } = useSelector(selectAlgorithm)
+    const { repoRunCommand, algoResource, algoContainer } = useSelector(selectAlgorithm)
     const { setAlgoDesc,
             setAlgoDiskSpace,
             setAlgoName,
@@ -38,6 +39,7 @@ export const RegistrationForm = ({ data }) => {
             setRepoRunCommand,
             setRepoBuildCommand,
             setRepoUrl } = algorithmActions
+    const registrationUrl = "https://ideas-digitaltwin.jpl.nasa.gov/airquality/dat"
 
 
     
@@ -94,10 +96,15 @@ export const RegistrationForm = ({ data }) => {
 
     async function submitHandler(e) { // = (e) => {
         e.preventDefault()
+        let pElement: HTMLElement = document.getElementById(SUBMITTED_ALGORITHM_ELEMENT_ID)
+        console.log("graceal1 printing pElement")
+        console.log(pElement)
         // setShowSpinner(true)
         let res = await registerAlgorithm()
         if (res) {
             // setShowSpinner(false)
+            let submissionText = SUBMITTED_ALGORITHM_SUCCESS.replace("{TIME}", new Date().toUTCString());
+            pElement.innerHTML =`${submissionText}<a href="${registrationUrl}">${registrationUrl}</a>`
             handleModalShow()
         }
     }
@@ -215,6 +222,8 @@ export const RegistrationForm = ({ data }) => {
                     Register Algorithm 
                     {/* <BsArrowRightShort size={20} /> */}
                 </Button>
+                <br />
+                <p id={SUBMITTED_ALGORITHM_ELEMENT_ID}></p>
             </div>
         </Form>
         <div>
@@ -223,7 +232,7 @@ export const RegistrationForm = ({ data }) => {
             <Modal.Header closeButton>
                 <Modal.Title>Algorithm submitted for registration</Modal.Title>
             </Modal.Header>
-            <Modal.Body>Your algorithm was submitted for registration. You can view the progress here: <a href={registrationUrl}>{registrationUrl}</a></Modal.Body>
+            <Modal.Body>Your algorithm was submitted for registration. You can view the progress here: <a href={registrationUrl} target="_blank">{registrationUrl}</a></Modal.Body>
             <Modal.Footer>
                 <Button variant="primary" onClick={handleModalClose}>
                     Close
