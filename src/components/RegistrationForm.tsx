@@ -9,12 +9,11 @@ import { TableConfigInputs } from './TableConfigInputs';
 import { TableFileInputs } from './TableFileInputs';
 import { TablePositionalInputs } from './TablePositionalInputs';
 import { registerAlgorithm } from '../utils/algoConfig';
-import { INotification } from 'jupyterlab_toastify'
 import AsyncSelect from 'react-select/async';
 import { getResources, getWorkspaceContainer } from "../utils/api";
 import { Spinner } from 'react-bootstrap';
 import { checkUrlExists } from '../utils/utils';
-import { SUBMITTED_ALGORITHM_SUCCESS, SUBMITTED_ALGORITHM_ELEMENT_ID } from "../constants";
+import { Notification } from "@jupyterlab/apputils";
 
 export const RegistrationForm = ({ data }) => {
 
@@ -29,7 +28,7 @@ export const RegistrationForm = ({ data }) => {
 
     // Redux
     const dispatch = useDispatch()
-    const { repoRunCommand, algoResource, algoContainer } = useSelector(selectAlgorithm)
+    const { registrationUrl, repoRunCommand, algoResource, algoContainer } = useSelector(selectAlgorithm)
     const { setAlgoDesc,
             setAlgoDiskSpace,
             setAlgoName,
@@ -39,8 +38,6 @@ export const RegistrationForm = ({ data }) => {
             setRepoRunCommand,
             setRepoBuildCommand,
             setRepoUrl } = algorithmActions
-    const registrationUrl = "https://ideas-digitaltwin.jpl.nasa.gov/airquality/dat"
-
 
     
 
@@ -96,15 +93,23 @@ export const RegistrationForm = ({ data }) => {
 
     async function submitHandler(e) { // = (e) => {
         e.preventDefault()
-        let pElement: HTMLElement = document.getElementById(SUBMITTED_ALGORITHM_ELEMENT_ID)
-        console.log("graceal1 printing pElement")
-        console.log(pElement)
         // setShowSpinner(true)
         let res = await registerAlgorithm()
         if (res) {
             // setShowSpinner(false)
-            let submissionText = SUBMITTED_ALGORITHM_SUCCESS.replace("{TIME}", new Date().toUTCString());
-            pElement.innerHTML =`${submissionText}<a href="${registrationUrl}">${registrationUrl}</a>`
+            Notification.success("The algorithm was successfully submitted.", {
+                autoClose: 5000,
+                actions: [
+                  {
+                    label: 'View algorithm registration progress here',
+                    callback: event => {
+                        event.preventDefault();
+                        window.open(registrationUrl, '_blank', 'noreferrer');
+                    },
+                    displayType: 'link'
+                  }
+                ]
+              });
             handleModalShow()
         }
     }
@@ -222,8 +227,6 @@ export const RegistrationForm = ({ data }) => {
                     Register Algorithm 
                     {/* <BsArrowRightShort size={20} /> */}
                 </Button>
-                <br />
-                <p id={SUBMITTED_ALGORITHM_ELEMENT_ID}></p>
             </div>
         </Form>
         <div>
