@@ -25,6 +25,7 @@ export const RegistrationForm = ({ data }) => {
     const [firstRepoCheck, setFirstRepoCheck] = useState(true)
     const [show, setShow] = useState(false);
     const [showSpinner, setShowSpinner] = useState(false)
+    const [showNotification, setShowNotification] = useState(false);
 
     // Redux
     const dispatch = useDispatch()
@@ -97,20 +98,8 @@ export const RegistrationForm = ({ data }) => {
         let res = await registerAlgorithm()
         if (res) {
             // setShowSpinner(false)
-            Notification.success("The algorithm was successfully submitted.", {
-                autoClose: 5000,
-                actions: [
-                  {
-                    label: 'View algorithm registration progress here',
-                    callback: event => {
-                        event.preventDefault();
-                        window.open(registrationUrl, '_blank', 'noreferrer');
-                    },
-                    displayType: 'link'
-                  }
-                ]
-              });
             handleModalShow()
+            setShowNotification(true)
         }
     }
 
@@ -121,6 +110,25 @@ export const RegistrationForm = ({ data }) => {
             if (container != null) { dispatch(setAlgoContainerURL(container)) }
         })
     }, []);
+
+    useEffect(() => {
+        if (showNotification) {
+            Notification.success("The algorithm was successfully submitted.", {
+                autoClose: 5000,
+                actions: [
+                {
+                    label: 'View algorithm registration progress here',
+                    callback: event => {
+                        event.preventDefault();
+                        window.open(registrationUrl, '_blank', 'noreferrer');
+                    },
+                    displayType: 'link'
+                }
+                ]
+            });
+            setShowNotification(false);
+        }
+    }, [showNotification]);
 
     return (
         <>
