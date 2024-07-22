@@ -9,11 +9,11 @@ import { TableConfigInputs } from './TableConfigInputs';
 import { TableFileInputs } from './TableFileInputs';
 import { TablePositionalInputs } from './TablePositionalInputs';
 import { registerAlgorithm } from '../utils/algoConfig';
-import { INotification } from 'jupyterlab_toastify'
 import AsyncSelect from 'react-select/async';
 import { getResources, getWorkspaceContainer } from "../utils/api";
 import { Spinner } from 'react-bootstrap';
 import { checkUrlExists } from '../utils/utils';
+import { Notification } from "@jupyterlab/apputils";
 
 export const RegistrationForm = ({ data }) => {
 
@@ -25,6 +25,7 @@ export const RegistrationForm = ({ data }) => {
     const [firstRepoCheck, setFirstRepoCheck] = useState(true)
     const [show, setShow] = useState(false);
     const [showSpinner, setShowSpinner] = useState(false)
+    const [showNotification, setShowNotification] = useState(false);
 
     // Redux
     const dispatch = useDispatch()
@@ -38,7 +39,6 @@ export const RegistrationForm = ({ data }) => {
             setRepoRunCommand,
             setRepoBuildCommand,
             setRepoUrl } = algorithmActions
-
 
     
 
@@ -99,6 +99,7 @@ export const RegistrationForm = ({ data }) => {
         if (res) {
             // setShowSpinner(false)
             handleModalShow()
+            setShowNotification(true)
         }
     }
 
@@ -109,6 +110,25 @@ export const RegistrationForm = ({ data }) => {
             if (container != null) { dispatch(setAlgoContainerURL(container)) }
         })
     }, []);
+
+    useEffect(() => {
+        if (showNotification) {
+            Notification.success("The algorithm was successfully submitted.", {
+                autoClose: 5000,
+                actions: [
+                {
+                    label: 'View algorithm registration progress here',
+                    callback: event => {
+                        event.preventDefault();
+                        window.open(registrationUrl, '_blank', 'noreferrer');
+                    },
+                    displayType: 'link'
+                }
+                ]
+            });
+            setShowNotification(false);
+        }
+    }, [showNotification]);
 
     return (
         <>
@@ -223,7 +243,7 @@ export const RegistrationForm = ({ data }) => {
             <Modal.Header closeButton>
                 <Modal.Title>Algorithm submitted for registration</Modal.Title>
             </Modal.Header>
-            <Modal.Body>Your algorithm was submitted for registration. You can view the progress here: <a href={registrationUrl}>{registrationUrl}</a></Modal.Body>
+            <Modal.Body>Your algorithm was submitted for registration. You can view the progress here: <a href={registrationUrl} target="_blank">{registrationUrl}</a></Modal.Body>
             <Modal.Footer>
                 <Button variant="primary" onClick={handleModalClose}>
                     Close
