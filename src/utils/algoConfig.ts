@@ -36,6 +36,7 @@ export async function registerAlgorithm() {
     // Pass the algo config file
     let response = await registerUsingFile(data.algorithm_name + ".yml", algo_data)
 
+    if (!response) return false;
     console.log(response)
     // update state
     store.dispatch(algorithmSlice.actions.setRegistrationUrl(response))

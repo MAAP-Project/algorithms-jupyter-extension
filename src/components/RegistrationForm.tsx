@@ -26,10 +26,11 @@ export const RegistrationForm = ({ data }) => {
     const [show, setShow] = useState(false);
     const [showSpinner, setShowSpinner] = useState(false)
     const [showNotification, setShowNotification] = useState(false);
+    const [algRegistrationSuccessful, setAlgRegistrationSuccessful] = useState(false);
 
     // Redux
     const dispatch = useDispatch()
-    const { registrationUrl, repoRunCommand, algoResource, algoContainer } = useSelector(selectAlgorithm)
+    const { registrationUrl, algorithmRegistrationError, repoRunCommand, algoResource, algoContainer } = useSelector(selectAlgorithm)
     const { setAlgoDesc,
             setAlgoDiskSpace,
             setAlgoName,
@@ -96,10 +97,16 @@ export const RegistrationForm = ({ data }) => {
         e.preventDefault()
         // setShowSpinner(true)
         let res = await registerAlgorithm()
+        console.log("graceal1 res which is returned by registering the alg is ");
+        console.log(res);
         if (res) {
             // setShowSpinner(false)
+            setAlgRegistrationSuccessful(true)
             handleModalShow()
             setShowNotification(true)
+        } else {
+            setAlgRegistrationSuccessful(false)
+            handleModalShow()
         }
     }
 
@@ -240,10 +247,19 @@ export const RegistrationForm = ({ data }) => {
         <div>
         {/* {showSpinner ? <Spinner animation="border" variant="primary" /> : */}
         <Modal show={show} aria-labelledby="contained-modal-title-vcenter" onHide={handleModalClose}>
-            <Modal.Header closeButton>
-                <Modal.Title>Algorithm submitted for registration</Modal.Title>
-            </Modal.Header>
-            <Modal.Body>Your algorithm was submitted for registration. You can view the progress here: <a href={registrationUrl} target="_blank">{registrationUrl}</a></Modal.Body>
+            {algRegistrationSuccessful ? 
+                <div>
+                    <Modal.Header closeButton>
+                        <Modal.Title>Algorithm submitted for registration</Modal.Title>
+                    </Modal.Header>
+                    <Modal.Body>Your algorithm was submitted for registration. You can view the progress here: <a href={registrationUrl} target="_blank">{registrationUrl}</a></Modal.Body>
+                </div>:
+                <div>
+                    <Modal.Header closeButton>
+                        <Modal.Title>Algorithm failed to submit for registration</Modal.Title>
+                    </Modal.Header>
+                    <Modal.Body>Error Message: {algorithmRegistrationError}</Modal.Body>
+                </div>}
             <Modal.Footer>
                 <Button variant="primary" onClick={handleModalClose}>
                     Close

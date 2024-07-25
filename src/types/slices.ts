@@ -20,7 +20,8 @@ export interface IAlgorithmSlice {
     algoResource: any,
     algoContainer: "",
     inputId: number,
-    registrationUrl: ""
+    registrationUrl: "",
+    algorithmRegistrationError: ""
   }
 
 export interface ISplitPaneSlice {
