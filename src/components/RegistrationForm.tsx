@@ -26,13 +26,11 @@ export const RegistrationForm = ({ data }) => {
     const [show, setShow] = useState(false);
     const [showSpinner, setShowSpinner] = useState(false)
     const [showNotification, setShowNotification] = useState(false);
-    const [algRegistrationSuccessful2, setAlgRegistrationSuccessful] = useState(false);
-    const algRegistrationSuccessful = true;
-    let registrationUrl = "https://repo.maap-project.org/root/register-job-hysds-v4/-/jobs/9661"
+    const [algRegistrationSuccessful, setAlgRegistrationSuccessful] = useState(false);
 
     // Redux
     const dispatch = useDispatch()
-    const { /*registrationUrl,*/ algorithmRegistrationError, repoRunCommand, algoResource, algoContainer } = useSelector(selectAlgorithm)
+    const { registrationUrl, algorithmRegistrationError, repoRunCommand, algoResource, algoContainer } = useSelector(selectAlgorithm)
     const { setAlgoDesc,
             setAlgoDiskSpace,
             setAlgoName,
@@ -254,7 +252,7 @@ export const RegistrationForm = ({ data }) => {
                     <Modal.Header closeButton>
                         <Modal.Title>Algorithm submitted for registration</Modal.Title>
                     </Modal.Header>
-                    <Modal.Body>Your algorithm was submitted for registration. You can view the progress here: <a href={registrationUrl} target="_blank">{registrationUrl}</a>. A yml file with this algorithm was added to your home directory (~).</Modal.Body>
+                    <Modal.Body>Your algorithm was submitted for registration. You can view the progress here: <a href={registrationUrl} target="_blank">{registrationUrl}</a></Modal.Body>
                 </div>:
                 <div>
                     <Modal.Header closeButton>
