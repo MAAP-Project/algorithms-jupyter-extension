@@ -97,17 +97,14 @@ export const RegistrationForm = ({ data }) => {
         e.preventDefault()
         // setShowSpinner(true)
         let res = await registerAlgorithm()
-        console.log("graceal1 res which is returned by registering the alg is ");
-        console.log(res);
         if (res) {
             // setShowSpinner(false)
             setAlgRegistrationSuccessful(true)
-            handleModalShow()
             setShowNotification(true)
         } else {
             setAlgRegistrationSuccessful(false)
-            handleModalShow()
         }
+        handleModalShow()
     }
 
     useEffect(() => {
