@@ -16,7 +16,8 @@ const initialState: IAlgorithmSlice = {
   algoResource: "",
   algoContainer: "",
   inputId: 0,
-  registrationUrl: ""
+  registrationUrl: "",
+  algorithmRegistrationError: ""
 }
 
 export const algorithmSlice = createSlice({
@@ -27,6 +28,10 @@ export const algorithmSlice = createSlice({
 
     setRegistrationUrl: (state, action): any => {
       state.registrationUrl = action.payload
+    },
+
+    setAlgorithmRegistrationError: (state, action): any => {
+      state.algorithmRegistrationError = action.payload
     },
 
     incrementInputId: (state): any => {
