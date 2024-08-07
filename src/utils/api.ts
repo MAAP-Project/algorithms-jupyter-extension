@@ -2,7 +2,8 @@ import { PageConfig } from '@jupyterlab/coreutils';
 import { IAlgorithmData } from '../types/slices';
 import { registeredAlgorithmsActions } from '../redux/slices/registeredAlgorithms';
 import { store } from "../redux/store";
-import { parseAlgorithmData } from "./parsers" 
+import { parseAlgorithmData } from "./parsers";
+import { algorithmSlice } from "../redux/slices/algorithmSlice";
 
 
 // export const getAlgorithmMetadata = (body: any) => {
@@ -25,6 +26,7 @@ export async function registerUsingFile(fileName: string, algo_data: any) {
   if (response_file) {
     console.log("submitting register")
     const response_register = await register(response_file.file, null)
+    if (!response_register) return false;
     const d = JSON.parse(response_register.response)
     console.log(d)
     console.log(d.message.job_web_url)
@@ -102,6 +104,8 @@ export async function register(file: string, data: any) {
     } catch (error) {
       console.log("error in new register endpoint")
       console.log(error)
+      store.dispatch(algorithmSlice.actions.setAlgorithmRegistrationError(error.toString()))
+      return false;
     }
 
   } else {
