@@ -30,7 +30,7 @@ export const RegistrationForm = ({ data }) => {
 
     // Redux
     const dispatch = useDispatch()
-    const { registrationUrl, algorithmRegistrationError, repoRunCommand, algoResource, algoContainer } = useSelector(selectAlgorithm)
+    const { registrationUrl, algorithmRegistrationError, algorithmYmlFilePath, repoRunCommand, algoResource, algoContainer } = useSelector(selectAlgorithm)
     const { setAlgoDesc,
             setAlgoDiskSpace,
             setAlgoName,
@@ -249,7 +249,11 @@ export const RegistrationForm = ({ data }) => {
                     <Modal.Header closeButton>
                         <Modal.Title>Algorithm submitted for registration</Modal.Title>
                     </Modal.Header>
-                    <Modal.Body>Your algorithm was submitted for registration. You can view the progress here: <a href={registrationUrl} target="_blank">{registrationUrl}</a></Modal.Body>
+                    <Modal.Body>
+                        Your algorithm was submitted for registration. You can view the progress here: <a href={registrationUrl} target="_blank">{registrationUrl}</a>
+                        <br />
+                        A yml file with the algorithm configuration has been created in your workspace: {algorithmYmlFilePath}
+                        </Modal.Body>
                 </div>:
                 <div>
                     <Modal.Header closeButton>

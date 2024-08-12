@@ -17,7 +17,8 @@ const initialState: IAlgorithmSlice = {
   algoContainer: "",
   inputId: 0,
   registrationUrl: "",
-  algorithmRegistrationError: ""
+  algorithmRegistrationError: "",
+  algorithmYmlFilePath: ""
 }
 
 export const algorithmSlice = createSlice({
@@ -32,6 +33,10 @@ export const algorithmSlice = createSlice({
 
     setAlgorithmRegistrationError: (state, action): any => {
       state.algorithmRegistrationError = action.payload
+    },
+
+    setAlgorithmYmlFilePath: (state, action): any => {
+      state.algorithmYmlFilePath = action.payload
     },
 
     incrementInputId: (state): any => {
