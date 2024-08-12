@@ -8,6 +8,7 @@ import { algorithmSlice } from "../redux/slices/algorithmSlice";
 
 
 export async function registerAlgorithm() {
+    console.log("graceal1 in registerAlgorithm");
     const state = store.getState();
     const storeData = state.Algorithm
 
@@ -45,12 +46,16 @@ export async function registerAlgorithm() {
 }
 
 function _parseInputs(inputType: IInputParam[]) {
+    console.log("graceal1 in _parseInputs");
     let tmpArr = []
     inputType.map((input) => {
         let tmpObj = {}
+        let defaultValue = input.isRequired ? null: input.inputDefault;
+        console.log("graceal1 in mapping arguments in _parseInputs and default value is ");
+        console.log(defaultValue);
         tmpObj = { name: input.inputName,
                    required: input.isRequired,
-                   default: input.inputDefault,
+                   default: defaultValue,
                    description: input.inputDesc}
         tmpArr.push(tmpObj)
     })
