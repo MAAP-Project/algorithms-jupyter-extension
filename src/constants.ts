@@ -52,4 +52,4 @@ export const ALGO_INPUT_FIELDS = {
    number -- unlike raw td elements where you could specify colspan=100%  */
 export const COLUMN_SPAN = 6
 
-export const YML_FOLDER = "algorithm_configs";
+export const YML_FOLDER = "algorithm-configs";
