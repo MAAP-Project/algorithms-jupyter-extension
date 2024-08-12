@@ -23,12 +23,6 @@ export async function registerUsingFile(fileName: string, algo_data: any) {
   const response_file = await createFile(fileName, algo_data)
   console.log(response_file)
 
-  console.log("graceal1 in registerUsingFile and file is ");
-  console.log(response_file.file);
-  console.log("graceal fileName passed into this function is ");
-  // this is important for later changing the location of the file 
-  console.log(fileName);
-
   store.dispatch(algorithmSlice.actions.setAlgorithmYmlFilePath(response_file.file));
 
   if (response_file) {
