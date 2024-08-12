@@ -4,6 +4,7 @@ import { registeredAlgorithmsActions } from '../redux/slices/registeredAlgorithm
 import { store } from "../redux/store";
 import { parseAlgorithmData } from "./parsers";
 import { algorithmSlice } from "../redux/slices/algorithmSlice";
+import { YML_FOLDER } from '../constants';
 
 
 // export const getAlgorithmMetadata = (body: any) => {
@@ -20,8 +21,12 @@ import { algorithmSlice } from "../redux/slices/algorithmSlice";
 
 export async function registerUsingFile(fileName: string, algo_data: any) {
 
-  const response_file = await createFile(fileName, algo_data)
+  console.log("graceal1 in registerUsingFile and YML_FOLDER is");
+  console.log(YML_FOLDER);
+  const response_file = await createFile(YML_FOLDER + "/" + fileName, algo_data)
   console.log(response_file)
+  console.log('graceal1 response_file.file:');
+  console.log(response_file.file);
 
   if (response_file) {
     console.log("submitting register")
