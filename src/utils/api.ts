@@ -21,12 +21,8 @@ import { YML_FOLDER } from '../constants';
 
 export async function registerUsingFile(fileName: string, algo_data: any) {
 
-  console.log("graceal1 in registerUsingFile and YML_FOLDER is");
-  console.log(YML_FOLDER);
   const response_file = await createFile(YML_FOLDER + "/" + fileName, algo_data)
   console.log(response_file)
-  console.log('graceal1 response_file.file:');
-  console.log(response_file.file);
 
   if (response_file) {
     console.log("submitting register")
