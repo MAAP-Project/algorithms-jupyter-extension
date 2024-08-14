@@ -252,6 +252,7 @@ export const RegistrationForm = ({ data }) => {
                     <Modal.Body>
                         Your algorithm was submitted for registration. You can view the progress here: <a href={registrationUrl} target="_blank">{registrationUrl}</a>
                         <br />
+                        <br />
                         A yml file with the algorithm configuration has been created in your workspace: {algorithmYmlFilePath}
                         </Modal.Body>
                 </div>:
