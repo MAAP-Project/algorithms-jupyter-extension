@@ -21,7 +21,7 @@ import { YML_FOLDER } from '../constants';
 
 export async function registerUsingFile(fileName: string, algo_data: any) {
 
-  const response_file = await createFile(YML_FOLDER + "/" + fileName, algo_data)
+  const response_file = await createFile(fileName, algo_data, YML_FOLDER);
   console.log(response_file)
 
   if (response_file) {
@@ -48,11 +48,12 @@ export async function registerUsingFile(fileName: string, algo_data: any) {
   // })
 }
 
-export async function createFile(fileName: string, data: any) {
+export async function createFile(fileName: string, data: any, folderName: string) {
   var requestUrl = new URL(PageConfig.getBaseUrl() + 'jupyter-server-extension/createFile');
   console.log(requestUrl.href)
 
   requestUrl.searchParams.append("fileName", fileName);
+  requestUrl.searchParams.append("folderName", folderName);
   requestUrl.searchParams.append("data", data);
 
   try {
