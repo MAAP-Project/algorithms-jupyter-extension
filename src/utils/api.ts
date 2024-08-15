@@ -24,6 +24,8 @@ export async function registerUsingFile(fileName: string, algo_data: any) {
   const response_file = await createFile(fileName, algo_data, YML_FOLDER);
   console.log(response_file)
 
+  store.dispatch(algorithmSlice.actions.setAlgorithmYmlFilePath(response_file.file));
+
   if (response_file) {
     console.log("submitting register")
     const response_register = await register(response_file.file, null)

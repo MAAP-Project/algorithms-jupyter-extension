@@ -21,7 +21,8 @@ export interface IAlgorithmSlice {
     algoContainer: "",
     inputId: number,
     registrationUrl: "",
-    algorithmRegistrationError: ""
+    algorithmRegistrationError: "",
+    algorithmYmlFilePath: ""
   }
 
 export interface ISplitPaneSlice {
