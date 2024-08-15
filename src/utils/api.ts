@@ -50,12 +50,12 @@ export async function registerUsingFile(fileName: string, algo_data: any) {
   // })
 }
 
-export async function createFile(fileName: string, data: any, folderName: string) {
+export async function createFile(fileName: string, data: any, pathName: string) {
   var requestUrl = new URL(PageConfig.getBaseUrl() + 'jupyter-server-extension/createFile');
   console.log(requestUrl.href)
 
   requestUrl.searchParams.append("fileName", fileName);
-  requestUrl.searchParams.append("folderName", folderName);
+  requestUrl.searchParams.append("pathName", pathName);
   requestUrl.searchParams.append("data", data);
 
   try {
