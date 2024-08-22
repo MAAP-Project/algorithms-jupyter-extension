@@ -51,3 +51,5 @@ export const ALGO_INPUT_FIELDS = {
 /* The colSpan attribute for td elements in React accepts a
    number -- unlike raw td elements where you could specify colspan=100%  */
 export const COLUMN_SPAN = 6
+
+export const YML_FOLDER = "algorithm-configs";
