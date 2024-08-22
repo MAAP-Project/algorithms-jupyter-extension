@@ -4,6 +4,7 @@ import { registeredAlgorithmsActions } from '../redux/slices/registeredAlgorithm
 import { store } from "../redux/store";
 import { parseAlgorithmData } from "./parsers";
 import { algorithmSlice } from "../redux/slices/algorithmSlice";
+import { YML_FOLDER } from '../constants';
 
 
 // export const getAlgorithmMetadata = (body: any) => {
@@ -20,7 +21,7 @@ import { algorithmSlice } from "../redux/slices/algorithmSlice";
 
 export async function registerUsingFile(fileName: string, algo_data: any) {
 
-  const response_file = await createFile(fileName, algo_data)
+  const response_file = await createFile(fileName, algo_data, YML_FOLDER);
   console.log(response_file)
 
   store.dispatch(algorithmSlice.actions.setAlgorithmYmlFilePath(response_file.file));
@@ -49,11 +50,12 @@ export async function registerUsingFile(fileName: string, algo_data: any) {
   // })
 }
 
-export async function createFile(fileName: string, data: any) {
+export async function createFile(fileName: string, data: any, pathName: string) {
   var requestUrl = new URL(PageConfig.getBaseUrl() + 'jupyter-server-extension/createFile');
   console.log(requestUrl.href)
 
   requestUrl.searchParams.append("fileName", fileName);
+  requestUrl.searchParams.append("pathName", pathName);
   requestUrl.searchParams.append("data", data);
 
   try {
