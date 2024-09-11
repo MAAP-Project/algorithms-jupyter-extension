@@ -7,7 +7,7 @@ on:
 env:
   NODE_VERSION: "18.x"
   PYTHON_VERSION: "3.11"
-  JUPYTERLAB_VERSION: "~=4.1.0"
+  JUPYTERLAB_VERSION: "~=4.2.5"
 
 jobs:
   build_extensions:
