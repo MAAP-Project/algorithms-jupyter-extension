@@ -11,14 +11,10 @@ env:
 
 jobs:
   build_extensions:
-    runs-on: ${{ matrix.os }}
+    runs-on: ubuntu-latest
     defaults:
       run:
         shell: bash -el {0}
-
-    strategy:
-      matrix:
-        os: [ubuntu-latest, macos-latest, windows-latest]
 
     steps:
       - uses: getsentry/action-github-app-token@v3
