@@ -117,7 +117,7 @@ export const RegistrationForm = ({ data }) => {
 
     useEffect(() => {
         if (showNotification) {
-            Notification.success("The algorithm was successfully submitted.", {
+            Notification.success("Algorithm "+algoName+": "+ repoBranch + " was successfully submitted.", {
                 autoClose: 5000,
                 actions: [
                 {
@@ -251,6 +251,7 @@ export const RegistrationForm = ({ data }) => {
                     </Modal.Header>
                     <Modal.Body>
                         <Modal.Title>{algoName}: {repoBranch}</Modal.Title>
+                        <br />
                         Your algorithm was submitted for registration. You can view the progress here: <a href={registrationUrl} target="_blank">{registrationUrl}</a>
                         <br />
                         <br />

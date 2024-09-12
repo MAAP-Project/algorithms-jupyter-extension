@@ -1,0 +1,13 @@
+algorithm_description: t
+algorithm_name: dummy-alg-graceal3
+algorithm_version: main
+build_command: dps_tutorial/gdal_wrapper/build-env.sh
+disk_space: 1GB
+docker_container_url: mas.dit.maap-project.org/root/maap-workspaces/jupyterlab/python:develop
+inputs:
+  config: []
+  file: []
+  positional: []
+queue: maap-dps-sandbox
+repository_url: https://github.com/MAAP-Project/dps_tutorial.git
+run_command: dps_tutorial/gdal_wrapper/run_gdal.sh
