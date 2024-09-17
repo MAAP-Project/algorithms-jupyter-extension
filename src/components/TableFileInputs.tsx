@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { OverlayTrigger, Row, Table, Tooltip } from 'react-bootstrap';
+import { OverlayTrigger, Row, /*Table, */Tooltip } from 'react-bootstrap';
 import { BsPlusCircleFill, BsInfoCircle, BsFillInfoCircleFill } from 'react-icons/bs';
 import { useDispatch, useSelector } from 'react-redux';
 import { algorithmActions, selectAlgorithm } from '../redux/slices/algorithmSlice'
@@ -7,6 +7,13 @@ import { ALGO_INPUTS, ALGO_INPUTS_DESC, ALGO_INPUT_FIELDS } from '../constants';
 import { InputRow } from './InputRow';
 import { EmptyRow } from './EmptyRow';
 import { Tooltip as ReactTooltip } from "react-tooltip";
+import Table from '@mui/material/Table';
+import TableContainer from '@mui/material/TableContainer';
+import Paper from '@mui/material/Paper';
+import TableBody from '@mui/material/TableBody';
+import TableRow from '@mui/material/TableRow';
+import TableCell from '@mui/material/TableCell';
+import TableHead from '@mui/material/TableHead';
 
 export const TableFileInputs = () => {
 
@@ -26,6 +33,7 @@ export const TableFileInputs = () => {
     }
 
     const handleDataChange = e => {
+        console.log("graceal1 in handleDataChange");
         switch (e.target.type) {
             case "checkbox": {
                 dispatch(updateFileData({inputId: e.target.parentNode.parentNode.parentNode.id, inputField: [e.target.id], inputValue: e.target.checked}))
@@ -52,23 +60,27 @@ export const TableFileInputs = () => {
                 />
                 <span id="file_input_info"><BsInfoCircle /></span>
             </div>
-            <Table className="inputs-table">
-                <thead>
-                    <tr>
-                        <td><BsPlusCircleFill className="success-icon" onClick={addRow} /></td>
-                        <td>Name</td>
-                        <td>Description</td>
-                        <td className="center-align">Required?</td>
-                        <td>Default Value</td>
-                        <td></td>
-                    </tr>
-                </thead>
-                <tbody>
-                    {fileData.length == 0 ? <EmptyRow text="No inputs specified"/> : Object.entries(fileData).map(([key, data]) => {
-                    return <InputRow row={data} handleRemoveRow={handleRemoveRow} handleDataChange={handleDataChange}/>
-                })}
-                </tbody>
-            </Table>
+            <div style={{ display: 'flex', alignItems: 'center' }}>
+                <TableContainer component={Paper}>
+                    <Table aria-label="simple table" sx={{ border: 'none' }}>
+                        <TableHead>
+                            <TableRow>
+                                <TableCell><BsPlusCircleFill className="success-icon" onClick={addRow} /></TableCell>
+                                <TableCell align="left">Name</TableCell>
+                                <TableCell align="left">Description</TableCell>
+                                <TableCell align="center">Required?</TableCell>
+                                <TableCell align="left">Default Value</TableCell>
+                                <TableCell></TableCell>
+                            </TableRow>
+                        </TableHead>
+                        <TableBody>
+                            {fileData.length == 0 ? <TableRow><EmptyRow text="No inputs specified"/></TableRow> : Object.entries(fileData).map(([key, data]) => {
+                                return <InputRow row={data} handleRemoveRow={handleRemoveRow} handleDataChange={handleDataChange}/>
+                            })}
+                        </TableBody>
+                    </Table>
+                </TableContainer>
+            </div>
         </div>
     )
 }
