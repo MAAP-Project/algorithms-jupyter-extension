@@ -11,37 +11,38 @@ export const InputRow = ({row, handleRemoveRow, handleDataChange }) => {
     return (
         <TableRow id={row.inputId.toString()}>
             <TableCell> </TableCell>
-            <TableCell sx={{ '& .MuiTextField-root': { m: 1, width: '35ch' } }} id={ALGO_INPUT_FIELDS.INPUT_NAME}>
+            <TableCell sx={{ '& .MuiTextField-root': { m: 1, width: '35ch' } }}>
                 <TextField
-                    id="outlined-textarea"
+                    id={ALGO_INPUT_FIELDS.INPUT_NAME}
                     placeholder="What is the input name?"
                     size="small"
                     onChange={handleDataChange}
                     value={row.inputName}/>
             </TableCell>
-            <TableCell sx={{ '& .MuiTextField-root': { m: 1, width: '35ch' } }} id={ALGO_INPUT_FIELDS.INPUT_DESC}>
+            <TableCell sx={{ '& .MuiTextField-root': { m: 1, width: '35ch' } }}>
                 <TextField
-                    id="outlined-textarea"
+                    id={ALGO_INPUT_FIELDS.INPUT_DESC}
                     placeholder="Describe the input parameter"
                     size="small" 
                     onChange={handleDataChange}
                     value={row.inputDesc}/>
             </TableCell>
-            <TableCell sx={{ '& .MuiTextField-root': { m: 1, width: '25ch' } }} id={ALGO_INPUT_FIELDS.IS_REQUIRED}>
+            <TableCell sx={{ '& .MuiTextField-root': { m: 1, width: '25ch' } }}>
                 <Switch
+                    id={ALGO_INPUT_FIELDS.IS_REQUIRED}
                     name="required"
                     onChange={handleDataChange}
                     checked={row.isRequired}/>
             </TableCell>
-            <TableCell sx={{ '& .MuiTextField-root': { m: 1, width: '25ch' } }} id={ALGO_INPUT_FIELDS.INPUT_DEFAULT}>
+            <TableCell sx={{ '& .MuiTextField-root': { m: 1, width: '25ch' } }}>
                 <TextField
-                    id="outlined-textarea"
+                    id={ALGO_INPUT_FIELDS.INPUT_DEFAULT}
                     placeholder="Default value"
                     size="small" 
                     onChange={handleDataChange}
                     value={row.inputDefault}/>
             </TableCell>
-            <TableCell sx={{ '& .MuiTextField-root': { m: 1, width: '25ch' } }} id={ALGO_INPUT_FIELDS.INPUT_DEFAULT}>
+            <TableCell sx={{ '& .MuiTextField-root': { m: 1, width: '25ch' } }}>
                 <BsFillXCircleFill className="danger-icon" id={row.inputId.toString()} onClick={() => handleRemoveRow(row.inputId.toString())}/>
             </TableCell>
         </TableRow>

@@ -34,12 +34,13 @@ export const TableFileInputs = () => {
 
     const handleDataChange = e => {
         console.log("graceal1 in handleDataChange");
+        console.log(e.target.parentNode.parentNode.parentNode.parentNode.id);
         switch (e.target.type) {
             case "checkbox": {
-                dispatch(updateFileData({inputId: e.target.parentNode.parentNode.parentNode.id, inputField: [e.target.id], inputValue: e.target.checked}))
+                dispatch(updateFileData({inputId: e.target.parentNode.parentNode.parentNode.parentNode.id, inputField: [e.target.id], inputValue: e.target.checked}))
                 break;
             }
-            default: dispatch(updateFileData({inputId: e.target.parentNode.parentNode.id, inputField: [e.target.id], inputValue: e.target.value}))
+            default: dispatch(updateFileData({inputId: e.target.parentNode.parentNode.parentNode.parentNode.id, inputField: [e.target.id], inputValue: e.target.value}))
             break;
         }
     }
