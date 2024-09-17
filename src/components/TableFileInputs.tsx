@@ -61,21 +61,21 @@ export const TableFileInputs = () => {
                 />
                 <span id="file_input_info"><BsInfoCircle /></span>
             </div>
-            <div style={{ display: 'flex', alignItems: 'center' }}>
+            <div style={{ display: 'flex', alignItems: 'left' }}>
                 <TableContainer component={Paper}>
                     <Table aria-label="simple table" sx={{ border: 'none' }}>
                         <TableHead>
                             <TableRow>
-                                <TableCell><BsPlusCircleFill className="success-icon" onClick={addRow} /></TableCell>
-                                <TableCell align="left">Name</TableCell>
-                                <TableCell align="left">Description</TableCell>
-                                <TableCell align="center">Required?</TableCell>
-                                <TableCell align="left">Default Value</TableCell>
+                                <TableCell align="left"><BsPlusCircleFill className="success-icon" onClick={addRow} /></TableCell>
+                                <TableCell align="left" sx={{ fontSize: '16px' }}>Name</TableCell>
+                                <TableCell align="left" sx={{ fontSize: '16px' }}>Description</TableCell>
+                                <TableCell align="left" sx={{ fontSize: '16px' }}>Required?</TableCell>
+                                <TableCell align="left" sx={{ fontSize: '16px' }}>Default Value</TableCell>
                                 <TableCell></TableCell>
                             </TableRow>
                         </TableHead>
                         <TableBody>
-                            {fileData.length == 0 ? <TableRow><EmptyRow text="No inputs specified"/></TableRow> : Object.entries(fileData).map(([key, data]) => {
+                            {fileData.length == 0 ? <TableRow><TableCell colSpan={6} align="center" className="empty-row" sx={{ fontSize: '16px' }}>No inputs specified</TableCell></TableRow> : Object.entries(fileData).map(([key, data]) => {
                                 return <InputRow row={data} handleRemoveRow={handleRemoveRow} handleDataChange={handleDataChange}/>
                             })}
                         </TableBody>
