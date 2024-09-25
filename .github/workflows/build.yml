@@ -64,11 +64,12 @@ jobs:
 #          jlpm
 #          jlpm run lint:check
 
-      - name: Build the extension
+      - name: Build and test the extension
         run: |
           jlpm install
           pip install -e . -v
           jupyter labextension develop . --overwrite
+          jlpm run test
       - name: Check extension installation
         run: |
           jupyter labextension list 2>&1 | tee labextension.list
