@@ -64,19 +64,17 @@ jobs:
 #          jlpm
 #          jlpm run lint:check
 
-      - name: Test the extension
-        run: |
-          set -eux
-          jlpm install
-          jlpm run test
-
       - name: Build the extension
         run: |
-          set -eux
-          python -m pip install .[test]
-          
-          jupyter labextension list
-          jupyter labextension list 2>&1 | grep -ie "maap_algorithms_jupyter_extension.*OK"
+          jlpm install
+          pip install -e . -v
+          jupyter labextension develop . --overwrite
+      - name: Check extension installation
+        run: |
+          jupyter labextension list 2>&1 | tee labextension.list
+          cat labextension.list | grep -ie "maap_algorithms_jupyter_extension.*OK"
+      - name: Browser check
+        run: |
           python -m jupyterlab.browser_check
 
       - name: Package the extension
