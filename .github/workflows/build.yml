@@ -22,16 +22,16 @@ jobs:
         shell: bash -el {0}
 
     steps:
-      - uses: getsentry/action-github-app-token@v3
-        name: cicd token
-        id: cicd-key
-        with:
-          app_id: ${{ secrets.CICD_APP }}
-          private_key: ${{ secrets.CICD_APP_PRIVATE_KEY }}
+#      - uses: getsentry/action-github-app-token@v3
+#        name: cicd token
+#        id: cicd-key
+#        with:
+#          app_id: ${{ secrets.CICD_APP }}
+#          private_key: ${{ secrets.CICD_APP_PRIVATE_KEY }}
       - uses: actions/checkout@v4
         with:
           repository: ${{ github.repository }}
-          token: ${{ steps.cicd-key.outputs.token }}
+#          token: ${{ steps.cicd-key.outputs.token }}
           fetch-depth: 0
       - name: Install node
         uses: actions/setup-node@v4
