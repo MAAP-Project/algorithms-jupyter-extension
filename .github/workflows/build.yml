@@ -96,7 +96,7 @@ jobs:
 
   test_isolated:
     name: Test wheel artifact
-    needs: build
+    needs: build_extension
     runs-on: ubuntu-latest
 
     steps:
