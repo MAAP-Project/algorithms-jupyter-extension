@@ -69,6 +69,7 @@ jobs:
           jlpm install
           pip install -e . -v
           jupyter labextension develop . --overwrite
+          jlpm playwright install
           jlpm run test
       - name: Check extension installation
         run: |
