@@ -92,3 +92,30 @@ jobs:
           name: extension-artifacts
           path: dist/maap_algorithms_jupyter_extension*
           if-no-files-found: error
+
+  test_isolated:
+    name: Test wheel artifact
+    needs: build
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Install Python
+      uses: actions/setup-python@v5
+      with:
+        python-version: ${{ env.PYTHON_VERSION }}
+    - uses: actions/download-artifact@v4
+      with:
+        name: extension-artifacts
+    - name: Install and Test
+      run: |
+        set -eux
+        # Remove NodeJS, twice to take care of system and locally installed node versions.
+        sudo rm -rf $(which node)
+        sudo rm -rf $(which node)
+
+        pip install "jupyterlab>=4.0.0,<5" maap_algorithms_jupyter_extension*.whl
+
+
+        jupyter labextension list
+        jupyter labextension list 2>&1 | grep -ie "maap_algorithms_jupyter_extension.*OK"
+        python -m jupyterlab.browser_check --no-browser-test
