@@ -2975,6 +2975,16 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@types/jest@npm:^29.5.13":
+  version: 29.5.13
+  resolution: "@types/jest@npm:29.5.13"
+  dependencies:
+    expect: ^29.0.0
+    pretty-format: ^29.0.0
+  checksum: 875ac23c2398cdcf22aa56c6ba24560f11d2afda226d4fa23936322dde6202f9fdbd2b91602af51c27ecba223d9fc3c1e33c9df7e47b3bf0e2aefc6baf13ce53
+  languageName: node
+  linkType: hard
+
 "@types/js-yaml@npm:^4.0.5":
   version: 4.0.9
   resolution: "@types/js-yaml@npm:4.0.9"
@@ -4901,7 +4911,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"expect@npm:^29.7.0":
+"expect@npm:^29.0.0, expect@npm:^29.7.0":
   version: 29.7.0
   resolution: "expect@npm:29.7.0"
   dependencies:
@@ -6713,6 +6723,7 @@ __metadata:
     "@jupyterlab/mainmenu": ^4.2.5
     "@playwright/test": ^1.44.0
     "@reduxjs/toolkit": ^1.9.3
+    "@types/jest": ^29.5.13
     "@types/js-yaml": ^4.0.5
     "@types/react-table": ^7.7.20
     bootstrap: ^5.2.0
@@ -6730,6 +6741,7 @@ __metadata:
     react-tooltip: ^5.13.1
     rimraf: ^3.0.2
     typescript: ~5.4.2
+    yjs: ^13.6.19
   languageName: unknown
   linkType: soft
 
@@ -7522,7 +7534,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"pretty-format@npm:^29.7.0":
+"pretty-format@npm:^29.0.0, pretty-format@npm:^29.7.0":
   version: 29.7.0
   resolution: "pretty-format@npm:29.7.0"
   dependencies:
@@ -10001,7 +10013,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"yjs@npm:^13.5.40":
+"yjs@npm:^13.5.40, yjs@npm:^13.6.19":
   version: 13.6.19
   resolution: "yjs@npm:13.6.19"
   dependencies:
