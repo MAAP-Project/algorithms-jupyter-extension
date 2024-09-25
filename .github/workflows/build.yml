@@ -122,7 +122,7 @@ jobs:
         python -m jupyterlab.browser_check --no-browser-test
 
   integration-tests:
-    name: Integration tests
+    name: UI tests
     needs: build_extension
     runs-on: ubuntu-latest
 
