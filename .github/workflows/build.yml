@@ -67,6 +67,7 @@ jobs:
       - name: Test the extension
         run: |
           set -eux
+          jlpm install
           jlpm run test
 
       - name: Build the extension
