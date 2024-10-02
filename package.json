@@ -27,7 +27,7 @@
   "style": "style/index.css",
   "repository": {
     "type": "git",
-    "url": "https://github.com/frankinspace/algorithms_jupyter_extension.git"
+    "url": "https://github.com/frankinspace/algorithms-jupyter-extension.git"
   },
   "scripts": {
     "build": "jlpm build:lib && jlpm build:labextension:dev",
