@@ -39,7 +39,6 @@ jobs:
       - name: Finalize Release
         id: finalize-release
         env:
-          NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
           TWINE_REPOSITORY_URL: https://test.pypi.org/legacy/
           PYPI_TOKEN: ${{ secrets.PYPI_TOKEN }}
           TWINE_USERNAME: __token__
