@@ -10,7 +10,7 @@ import { TableFileInputs } from './TableFileInputs';
 import { TablePositionalInputs } from './TablePositionalInputs';
 import { registerAlgorithm } from '../utils/algoConfig';
 import AsyncSelect from 'react-select/async';
-import { getResources, getWorkspaceContainer } from "../utils/api";
+import { getResources, getWorkspaceContainers, getWorkspaceContainersOrDefault } from "../utils/api";
 import { Spinner } from 'react-bootstrap';
 import { checkUrlExists } from '../utils/utils';
 import { Notification } from "@jupyterlab/apputils";
@@ -108,10 +108,12 @@ export const RegistrationForm = ({ data }) => {
     }
 
     useEffect(() => {
+        console.log("graceal1 in the useeffect that is setting the algo container url");
         // The container from which the workspace is running will be the default container for algorithm registration.
-        getWorkspaceContainer().then((param) => {
-            let container = param["DOCKERIMAGE_PATH"]
-            if (container != null) { dispatch(setAlgoContainerURL(container)) }
+        getWorkspaceContainersOrDefault(null, null, true).then((param) => {
+            console.log("graceal1 in the then of getting the workspace containers")
+            console.log(param);
+            if (param != null) { dispatch(setAlgoContainerURL(param)) }
         })
     }, []);
 
@@ -222,7 +224,14 @@ export const RegistrationForm = ({ data }) => {
                         <tr>
                             <td>Container URL</td>
                             <td>
-                                <Form.Control type="text" defaultValue={algoContainer} placeholder="Enter container URL" onChange={handleContainerURLChange} />
+                                <AsyncSelect
+                                    cacheOptions
+                                    defaultOptions
+                                    value={algoContainer}
+                                    loadOptions={getWorkspaceContainers}
+                                    onChange={handleContainerURLChange}
+                                    placeholder="Enter container URL"
+                                />
                             </td>
                         </tr>
                     </tbody>

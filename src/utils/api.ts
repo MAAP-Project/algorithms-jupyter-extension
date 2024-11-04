@@ -264,8 +264,12 @@ export async function unregisterAlgorithm(algo_id: string) {
   return ""
 }
 
+export async function getWorkspaceContainers(inputValue, callback) {
+  return getWorkspaceContainersOrDefault(inputValue, callback, false)
+}
 
-export async function getWorkspaceContainer() {
+export async function getWorkspaceContainersOrDefault(inputValue = null, callback = null, getDefaultContainer = false) {
+  var workspaceContainers: any[] = []
   var requestUrl = new URL(PageConfig.getBaseUrl() + 'jupyter-server-extension/getWorkspaceContainer');
   console.log(requestUrl.href)
 
@@ -283,7 +287,28 @@ export async function getWorkspaceContainer() {
     console.log("resolved")
     const r_data = await response.json();
     console.log(r_data)
-    return r_data
+    if (getDefaultContainer) {
+      console.log("graceal1 returning the default conatiner as ")
+      console.log(r_data["DOCKERIMAGE_PATH_DEFAULT"])
+      return r_data["DOCKERIMAGE_PATH_DEFAULT"]
+    }
+    Object.entries(r_data).forEach(([key, value]) => {
+      let workspaceContainer: any = {}
+      workspaceContainer["value"] = value
+      workspaceContainer["label"] = value
+      workspaceContainers.push(workspaceContainer)
+    })
+    if (inputValue && callback) {
+      const filtered = filterOptions(workspaceContainers, inputValue);
+      console.log("graceal1 calling the callback with filtered");
+      console.log(filtered);
+      console.log(callback);
+      console.log(inputValue);
+      callback(filtered);
+    }
+    console.log("graceal1 returning workspace containers");
+    console.log(workspaceContainers);
+    return workspaceContainers
   } catch (error) {
     console.log("error in new endpoint")
     console.log(error)
