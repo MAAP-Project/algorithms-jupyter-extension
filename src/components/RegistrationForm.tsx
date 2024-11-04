@@ -210,7 +210,7 @@ export const RegistrationForm = ({ data }) => {
                                     <AsyncSelect
                                         cacheOptions
                                         defaultOptions
-                                        value={algoResource}
+                                        value={"maap-dps-sandbox"}
                                         loadOptions={getResources}
                                         onChange={handleResourceChange}
                                         placeholder="Select resource"

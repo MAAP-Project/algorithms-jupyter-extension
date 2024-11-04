@@ -133,6 +133,7 @@ tbody tr:nth-child(odd) {
 
 .success-icon {
     color: var(--ADE-contexts-success) !important;
+    padding: 2px 0px 2px 2px;
 }
 
 .danger-icon {
