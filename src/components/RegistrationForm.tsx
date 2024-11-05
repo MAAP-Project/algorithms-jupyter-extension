@@ -86,8 +86,8 @@ export const RegistrationForm = ({ data }) => {
         dispatch(setAlgoResource(value))
     }
 
-    const handleContainerURLChange = e => {
-        dispatch(setAlgoContainerURL(e.target.value))
+    const handleContainerURLChange = value => {
+        dispatch(setAlgoContainerURL(value))
     }
 
     const handleModalClose = () => setShow(false);
@@ -108,12 +108,9 @@ export const RegistrationForm = ({ data }) => {
     }
 
     useEffect(() => {
-        console.log("graceal1 in the useeffect that is setting the algo container url");
         // The container from which the workspace is running will be the default container for algorithm registration.
         getWorkspaceContainersOrDefault(null, null, true).then((param) => {
-            console.log("graceal1 in the then of getting the workspace containers")
-            console.log(param);
-            if (param != null) { dispatch(setAlgoContainerURL(param)) }
+            if (param[0] != null) dispatch(setAlgoContainerURL(param[0]))
         })
     }, []);
 

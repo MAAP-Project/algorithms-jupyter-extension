@@ -288,9 +288,7 @@ export async function getWorkspaceContainersOrDefault(inputValue = null, callbac
     const r_data = await response.json();
     console.log(r_data)
     if (getDefaultContainer) {
-      console.log("graceal1 returning the default conatiner as ")
-      console.log(r_data["DOCKERIMAGE_PATH_DEFAULT"])
-      return r_data["DOCKERIMAGE_PATH_DEFAULT"]
+      return [{"value": r_data["DOCKERIMAGE_PATH_DEFAULT"], "label": r_data["DOCKERIMAGE_PATH_DEFAULT"]}]
     }
     Object.entries(r_data).forEach(([key, value]) => {
       let workspaceContainer: any = {}
@@ -300,14 +298,8 @@ export async function getWorkspaceContainersOrDefault(inputValue = null, callbac
     })
     if (inputValue && callback) {
       const filtered = filterOptions(workspaceContainers, inputValue);
-      console.log("graceal1 calling the callback with filtered");
-      console.log(filtered);
-      console.log(callback);
-      console.log(inputValue);
       callback(filtered);
     }
-    console.log("graceal1 returning workspace containers");
-    console.log(workspaceContainers);
     return workspaceContainers
   } catch (error) {
     console.log("error in new endpoint")
