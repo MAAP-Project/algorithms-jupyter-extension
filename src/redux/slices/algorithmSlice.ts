@@ -15,6 +15,7 @@ const initialState: IAlgorithmSlice = {
   algoDiskSpace: "",
   algoResource: "",
   algoContainer: "",
+  algoContainerOptions: "",
   inputId: 0,
   registrationUrl: "",
   algorithmRegistrationError: "",
@@ -77,6 +78,12 @@ export const algorithmSlice = createSlice({
 
     setAlgoContainerURL: (state, action): any => {
       state.algoContainer = action.payload
+    },
+
+    setAlgoContainerOptions: (state, action): any => {
+      console.log("graceal1 setting the algo container options");
+      console.log(action.payload);
+      state.algoContainerOptions = action.payload
     },
 
     addConfigData: (state, action): any => {
