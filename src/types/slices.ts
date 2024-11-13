@@ -19,7 +19,6 @@ export interface IAlgorithmSlice {
     algoDiskSpace: "",
     algoResource: any,
     algoContainer: any,
-    algoContainerOptions: any,
     inputId: number,
     registrationUrl: "",
     algorithmRegistrationError: "",

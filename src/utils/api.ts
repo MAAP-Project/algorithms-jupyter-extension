@@ -264,22 +264,12 @@ export async function unregisterAlgorithm(algo_id: string) {
   return ""
 }
 
-export async function getWorkspaceContainers(inputValue, callback) {
-  const containerOptions = store.getState().Algorithm.algoContainerOptions;
-  console.log("graceal1 container options from store are");
-  console.log(containerOptions);
-  console.log(store.getState());
-  const filtered = filterOptions(containerOptions, inputValue);
-  callback(filtered);
-  return containerOptions;
-}
-
 /**
  * 
  * @returns Returns a list of the workspace containers with the first item 
  * in the list being the default
  */
-export async function getWorkspaceContainerOptions() {
+export async function getWorkspaceContainers() {
   var workspaceContainers: any[] = []
   var requestUrl = new URL(PageConfig.getBaseUrl() + 'jupyter-server-extension/getWorkspaceContainer');
   console.log(requestUrl.href)
@@ -298,19 +288,15 @@ export async function getWorkspaceContainerOptions() {
     console.log("resolved")
     const r_data = await response.json();
     console.log(r_data)
-    let workspaceContainerDefault: any = {}
-    workspaceContainerDefault["value"] = r_data["DOCKERIMAGE_PATH_DEFAULT"]
-    workspaceContainerDefault["label"] = r_data["DOCKERIMAGE_PATH_DEFAULT"]
-    workspaceContainers.push(workspaceContainerDefault);
-
     Object.entries(r_data).forEach(([key, value]) => {
-      if (value !== workspaceContainerDefault) {
-        let workspaceContainer: any = {}
+      let workspaceContainer: any = {}
         workspaceContainer["value"] = value
         workspaceContainer["label"] = value
         workspaceContainers.push(workspaceContainer)
-      }
     })
+    // set the algorithm container url to the default
+    let defaultDockerImagePath = r_data["DOCKERIMAGE_PATH_DEFAULT"];
+    store.dispatch(algorithmSlice.actions.setAlgoContainerURL({"value": defaultDockerImagePath, "label": defaultDockerImagePath}))
     return workspaceContainers
   } catch (error) {
     console.log("error in new endpoint")

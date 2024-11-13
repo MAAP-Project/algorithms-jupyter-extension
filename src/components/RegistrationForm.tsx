@@ -10,7 +10,7 @@ import { TableFileInputs } from './TableFileInputs';
 import { TablePositionalInputs } from './TablePositionalInputs';
 import { registerAlgorithm } from '../utils/algoConfig';
 import AsyncSelect from 'react-select/async';
-import { getResources, getWorkspaceContainers, getWorkspaceContainerOptions } from "../utils/api";
+import { getResources, getWorkspaceContainers } from "../utils/api";
 import { Spinner } from 'react-bootstrap';
 import { checkUrlExists } from '../utils/utils';
 import { Notification } from "@jupyterlab/apputils";
@@ -30,13 +30,12 @@ export const RegistrationForm = ({ data }) => {
 
     // Redux
     const dispatch = useDispatch()
-    const { registrationUrl, algoName, repoBranch, algorithmRegistrationError, algorithmYmlFilePath, repoRunCommand, algoResource, algoContainer, algoContainerOptions } = useSelector(selectAlgorithm)
+    const { registrationUrl, algoName, repoBranch, algorithmRegistrationError, algorithmYmlFilePath, repoRunCommand, algoResource, algoContainer } = useSelector(selectAlgorithm)
     const { setAlgoDesc,
             setAlgoDiskSpace,
             setAlgoName,
             setAlgoResource,
             setAlgoContainerURL,
-            setAlgoContainerOptions,
             setRepoBranch,
             setRepoRunCommand,
             setRepoBuildCommand,
@@ -107,19 +106,6 @@ export const RegistrationForm = ({ data }) => {
         }
         handleModalShow()
     }
-
-    useEffect(() => {
-        // The container from which the workspace is running will be the default container for algorithm registration.
-        getWorkspaceContainerOptions().then((param) => {
-            // param is a list where the first item is the default container 
-            if (param != null) {
-                dispatch(setAlgoContainerURL(param[0]))
-                console.log("graceal1 about to set container options to ");
-                console.log(param);
-                dispatch(setAlgoContainerOptions(param))
-            } 
-        })
-    }, []);
 
     useEffect(() => {
         if (showNotification) {
@@ -228,13 +214,13 @@ export const RegistrationForm = ({ data }) => {
                         <tr>
                             <td>Container URL</td>
                             <td>
-                                <select
-                                    value={algoContainer}
-                                    onChange={handleContainerURLChange}
-                                />
-                                {algoContainerOptions ? algoContainerOptions.forEach(algoContainerOption => {
-                                    return <option value={algoContainerOption}>{algoContainerOption}</option>
-                                }): null}
+                            <AsyncSelect
+                                cacheOptions
+                                defaultOptions
+                                value={algoContainer}
+                                loadOptions={getWorkspaceContainers}
+                                onChange={handleContainerURLChange}
+                            />
                             </td>
                         </tr>
                     </tbody>
