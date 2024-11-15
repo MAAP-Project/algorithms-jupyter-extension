@@ -290,9 +290,9 @@ export async function getWorkspaceContainers() {
     console.log(r_data)
     Object.entries(r_data).forEach(([key, value]) => {
       let workspaceContainer: any = {}
-        workspaceContainer["value"] = value
-        workspaceContainer["label"] = value
-        workspaceContainers.push(workspaceContainer)
+      workspaceContainer["value"] = value
+      workspaceContainer["label"] = value
+      workspaceContainers.push(workspaceContainer)
     })
     // set the algorithm container url to the default
     let defaultDockerImagePath = r_data["DOCKERIMAGE_PATH_DEFAULT"];
