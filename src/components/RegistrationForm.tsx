@@ -131,7 +131,7 @@ export const RegistrationForm = ({ data }) => {
         <Form onSubmit={submitHandler}>
             <div className='section-padding'>
                 <h2>Register Algorithm</h2>
-                <Alert variant="primary" className="alert-box">To register an algorithm to the MAAP, your code must be committed to a public code repository.<br/><br/>Need more tips and tricks? Documentation may be found <a href="">here</a>.</Alert>
+                <Alert variant="primary" className="alert-box">To register an algorithm to the MAAP, your code must be committed to a public code repository.<br/><br/>Need more tips and tricks? Documentation may be found <a href="https://docs.maap-project.org/en/latest/system_reference_guide/algorithm_registration.html" target="_blank">here</a>.</Alert>
                 <h3>Repository Information</h3>
                 <Table className="form-table">
                     <tbody>
