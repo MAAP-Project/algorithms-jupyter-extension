@@ -64,9 +64,9 @@ export const TableConfigInputs = () => {
                     </tr>
                 </thead>
                 <tbody>
-                {configData.length == 0 ? <EmptyRow text="No inputs specified"/> : Object.entries(configData).map(([key, data]) => {
+                {configData.length == 0 ? <EmptyRow text="No inputs specified"/> : Object.entries(configData).map(([key, data], index) => {
                     console.log(data)
-                    return <InputRow row={data} handleRemoveRow={handleRemoveRow} handleDataChange={handleDataChange} />
+                    return <InputRow row={data} index={index}  inputType={"Config"} handleRemoveRow={handleRemoveRow} handleDataChange={handleDataChange} />
                 })}
                 </tbody>
             </Table>

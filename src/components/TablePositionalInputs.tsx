@@ -65,8 +65,8 @@ export const TablePositionalInputs = () => {
                     </tr>
                 </thead>
                 <tbody>
-                    {positionalData.length == 0 ? <EmptyRow text="No inputs specified"/> : Object.entries(positionalData).map(([key, data]) => {
-                    return <InputRow row={data} handleRemoveRow={handleRemoveRow} handleDataChange={handleDataChange} />
+                    {positionalData.length == 0 ? <EmptyRow text="No inputs specified"/> : Object.entries(positionalData).map(([key, data], index) => {
+                    return <InputRow row={data} index={index} inputType={"Positional"} handleRemoveRow={handleRemoveRow} handleDataChange={handleDataChange} />
                 })}
                 </tbody>
             </Table>

@@ -199,4 +199,30 @@ svg:hover {
     margin-right: 1rem;
 }
 
+.input-table {
+    width: 700px;
+    border-collapse: collapse;
+    margin-bottom: 20px;
+    border: none;
+}
 
+.input-table td {
+    padding: 10px;
+    vertical-align: middle;
+    border: none;
+}
+
+.input-cell {
+    width: 75%;
+}
+
+.danger-icon {
+    color: red;
+    cursor: pointer;
+}
+
+.table-input-header {
+    font-size: 25px;
+    text-align: center;
+    padding-left: 15px;
+}

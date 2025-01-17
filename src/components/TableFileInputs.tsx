@@ -64,8 +64,8 @@ export const TableFileInputs = () => {
                     </tr>
                 </thead>
                 <tbody>
-                    {fileData.length == 0 ? <EmptyRow text="No inputs specified"/> : Object.entries(fileData).map(([key, data]) => {
-                    return <InputRow row={data} handleRemoveRow={handleRemoveRow} handleDataChange={handleDataChange}/>
+                    {fileData.length == 0 ? <EmptyRow text="No inputs specified"/> : Object.entries(fileData).map(([key, data], index) => {
+                    return <InputRow row={data} index={index} inputType={"File"} handleRemoveRow={handleRemoveRow} handleDataChange={handleDataChange}/>
                 })}
                 </tbody>
             </Table>
