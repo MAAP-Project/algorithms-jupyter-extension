@@ -226,3 +226,7 @@ svg:hover {
     text-align: center;
     padding-left: 15px;
 }
+
+.input-table-body {
+    border: none;
+}

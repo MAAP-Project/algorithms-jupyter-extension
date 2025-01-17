@@ -7,7 +7,7 @@ export const InputRow = ({row, index, inputType, handleRemoveRow, handleDataChan
     return (
         <table className="input-table">
             <thead className="table-input-header"><strong>{inputType} argument {index+1}</strong></thead>
-            <tbody>
+            <tbody className="input-table-body">
                 <tr>
                     <td><strong>Name</strong></td>
                     <td>
