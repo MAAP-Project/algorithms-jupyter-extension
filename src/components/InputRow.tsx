@@ -6,8 +6,11 @@ import { BsFillXCircleFill } from 'react-icons/bs';
 export const InputRow = ({row, index, inputType, handleRemoveRow, handleDataChange }) => {
     return (
         <table className="input-table">
-            <thead className="table-input-header"><strong>{inputType} argument {index+1}</strong></thead>
             <tbody className="input-table-body">
+                <tr>
+                    <td className="table-input-header"><strong>{inputType} input {index+1}</strong></td>
+                    <td></td>
+                </tr>
                 <tr>
                     <td><strong>Name</strong></td>
                     <td>
