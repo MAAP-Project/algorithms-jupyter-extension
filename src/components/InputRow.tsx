@@ -60,7 +60,7 @@ export const InputRow = ({row, index, inputType, handleRemoveRow, handleDataChan
                     </td>
                 </tr>
                 <tr>
-                    <td colSpan={2} className="center-align">
+                    <td colSpan={2} className="left-align">
                         <BsFillXCircleFill
                             className="danger-icon"
                             id={row.inputId.toString()}
