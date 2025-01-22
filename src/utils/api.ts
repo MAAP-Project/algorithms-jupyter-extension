@@ -264,8 +264,13 @@ export async function unregisterAlgorithm(algo_id: string) {
   return ""
 }
 
-
-export async function getWorkspaceContainer() {
+/**
+ * 
+ * @returns Returns a list of the workspace containers with the first item 
+ * in the list being the default
+ */
+export async function getWorkspaceContainers() {
+  var workspaceContainers: any[] = []
   var requestUrl = new URL(PageConfig.getBaseUrl() + 'jupyter-server-extension/getWorkspaceContainer');
   console.log(requestUrl.href)
 
@@ -283,7 +288,16 @@ export async function getWorkspaceContainer() {
     console.log("resolved")
     const r_data = await response.json();
     console.log(r_data)
-    return r_data
+    Object.entries(r_data).forEach(([key, value]) => {
+      let workspaceContainer: any = {}
+      workspaceContainer["value"] = value
+      workspaceContainer["label"] = value
+      workspaceContainers.push(workspaceContainer)
+    })
+    // set the algorithm container url to the default
+    let defaultDockerImagePath = r_data["DOCKERIMAGE_PATH_DEFAULT"];
+    store.dispatch(algorithmSlice.actions.setAlgoContainerURL({"value": defaultDockerImagePath, "label": defaultDockerImagePath}))
+    return workspaceContainers
   } catch (error) {
     console.log("error in new endpoint")
     console.log(error)

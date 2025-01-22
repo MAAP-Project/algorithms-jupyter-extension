@@ -10,7 +10,7 @@ import { TableFileInputs } from './TableFileInputs';
 import { TablePositionalInputs } from './TablePositionalInputs';
 import { registerAlgorithm } from '../utils/algoConfig';
 import AsyncSelect from 'react-select/async';
-import { getResources, getWorkspaceContainer } from "../utils/api";
+import { getResources, getWorkspaceContainers } from "../utils/api";
 import { Spinner } from 'react-bootstrap';
 import { checkUrlExists } from '../utils/utils';
 import { Notification } from "@jupyterlab/apputils";
@@ -86,8 +86,8 @@ export const RegistrationForm = ({ data }) => {
         dispatch(setAlgoResource(value))
     }
 
-    const handleContainerURLChange = e => {
-        dispatch(setAlgoContainerURL(e.target.value))
+    const handleContainerURLChange = value => {
+        dispatch(setAlgoContainerURL(value))
     }
 
     const handleModalClose = () => setShow(false);
@@ -106,14 +106,6 @@ export const RegistrationForm = ({ data }) => {
         }
         handleModalShow()
     }
-
-    useEffect(() => {
-        // The container from which the workspace is running will be the default container for algorithm registration.
-        getWorkspaceContainer().then((param) => {
-            let container = param["DOCKERIMAGE_PATH"]
-            if (container != null) { dispatch(setAlgoContainerURL(container)) }
-        })
-    }, []);
 
     useEffect(() => {
         if (showNotification) {
@@ -139,7 +131,7 @@ export const RegistrationForm = ({ data }) => {
         <Form onSubmit={submitHandler}>
             <div className='section-padding'>
                 <h2>Register Algorithm</h2>
-                <Alert variant="primary" className="alert-box">To register an algorithm to the MAAP, your code must be committed to a public code repository.<br/><br/>Need more tips and tricks? Documentation may be found <a href="">here</a>.</Alert>
+                <Alert variant="primary" className="alert-box">To register an algorithm to the MAAP, your code must be committed to a public code repository.<br/><br/>Need more tips and tricks? Documentation may be found <a href="https://docs.maap-project.org/en/latest/system_reference_guide/algorithm_registration.html" target="_blank">here</a>.</Alert>
                 <h3>Repository Information</h3>
                 <Table className="form-table">
                     <tbody>
@@ -222,7 +214,13 @@ export const RegistrationForm = ({ data }) => {
                         <tr>
                             <td>Container URL</td>
                             <td>
-                                <Form.Control type="text" defaultValue={algoContainer} placeholder="Enter container URL" onChange={handleContainerURLChange} />
+                            <AsyncSelect
+                                cacheOptions
+                                defaultOptions
+                                value={algoContainer}
+                                loadOptions={getWorkspaceContainers}
+                                onChange={handleContainerURLChange}
+                            />
                             </td>
                         </tr>
                     </tbody>
