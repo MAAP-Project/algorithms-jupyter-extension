@@ -1,6 +1,6 @@
 {
   "name": "maap_algorithms_jupyter_extension",
-  "version": "0.3.8",
+  "version": "0.3.9",
   "description": "A JupyterLab extension for managing algorithms on the MAAP",
   "keywords": [
     "algorithm",
@@ -50,11 +50,14 @@
     "watch:labextension": "jupyter labextension watch ."
   },
   "dependencies": {
+    "@emotion/react": "^11.13.3",
+    "@emotion/styled": "^11.13.0",
     "@jupyterlab/application": "^4.1.8",
     "@jupyterlab/apputils": "^4.1.8",
     "@jupyterlab/galata": "^5.2.0",
     "@jupyterlab/launcher": "^4.1.8",
     "@jupyterlab/mainmenu": "^4.1.8",
+    "@mui/material": "^6.1.0",
     "@playwright/test": "^1.44.0",
     "@reduxjs/toolkit": "^1.9.3",
     "@types/js-yaml": "^4.0.5",
