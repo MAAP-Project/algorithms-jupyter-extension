@@ -22,16 +22,16 @@ jobs:
         shell: bash -el {0}
 
     steps:
-#      - uses: getsentry/action-github-app-token@v3
-#        name: cicd token
-#        id: cicd-key
-#        with:
-#          app_id: ${{ secrets.CICD_APP }}
-#          private_key: ${{ secrets.CICD_APP_PRIVATE_KEY }}
+      - uses: getsentry/action-github-app-token@v3
+        name: cicd token
+        id: cicd-key
+        with:
+          app_id: ${{ secrets.CICD_APP }}
+          private_key: ${{ secrets.CICD_APP_PRIVATE_KEY }}
       - uses: actions/checkout@v4
         with:
           repository: ${{ github.repository }}
-#          token: ${{ steps.cicd-key.outputs.token }}
+          token: ${{ steps.cicd-key.outputs.token }}
           fetch-depth: 0
       - name: Install node
         uses: actions/setup-node@v4
@@ -57,12 +57,6 @@ jobs:
 
       - name: Install dependencies
         run: python -m pip install -U "jupyterlab>=4.0.0,<5"
-
-#      - name: Lint the extension
-#        run: |
-#          set -eux
-#          jlpm
-#          jlpm run lint:check
 
       - name: Build and test the extension
         run: |
@@ -181,7 +175,7 @@ jobs:
   check_links:
     name: Check Links
     runs-on: ubuntu-latest
-    timeout-minutes: 15
+    timeout-minutes: 5
     steps:
       - uses: actions/checkout@v4
       - uses: jupyterlab/maintainer-tools/.github/actions/base-setup@v1

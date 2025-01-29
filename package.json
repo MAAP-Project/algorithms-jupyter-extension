@@ -1,6 +1,6 @@
 {
     "name": "maap_algorithms_jupyter_extension",
-    "version": "0.3.15",
+    "version": "0.3.8",
     "description": "A JupyterLab extension for managing algorithms on the MAAP",
     "keywords": [
         "algorithm",
@@ -27,7 +27,7 @@
     "style": "style/index.css",
     "repository": {
         "type": "git",
-        "url": "https://github.com/frankinspace/algorithms-jupyter-extension.git"
+        "url": "https://github.com/MAAP-Project/algorithms-jupyter-extension.git"
     },
     "scripts": {
         "build": "jlpm build:lib && jlpm build:labextension:dev",
