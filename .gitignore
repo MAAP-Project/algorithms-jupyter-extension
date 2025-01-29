@@ -47,3 +47,5 @@ node_modules/
 labextension.list
 .idea
 coverage
+
+.DS_Store
