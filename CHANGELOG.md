@@ -2,11 +2,15 @@
 
 <!-- <START NEW CHANGELOG ENTRY> -->
 
-## 0.3.14
+## 0.3.15
 
 No merged PRs
 
 <!-- <END NEW CHANGELOG ENTRY> -->
+
+## 0.3.14
+
+No merged PRs
 
 ## 0.3.13
 
