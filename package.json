@@ -27,7 +27,7 @@
   "style": "style/index.css",
   "repository": {
     "type": "git",
-    "url": "https://github.com/MAAP-Project/algorithms_jupyter_extension.git"
+    "url": "https://github.com/MAAP-Project/algorithms-jupyter-extension"
   },
   "scripts": {
     "build": "jlpm build:lib && jlpm build:labextension:dev",
