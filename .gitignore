@@ -44,3 +44,8 @@ node_modules/
 /blob-report/
 /playwright/.cache/
 
+labextension.list
+.idea
+coverage
+
+.DS_Store
