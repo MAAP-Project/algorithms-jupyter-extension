@@ -1,7 +1,5 @@
 # MAAP Algorithms Jupyter Extension
 
-trivial change
-
 ## Requirements
 
 | Package | Version |
