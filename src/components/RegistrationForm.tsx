@@ -10,7 +10,7 @@ import { TableFileInputs } from './TableFileInputs';
 import { TablePositionalInputs } from './TablePositionalInputs';
 import { registerAlgorithm } from '../utils/algoConfig';
 import AsyncSelect from 'react-select/async';
-import { getResources, getWorkspaceContainer } from "../utils/api";
+import { getResources, getWorkspaceContainers } from "../utils/api";
 import { Spinner } from 'react-bootstrap';
 import { checkUrlExists } from '../utils/utils';
 import { Notification } from "@jupyterlab/apputils";
@@ -26,10 +26,11 @@ export const RegistrationForm = ({ data }) => {
     const [show, setShow] = useState(false);
     const [showSpinner, setShowSpinner] = useState(false)
     const [showNotification, setShowNotification] = useState(false);
+    const [algRegistrationSuccessful, setAlgRegistrationSuccessful] = useState(false);
 
     // Redux
     const dispatch = useDispatch()
-    const { registrationUrl, repoRunCommand, algoResource, algoContainer } = useSelector(selectAlgorithm)
+    const { registrationUrl, algoName, repoBranch, algorithmRegistrationError, algorithmYmlFilePath, repoRunCommand, algoResource, algoContainer } = useSelector(selectAlgorithm)
     const { setAlgoDesc,
             setAlgoDiskSpace,
             setAlgoName,
@@ -85,8 +86,8 @@ export const RegistrationForm = ({ data }) => {
         dispatch(setAlgoResource(value))
     }
 
-    const handleContainerURLChange = e => {
-        dispatch(setAlgoContainerURL(e.target.value))
+    const handleContainerURLChange = value => {
+        dispatch(setAlgoContainerURL(value))
     }
 
     const handleModalClose = () => setShow(false);
@@ -98,22 +99,17 @@ export const RegistrationForm = ({ data }) => {
         let res = await registerAlgorithm()
         if (res) {
             // setShowSpinner(false)
-            handleModalShow()
+            setAlgRegistrationSuccessful(true)
             setShowNotification(true)
+        } else {
+            setAlgRegistrationSuccessful(false)
         }
+        handleModalShow()
     }
 
     useEffect(() => {
-        // The container from which the workspace is running will be the default container for algorithm registration.
-        getWorkspaceContainer().then((param) => {
-            let container = param["DOCKERIMAGE_PATH"]
-            if (container != null) { dispatch(setAlgoContainerURL(container)) }
-        })
-    }, []);
-
-    useEffect(() => {
         if (showNotification) {
-            Notification.success("The algorithm was successfully submitted.", {
+            Notification.success("Algorithm "+algoName+": "+ repoBranch + " was successfully submitted.", {
                 autoClose: 5000,
                 actions: [
                 {
@@ -135,7 +131,7 @@ export const RegistrationForm = ({ data }) => {
         <Form onSubmit={submitHandler}>
             <div className='section-padding'>
                 <h2>Register Algorithm</h2>
-                <Alert variant="primary" className="alert-box">To register an algorithm to the MAAP, your code must be committed to a public code repository.<br/><br/>Need more tips and tricks? Documentation may be found <a href="">here</a>.</Alert>
+                <Alert variant="primary" className="alert-box">To register an algorithm to the MAAP, your code must be committed to a public code repository.<br/><br/>Need more tips and tricks? Documentation may be found <a href="https://docs.maap-project.org/en/latest/system_reference_guide/algorithm_registration.html" target="_blank">here</a>.</Alert>
                 <h3>Repository Information</h3>
                 <Table className="form-table">
                     <tbody>
@@ -218,7 +214,13 @@ export const RegistrationForm = ({ data }) => {
                         <tr>
                             <td>Container URL</td>
                             <td>
-                                <Form.Control type="text" defaultValue={algoContainer} placeholder="Enter container URL" onChange={handleContainerURLChange} />
+                            <AsyncSelect
+                                cacheOptions
+                                defaultOptions
+                                value={algoContainer}
+                                loadOptions={getWorkspaceContainers}
+                                onChange={handleContainerURLChange}
+                            />
                             </td>
                         </tr>
                     </tbody>
@@ -240,10 +242,26 @@ export const RegistrationForm = ({ data }) => {
         <div>
         {/* {showSpinner ? <Spinner animation="border" variant="primary" /> : */}
         <Modal show={show} aria-labelledby="contained-modal-title-vcenter" onHide={handleModalClose}>
-            <Modal.Header closeButton>
-                <Modal.Title>Algorithm submitted for registration</Modal.Title>
-            </Modal.Header>
-            <Modal.Body>Your algorithm was submitted for registration. You can view the progress here: <a href={registrationUrl} target="_blank">{registrationUrl}</a></Modal.Body>
+            {algRegistrationSuccessful ? 
+                <div>
+                    <Modal.Header closeButton>
+                        <Modal.Title>Algorithm submitted for registration</Modal.Title>
+                    </Modal.Header>
+                    <Modal.Body>
+                        <Modal.Title>{algoName}: {repoBranch}</Modal.Title>
+                        <br />
+                        Your algorithm was submitted for registration. You can view the progress here: <a href={registrationUrl} target="_blank">{registrationUrl}</a>
+                        <br />
+                        <br />
+                        A yml file with the algorithm configuration has been created in your workspace: {algorithmYmlFilePath}
+                        </Modal.Body>
+                </div>:
+                <div>
+                    <Modal.Header closeButton>
+                        <Modal.Title>Algorithm failed to submit for registration</Modal.Title>
+                    </Modal.Header>
+                    <Modal.Body>Error Message: {algorithmRegistrationError}</Modal.Body>
+                </div>}
             <Modal.Footer>
                 <Button variant="primary" onClick={handleModalClose}>
                     Close

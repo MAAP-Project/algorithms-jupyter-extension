@@ -18,7 +18,7 @@ export async function registerAlgorithm() {
     data.algorithm_name = storeData.algoName
     data.algorithm_version = storeData.repoBranch
     data.disk_space = storeData.algoDiskSpace + "GB" // maap-py request expects units in value string
-    data.docker_container_url = storeData.algoContainer
+    data.docker_container_url = storeData.algoContainer.value
     data.repository_url = storeData.repoUrl
     data.run_command = storeData.repoRunCommand
     data.build_command = storeData.repoBuildCommand
@@ -36,6 +36,7 @@ export async function registerAlgorithm() {
     // Pass the algo config file
     let response = await registerUsingFile(data.algorithm_name + ".yml", algo_data)
 
+    if (!response) return false;
     console.log(response)
     // update state
     store.dispatch(algorithmSlice.actions.setRegistrationUrl(response))

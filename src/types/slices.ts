@@ -18,9 +18,11 @@ export interface IAlgorithmSlice {
     algoDesc: "",
     algoDiskSpace: "",
     algoResource: any,
-    algoContainer: "",
+    algoContainer: any,
     inputId: number,
-    registrationUrl: ""
+    registrationUrl: "",
+    algorithmRegistrationError: "",
+    algorithmYmlFilePath: ""
   }
 
 export interface ISplitPaneSlice {

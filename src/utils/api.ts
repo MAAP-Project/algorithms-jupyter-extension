@@ -2,7 +2,9 @@ import { PageConfig } from '@jupyterlab/coreutils';
 import { IAlgorithmData } from '../types/slices';
 import { registeredAlgorithmsActions } from '../redux/slices/registeredAlgorithms';
 import { store } from "../redux/store";
-import { parseAlgorithmData } from "./parsers" 
+import { parseAlgorithmData } from "./parsers";
+import { algorithmSlice } from "../redux/slices/algorithmSlice";
+import { YML_FOLDER } from '../constants';
 
 
 // export const getAlgorithmMetadata = (body: any) => {
@@ -19,12 +21,15 @@ import { parseAlgorithmData } from "./parsers"
 
 export async function registerUsingFile(fileName: string, algo_data: any) {
 
-  const response_file = await createFile(fileName, algo_data)
+  const response_file = await createFile(fileName, algo_data, YML_FOLDER);
   console.log(response_file)
+
+  store.dispatch(algorithmSlice.actions.setAlgorithmYmlFilePath(response_file.file));
 
   if (response_file) {
     console.log("submitting register")
     const response_register = await register(response_file.file, null)
+    if (!response_register) return false;
     const d = JSON.parse(response_register.response)
     console.log(d)
     console.log(d.message.job_web_url)
@@ -45,11 +50,12 @@ export async function registerUsingFile(fileName: string, algo_data: any) {
   // })
 }
 
-export async function createFile(fileName: string, data: any) {
+export async function createFile(fileName: string, data: any, pathName: string) {
   var requestUrl = new URL(PageConfig.getBaseUrl() + 'jupyter-server-extension/createFile');
   console.log(requestUrl.href)
 
   requestUrl.searchParams.append("fileName", fileName);
+  requestUrl.searchParams.append("pathName", pathName);
   requestUrl.searchParams.append("data", data);
 
   try {
@@ -102,6 +108,8 @@ export async function register(file: string, data: any) {
     } catch (error) {
       console.log("error in new register endpoint")
       console.log(error)
+      store.dispatch(algorithmSlice.actions.setAlgorithmRegistrationError(error.toString()))
+      return false;
     }
 
   } else {
@@ -256,8 +264,13 @@ export async function unregisterAlgorithm(algo_id: string) {
   return ""
 }
 
-
-export async function getWorkspaceContainer() {
+/**
+ * 
+ * @returns Returns a list of the workspace containers with the first item 
+ * in the list being the default
+ */
+export async function getWorkspaceContainers() {
+  var workspaceContainers: any[] = []
   var requestUrl = new URL(PageConfig.getBaseUrl() + 'jupyter-server-extension/getWorkspaceContainer');
   console.log(requestUrl.href)
 
@@ -275,7 +288,16 @@ export async function getWorkspaceContainer() {
     console.log("resolved")
     const r_data = await response.json();
     console.log(r_data)
-    return r_data
+    Object.entries(r_data).forEach(([key, value]) => {
+      let workspaceContainer: any = {}
+      workspaceContainer["value"] = value
+      workspaceContainer["label"] = value
+      workspaceContainers.push(workspaceContainer)
+    })
+    // set the algorithm container url to the default
+    let defaultDockerImagePath = r_data["DOCKERIMAGE_PATH_DEFAULT"];
+    store.dispatch(algorithmSlice.actions.setAlgoContainerURL({"value": defaultDockerImagePath, "label": defaultDockerImagePath}))
+    return workspaceContainers
   } catch (error) {
     console.log("error in new endpoint")
     console.log(error)

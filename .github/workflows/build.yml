@@ -1,0 +1,182 @@
+name: CI
+
+on:
+  push:
+    branches: [ develop, release/**, main, master, feature/**, issue/**, issues/**, dependabot/** ]
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
+env:
+  NODE_VERSION: "18.x"
+  PYTHON_VERSION: "3.11"
+  JUPYTERLAB_VERSION: "~=4.2.5"
+
+jobs:
+  build_extension:
+    name: Build Extension
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        shell: bash -el {0}
+
+    steps:
+      - uses: getsentry/action-github-app-token@v3
+        name: cicd token
+        id: cicd-key
+        with:
+          app_id: ${{ secrets.CICD_APP }}
+          private_key: ${{ secrets.CICD_APP_PRIVATE_KEY }}
+      - uses: actions/checkout@v4
+        with:
+          repository: ${{ github.repository }}
+          token: ${{ steps.cicd-key.outputs.token }}
+          fetch-depth: 0
+      - name: Install node
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+      - name: Install Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+      - name: Get pip cache dir
+        id: pip-cache
+        run: |
+          echo "dir=$(pip cache dir)" >> $GITHUB_OUTPUT
+      - name: Cache pip
+        uses: actions/cache@v4
+        with:
+          path: ${{ steps.pip-cache.outputs.dir }}
+          key: ${{ runner.os }}-pip-${{ hashFiles('yarn.lock') }}
+          restore-keys: |
+            ${{ runner.os }}-pip-
+      - name: Base Setup
+        uses: jupyterlab/maintainer-tools/.github/actions/base-setup@v1
+
+      - name: Install dependencies
+        run: python -m pip install -U "jupyterlab>=4.0.0,<5"
+
+      - name: Build and test the extension
+        run: |
+          jlpm install
+          pip install -e . -v
+          jupyter labextension develop . --overwrite
+          jlpm playwright install
+          jlpm run test --passWithNoTests
+      - name: Check extension installation
+        run: |
+          jupyter labextension list 2>&1 | tee labextension.list
+          cat labextension.list | grep -ie "maap_algorithms_jupyter_extension.*OK"
+      - name: Browser check
+        run: |
+          python -m jupyterlab.browser_check
+
+      - name: Package the extension
+        run: |
+          set -eux
+          
+          pip install build
+          python -m build
+          pip uninstall -y "maap_algorithms_jupyter_extension" jupyterlab
+
+      - name: Upload extension packages
+        uses: actions/upload-artifact@v4
+        with:
+          name: extension-artifacts
+          path: dist/maap_algorithms_jupyter_extension*
+          if-no-files-found: error
+
+  test_isolated:
+    name: Test wheel artifact
+    needs: build_extension
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Install Python
+      uses: actions/setup-python@v5
+      with:
+        python-version: ${{ env.PYTHON_VERSION }}
+    - uses: actions/download-artifact@v4
+      with:
+        name: extension-artifacts
+    - name: Install and Test
+      run: |
+        set -eux
+        # Remove NodeJS, twice to take care of system and locally installed node versions.
+        sudo rm -rf $(which node)
+        sudo rm -rf $(which node)
+
+        pip install "jupyterlab>=4.0.0,<5" maap_algorithms_jupyter_extension*.whl
+
+
+        jupyter labextension list
+        jupyter labextension list 2>&1 | grep -ie "maap_algorithms_jupyter_extension.*OK"
+        python -m jupyterlab.browser_check --no-browser-test
+
+  integration-tests:
+    name: UI tests
+    needs: build_extension
+    runs-on: ubuntu-latest
+
+    env:
+      PLAYWRIGHT_BROWSERS_PATH: ${{ github.workspace }}/pw-browsers
+
+    steps:
+    - name: Checkout
+      uses: actions/checkout@v4
+
+    - name: Base Setup
+      uses: jupyterlab/maintainer-tools/.github/actions/base-setup@v1
+
+    - name: Download extension package
+      uses: actions/download-artifact@v4
+      with:
+        name: extension-artifacts
+
+    - name: Install the extension
+      run: |
+        set -eux
+        python -m pip install "jupyterlab>=4.0.0,<5" maap_algorithms_jupyter_extension*.whl
+
+    - name: Install dependencies
+      working-directory: ui-tests
+      env:
+        YARN_ENABLE_IMMUTABLE_INSTALLS: 0
+        PLAYWRIGHT_SKIP_BROWSER_DOWNLOAD: 1
+      run: jlpm install
+
+    - name: Set up browser cache
+      uses: actions/cache@v4
+      with:
+        path: |
+          ${{ github.workspace }}/pw-browsers
+        key: ${{ runner.os }}-${{ hashFiles('ui-tests/yarn.lock') }}
+
+    - name: Install browser
+      run: jlpm playwright install chromium
+      working-directory: ui-tests
+
+    - name: Execute integration tests
+      working-directory: ui-tests
+      run: |
+        jlpm playwright test
+
+    - name: Upload Playwright Test report
+      if: always()
+      uses: actions/upload-artifact@v4
+      with:
+        name: maap_algorithms_jupyter_extension-playwright-tests
+        path: |
+          ui-tests/test-results
+          ui-tests/playwright-report
+
+  check_links:
+    name: Check Links
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+      - uses: jupyterlab/maintainer-tools/.github/actions/base-setup@v1
+      - uses: jupyterlab/maintainer-tools/.github/actions/check-links@v1
