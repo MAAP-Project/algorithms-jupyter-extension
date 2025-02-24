@@ -202,4 +202,9 @@ svg:hover {
     margin-right: 1rem;
 }
 
+#algorithm-registration-link {
+    text-decoration: underline !important;
+    color: var(--bs-link-color) !important;
+}
+
 

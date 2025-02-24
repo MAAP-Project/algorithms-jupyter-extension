@@ -250,7 +250,7 @@ export const RegistrationForm = ({ data }) => {
                     <Modal.Body>
                         <Modal.Title>{algoName}: {repoBranch}</Modal.Title>
                         <br />
-                        Your algorithm was submitted for registration. You can view the progress here: <a href={registrationUrl} target="_blank">{registrationUrl}</a>
+                        Your algorithm was submitted for registration. You can view the progress here: <a id="algorithm-registration-link" href={registrationUrl} target="_blank">{registrationUrl}</a>
                         <br />
                         <br />
                         A yml file with the algorithm configuration has been created in your workspace: {algorithmYmlFilePath}
