@@ -17,7 +17,6 @@ on:
         required: false
         type: boolean
   workflow_call:
-    secrets: inherit
     inputs:
       version_spec:
         description: "New Version Specifier"

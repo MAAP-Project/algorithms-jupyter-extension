@@ -12,7 +12,6 @@ on:
         description: "Comma separated list of steps to skip"
         required: false
   workflow_call:
-    secrets: inherit
     inputs:
       branch:
         description: "The target branch"
