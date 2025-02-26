@@ -11,6 +11,18 @@ on:
       steps_to_skip:
         description: "Comma separated list of steps to skip"
         required: false
+  workflow_call:
+    secrets: inherit
+    inputs:
+      branch:
+        description: "The target branch"
+        required: false
+      release_url:
+        description: "The URL of the draft GitHub release"
+        required: false
+      steps_to_skip:
+        description: "Comma separated list of steps to skip"
+        required: false
 
 jobs:
   publish_release:
