@@ -6,12 +6,15 @@ on:
         description: "New Version Specifier"
         default: "next"
         required: false
+        type: string
       branch:
         description: "The branch to target"
         required: false
+        type: string
       since:
         description: "Use PRs with activity since this date or git reference"
         required: false
+        type: string
       since_last_stable:
         description: "Use PRs with activity since the last stable git tag"
         required: false
@@ -22,12 +25,15 @@ on:
         description: "New Version Specifier"
         default: "next"
         required: false
+        type: string
       branch:
         description: "The branch to target"
         required: false
+        type: string
       since:
         description: "Use PRs with activity since this date or git reference"
         required: false
+        type: string
       since_last_stable:
         description: "Use PRs with activity since the last stable git tag"
         required: false
