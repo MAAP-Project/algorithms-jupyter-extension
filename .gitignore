@@ -38,14 +38,19 @@ node_modules/
 *.tsbuildinfo
 .yarn/
 
-# Testing
+# IDE
+.vscode/
 /test-results/
 /playwright-report/
 /blob-report/
 /playwright/.cache/
 
-labextension.list
 .idea
-coverage
 
+labextension.list
+junit.xml
+ui-tests/test-results
+ui-tests/playwright-report
+ui-tests/yarn.lock
+coverage/
 .DS_Store
