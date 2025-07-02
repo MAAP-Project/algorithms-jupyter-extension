@@ -1,14 +1,12 @@
-# MAAP Algorithms Jupyter Extension
+# maap_algorithms_jupyter_extension
+
+[![Github Actions Status](/workflows/Build/badge.svg)](/actions/workflows/build.yml)
+
+A JupyterLab extension.
 
 ## Requirements
 
-| Package | Version |
-|---------|---------|
-| JupyterLab | v4.1.6 |
-| NodeJS | v18.20.0 |
-| Python | >= v3.8 |
-
-These are the recommended versions. Others may be suitable, but are not actively supported.
+- JupyterLab >= 4.0.0
 
 ## Install
 
@@ -38,9 +36,7 @@ The `jlpm` command is JupyterLab's pinned version of
 
 ```bash
 # Clone the repo to your local environment
-# Change directory to the algorithms_jupyter_extension directory
-# Install dependencies
-jlpm install
+# Change directory to the maap_algorithms_jupyter_extension directory
 # Install package in development mode
 pip install -e "."
 # Link your development version of the extension with JupyterLab
@@ -66,7 +62,7 @@ By default, the `jlpm build` command generates the source maps for this extensio
 jupyter lab build --minimize=False
 ```
 
-## Development uninstall
+### Development uninstall
 
 ```bash
 pip uninstall maap_algorithms_jupyter_extension
@@ -74,25 +70,28 @@ pip uninstall maap_algorithms_jupyter_extension
 
 In development mode, you will also need to remove the symlink created by `jupyter labextension develop`
 command. To find its location, you can run `jupyter labextension list` to figure out where the `labextensions`
-folder is located. Then you can remove the symlink named `algorithms_jupyter_extension` within that folder.
+folder is located. Then you can remove the symlink named `maap_algorithms_jupyter_extension` within that folder.
 
-## Testing
+### Testing the extension
 
-Playwright is the testing framework used. When testing locally, use the following command to start the jupyter server and run the tests:
+#### Frontend tests
+
+This extension is using [Jest](https://jestjs.io/) for JavaScript code testing.
+
+To execute them, execute:
+
+```sh
+jlpm
+jlpm test
 ```
-jlpm run start & jlpm run test
-```
 
-To test using the interactive UI, run the following instead:
+#### Integration tests
 
-```
-jlpm run start & jlpm run test --ui
-```
+This extension uses [Playwright](https://playwright.dev/docs/intro) for the integration tests (aka user level tests).
+More precisely, the JupyterLab helper [Galata](https://github.com/jupyterlab/jupyterlab/tree/master/galata) is used to handle testing the extension in JupyterLab.
 
-## Release
+More information are provided within the [ui-tests](./ui-tests/README.md) README.
+
+### Packaging the extension
 
 See [RELEASE](RELEASE.md)
-
-## Contribute
-
-See [CONTRIBUTING](CONTRIBUTING.md)

@@ -1,0 +1,7 @@
+name: algorithms-jlab-ext
+channels:
+  - conda-forge
+dependencies:
+  - python=3.11
+  - jupyterlab=4.4.3
+  - ipython
