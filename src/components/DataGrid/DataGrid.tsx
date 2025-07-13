@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import { useMemo } from 'react';
 import {
   MaterialReactTable,
@@ -18,164 +18,127 @@ import {
 } from '@mui/material';
 import '../../../style/ag-grid-stellar.css';
 import '../../../style/table-theme-stellar.css';
+import { openRegisterAlgorithm } from '../../utils/utils';
+import { getProcess, getProcesses } from '../../utils/api';
+import { Process, ProcessDetailed } from '../../types/process';
+import { ExpandedState } from '@tanstack/react-table';
+// import "@nasa-jpl/react-stellar/dist/esm/stellar.css";
 
-export type Input = {
-  name: string;
-  description: string;
-  type: string;
-  required?: string;
-  defaultValue?: string;
-};
+export const DataGrid = ({ jupyterApp }) => {
+  const [processes, setProcesses] = useState<Process[]>([]);
+  const [expandedRowIds, setExpandedRowIds] = useState<Set<string>>(new Set());
+  const [rowDetails, setRowDetails] = useState<
+    Record<string, ProcessDetailed | null>
+  >({});
 
-export type Algorithm = {
-  algorithmName: string;
-  description: string;
-  author: string;
-  repositoryURL: string;
-  runCommand: string;
-  minRam: string;
-  minCores: string;
-  inputs?: Input[];
-  actions?: string[];
-};
+  const handleRowExpand = async (
+    updater: ExpandedState | ((old: ExpandedState) => ExpandedState)
+  ) => {
+    const oldExpanded = Object.fromEntries(
+      [...expandedRowIds].map(id => [id, true])
+    );
+    const newExpanded =
+      typeof updater === 'function' ? updater(oldExpanded) : updater;
 
-export const data = [
-  {
-    algorithmName: 'algo1:main',
-    description: 'my algorithm',
-    author: 'Jane Doe',
-    repositoryURL: 'https://github.com',
-    runCommand: '/bin/run_algorithm.sh',
-    minRam: '5',
-    minCores: '1',
-    inputs: [
-      {
-        name: 'input1',
-        description: 'input 1',
-        type: 'number'
+    const newExpandedIds = new Set(Object.keys(newExpanded));
+
+    // Find the row that was just expanded
+    const added = [...newExpandedIds].find(id => !expandedRowIds.has(id));
+    const removed = [...expandedRowIds].find(id => !newExpandedIds.has(id));
+
+    // Fetch details if row was added
+    if (added) {
+      const data = table.getRowModel().rowsById[added];
+      const links = data?.original?.links;
+      const selfLink = links?.find(link => link.rel === 'self');
+      const processResource = selfLink?.href;
+
+      if (processResource) {
+        try {
+          const detail = await getProcess(processResource);
+          setRowDetails(prev => ({ ...prev, [added]: detail }));
+        } catch (error) {
+          console.error(`Failed to fetch details for ${added}:`, error);
+          setRowDetails(prev => ({ ...prev, [added]: null }));
+        }
       }
-    ],
-    actions: ['configureJob']
-  },
-  {
-    algorithmName: 'zalgo1:main',
-    description: 'my algorithm',
-    author: 'Jane Doe',
-    repositoryURL: 'https://github.com',
-    runCommand: '/bin/execute.sh',
-    minRam: '5',
-    minCores: '5',
-    inputs: [
-      {
-        name: 'input1',
-        description: 'input 1',
-        type: 'string'
-      },
-      {
-        name: 'input2',
-        description: 'input 2',
-        type: 'string'
-      },
-      {
-        name: 'input3',
-        description: 'input 3',
-        type: 'string'
-      },
-      {
-        name: 'input4',
-        description: 'input 4',
-        type: 'string'
-      }
-    ],
-    actions: ['configureJob']
-  },
-  {
-    algorithmName: 'algo3:main',
-    description: 'my algorithm',
-    author: 'John Smith',
-    repositoryURL: 'https://github.com',
-    runCommand: '/bin/run_algorithm.sh',
-    minRam: '1',
-    minCores: '1',
-    actions: ['configureJob']
-  },
-  {
-    algorithmName: 'galgo1:main',
-    description: 'my algorithm',
-    author: 'John Smith',
-    repositoryURL: 'https://github.com/MAAP-Project',
-    runCommand: '/bin/run_algorithm.py',
-    minRam: '10',
-    minCores: '3',
-    actions: ['configureJob']
-  },
-  {
-    algorithmName: 'lalgo1:main',
-    description: 'my algorithm',
-    author: 'John Smith',
-    repositoryURL: 'https://github.com',
-    runCommand: '/bin/execute.sh',
-    minRam: '20',
-    minCores: '1',
-    actions: ['configureJob']
-  },
-  {
-    algorithmName: 'lalgo1:main',
-    description: 'my algorithm',
-    author: 'Bob Smith',
-    repositoryURL: 'https://github.com',
-    runCommand: '/bin/execute_algorithm.py',
-    minRam: '1',
-    minCores: '2',
-    actions: ['configureJob']
-  }
-];
+    }
 
-export const DataGrid = () => {
-  const columns = useMemo<MRT_ColumnDef<Algorithm>[]>(
+    // Update Set based on added/removed rows
+    const updatedSet = new Set(expandedRowIds);
+    if (added) updatedSet.add(added);
+    if (removed) updatedSet.delete(removed);
+    setExpandedRowIds(updatedSet);
+  };
+
+  useEffect(() => {
+    const fetchProcesses = async () => {
+      try {
+        const data = await getProcesses();
+        setProcesses(data);
+      } catch (err) {
+        console.error('Failed to load processes:', err);
+      }
+    };
+
+    fetchProcesses();
+  }, []);
+
+  const columns = useMemo<MRT_ColumnDef<Process>[]>(
     () => [
       {
-        accessorKey: 'algorithmName',
+        accessorKey: 'id',
         header: 'Algorithm Name',
         size: 50
       },
       {
         accessorKey: 'description',
-        header: 'Description'
+        header: 'Description',
+        Cell: ({ row }) => (
+          <Box
+            sx={{
+              overflow: 'hidden',
+              textOverflow: 'ellipsis',
+              whiteSpace: 'nowrap',
+              maxWidth: '500px'
+            }}
+          >
+            {row.original.description}
+          </Box>
+        )
       },
       {
         accessorKey: 'author',
         header: 'Author'
       },
       {
+        accessorKey: 'lastModifiedTime',
+        header: 'Last Modified',
+        Cell: ({ row }) => {
+          const rawDate = row.original.lastModifiedTime;
+          const formatted = rawDate
+            ? new Date(rawDate).toISOString().slice(0, 19)
+            : '-';
+          return formatted;
+        }
+      },
+      {
         accessorKey: 'actions',
         header: 'Actions',
-        enableSorting: false,
-        enableColumnFilter: false,
         muiTableHeadCellProps: {
           align: 'center'
         },
+        muiTableBodyCellProps: { align: 'center' },
         Cell: ({ row }) => (
-          // TODO: map all actions
-          <Box
-            sx={{ display: 'flex', gap: '0.5rem', justifyContent: 'center' }}
+          <Button
+            variant="contained"
+            sx={{
+              maxWidth: '500px',
+              textTransform: 'none'
+            }}
           >
-            {row.original.actions?.map((action, index) => (
-              <Button
-                key={index}
-                variant="contained"
-                size="small"
-                sx={{ textTransform: 'none' }}
-                onClick={() => {
-                  console.log(
-                    `Action: '${action}' on algorithm: '${row.original.algorithmName}'`
-                  );
-                }}
-              >
-                Configure Job
-              </Button>
-            ))}
-          </Box>
+            Configure Job
+          </Button>
         )
       }
     ],
@@ -184,11 +147,22 @@ export const DataGrid = () => {
 
   const table = useMaterialReactTable({
     columns,
-    data,
+    data: processes,
     enableExpandAll: false,
     enableFullScreenToggle: false,
     enableDensityToggle: false,
-    initialState: { density: 'compact' },
+    initialState: {
+      density: 'compact',
+      sorting: [
+        {
+          id: 'lastModifiedTime',
+          desc: true
+        }
+      ]
+    },
+    state: {
+      expanded: Object.fromEntries([...expandedRowIds].map(id => [id, true]))
+    },
     displayColumnDefOptions: {
       'mrt-row-expand': {
         size: 100,
@@ -220,109 +194,142 @@ export const DataGrid = () => {
         })
       }
     }),
-    muiExpandButtonProps: ({ row, table }) => ({
+    muiExpandButtonProps: ({ row }) => ({
       sx: {
         transform: row.getIsExpanded() ? 'rotate(180deg)' : 'rotate(-90deg)',
         transition: 'transform 0.2s'
       }
     }),
+    onExpandedChange: row => handleRowExpand(row),
     renderTopToolbarCustomActions: () => (
       <Box sx={{ display: 'flex', alignItems: 'center', height: '100%' }}>
-        <Typography variant="h6" sx={{ ml: 2 }}>
+        <Typography variant="h6" sx={{ ml: 2, mr: 2 }}>
           Algorithm Search and Discovery
         </Typography>
+        <Button
+          variant="contained"
+          size="small"
+          sx={{ textTransform: 'none', backgroundColor: 'green' }}
+          onClick={() => openRegisterAlgorithm(jupyterApp, null)}
+        >
+          Register New Algorithm
+        </Button>
       </Box>
     ),
-    renderDetailPanel: ({ row }) => (
-      <Box
-        sx={{
-          backgroundColor: 'white',
-          borderBottom: theme => `1px solid ${theme.palette.divider}`,
-          padding: '2rem',
-          boxShadow: '0px 5px 10px lightgrey inset'
-        }}
-      >
-        <Table
-          size="small"
-          sx={{ mb: 2, border: theme => `1px solid ${theme.palette.divider}` }}
-        >
-          <TableBody>
-            <TableRow>
-              <TableCell>Code Repository</TableCell>
-              <TableCell>
-                <Link
-                  href={row.original.repositoryURL}
-                  underline="always"
-                  sx={{
-                    color: 'blue',
-                    '&:visited': {
-                      color: 'purple'
-                    },
-                    '&:hover': {
-                      color: 'darkblue'
-                    }
-                  }}
-                >
-                  {row.original.repositoryURL}
-                </Link>
-              </TableCell>
-            </TableRow>
-            <TableRow>
-              <TableCell>Minimum RAM</TableCell>
-              <TableCell>{row.original.minRam}</TableCell>
-            </TableRow>
-            <TableRow>
-              <TableCell>Minimum Cores</TableCell>
-              <TableCell>{row.original.minCores}</TableCell>
-            </TableRow>
-            <TableRow>
-              <TableCell>Run Command</TableCell>
-              <TableCell>{row.original.runCommand}</TableCell>
-            </TableRow>
-          </TableBody>
-        </Table>
-        {row.original.inputs && row.original.inputs.length > 0 ? (
-          <Box>
-            <Typography variant="h6" component="h5">
-              Input Parameters
-            </Typography>
-            <Table
-              size="small"
-              sx={{ border: theme => `1px solid ${theme.palette.divider}` }}
-            >
-              <TableHead>
-                <TableRow>
-                  <TableCell>Name</TableCell>
-                  <TableCell>Description</TableCell>
-                  <TableCell>Type</TableCell>
-                  <TableCell>Required</TableCell>
-                  <TableCell>Default Value</TableCell>
-                </TableRow>
-              </TableHead>
-              <TableBody>
-                {row.original.inputs.map((input, i) => (
-                  <TableRow key={`${input.name}-${i}`}>
-                    <TableCell>{input.name}</TableCell>
-                    <TableCell>{input.description}</TableCell>
-                    <TableCell>{input.type}</TableCell>
-                    <TableCell>{input.required}</TableCell>
-                    <TableCell>{input.defaultValue}</TableCell>
-                  </TableRow>
-                ))}
-              </TableBody>
-            </Table>
+    renderDetailPanel: ({ row }) => {
+      console.log('Row id: ', row.id);
+      const processDetails = rowDetails[row.id];
+      console.log('Inputs: ', processDetails?.inputs);
+
+      if (!processDetails) {
+        return (
+          <Box p={2}>
+            <Typography>Loading details...</Typography>
           </Box>
-        ) : null}
-      </Box>
-    )
+        );
+      }
+      return (
+        <Box
+          sx={{
+            backgroundColor: 'white',
+            borderBottom: theme => `1px solid ${theme.palette.divider}`,
+            padding: '2rem',
+            boxShadow: '0px 5px 10px lightgrey inset'
+          }}
+        >
+          <Table
+            size="small"
+            sx={{
+              mb: 2,
+              border: theme => `1px solid ${theme.palette.divider}`
+            }}
+          >
+            <TableBody>
+              <TableRow>
+                <TableCell>Code Repository</TableCell>
+                <TableCell>
+                  <Link
+                    href={processDetails.githubUrl}
+                    underline="always"
+                    sx={{
+                      color: 'blue',
+                      '&:visited': {
+                        color: 'purple'
+                      },
+                      '&:hover': {
+                        color: 'darkblue'
+                      }
+                    }}
+                  >
+                    {processDetails.githubUrl}
+                  </Link>
+                </TableCell>
+              </TableRow>
+              <TableRow>
+                <TableCell>Git Commit Hash</TableCell>
+                <TableCell>{processDetails.gitCommitHash}</TableCell>
+              </TableRow>
+              <TableRow>
+                <TableCell>CWL Link</TableCell>
+                <TableCell>{processDetails.cwlLink}</TableCell>
+              </TableRow>
+              <TableRow>
+                <TableCell>RAM Min</TableCell>
+                <TableCell>{processDetails.ramMin}</TableCell>
+              </TableRow>
+              <TableRow>
+                <TableCell>Cores Min</TableCell>
+                <TableCell>{processDetails.coresMin}</TableCell>
+              </TableRow>
+              <TableRow>
+                <TableCell>Base Command</TableCell>
+                <TableCell>{processDetails.baseCommand}</TableCell>
+              </TableRow>
+            </TableBody>
+          </Table>
+          {processDetails.inputs ? (
+            <Box>
+              <Typography variant="h6" component="h5">
+                Input Parameters
+              </Typography>
+              <Table
+                size="small"
+                sx={{ border: theme => `1px solid ${theme.palette.divider}` }}
+              >
+                <TableHead>
+                  <TableRow>
+                    <TableCell>Name</TableCell>
+                    <TableCell>Description</TableCell>
+                    <TableCell>Type</TableCell>
+                    <TableCell>Default Value</TableCell>
+                  </TableRow>
+                </TableHead>
+                <TableBody>
+                  {Object.entries(processDetails.inputs).map(([key, value]) => (
+                    <TableRow key={key}>
+                      <TableCell>{value.title}</TableCell>
+                      <TableCell>{value.description}</TableCell>
+                      <TableCell>{value.type}</TableCell>
+                      <TableCell>{value.default ?? '-'}</TableCell>
+                    </TableRow>
+                  ))}
+                </TableBody>
+              </Table>
+            </Box>
+          ) : null}
+        </Box>
+      );
+    }
   });
 
   return (
-    <div
-      className="ag-theme-stellar algorithms-table"
-      style={{ height: '100%', width: '100%' }}
-    >
-      <MaterialReactTable table={table} />
-    </div>
+    <>
+      <div
+        className="ag-theme-stellar algorithms-table"
+        style={{ height: '100%', width: '100%' }}
+      >
+        <MaterialReactTable table={table} />
+      </div>
+    </>
   );
 };

@@ -1,0 +1,43 @@
+export type Link = {
+  href: string;
+  rel: string;
+  type: string | null;
+  hreflang: string | null;
+  title: string;
+};
+
+export type Input = {
+  title: string;
+  description: string;
+  type: string;
+  placeholder: string;
+  default?: string;
+};
+
+export type InputObj = {
+  [key: string]: Input;
+};
+
+export type Process = {
+  title?: string;
+  description?: string;
+  keywords?: string[];
+  metadata?: string[];
+  id?: string;
+  version?: string;
+  jobControlOptions?: string[];
+  author?: string;
+  lastModifiedTime?: string;
+  cwlLink?: string;
+  links?: Link[];
+};
+
+export type ProcessDetailed = Process & {
+  processID?: string;
+  githubUrl?: string;
+  gitCommitHash?: string;
+  ramMin?: number;
+  coresMin?: number;
+  baseCommand?: string;
+  inputs?: InputObj;
+};
