@@ -132,10 +132,7 @@ export const DataGrid = ({ jupyterApp }) => {
         Cell: ({ row }) => (
           <Button
             variant="contained"
-            sx={{
-              maxWidth: '500px',
-              textTransform: 'none'
-            }}
+            style={{ textTransform: 'none', backgroundColor: '#1976d2' }}
           >
             Configure Job
           </Button>
@@ -209,7 +206,11 @@ export const DataGrid = ({ jupyterApp }) => {
         <Button
           variant="contained"
           size="small"
-          sx={{ textTransform: 'none', backgroundColor: 'green' }}
+          style={{
+            textTransform: 'none',
+            backgroundColor: 'green',
+            marginLeft: '1rem'
+          }}
           onClick={() => openRegisterAlgorithm(jupyterApp, null)}
         >
           Register New Algorithm
