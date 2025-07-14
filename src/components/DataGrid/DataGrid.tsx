@@ -109,7 +109,7 @@ export const DataGrid = ({ jupyterApp }) => {
       },
       {
         accessorKey: 'author',
-        header: 'Author'
+        header: 'Deployed By'
       },
       {
         accessorKey: 'lastModifiedTime',

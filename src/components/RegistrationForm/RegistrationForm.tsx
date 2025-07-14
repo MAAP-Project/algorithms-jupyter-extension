@@ -4,8 +4,6 @@ import {
   Button,
   Box,
   Typography,
-  Grid,
-  Paper,
   Dialog,
   DialogTitle,
   DialogContent,
@@ -16,18 +14,24 @@ import {
   TableCell,
   TableRow,
   Input,
-  Link
+  IconButton
 } from '@mui/material';
+import AddIcon from '@mui/icons-material/Add';
 import '../../../style/ag-grid-stellar.css';
 import '../../../style/table-theme-stellar.css';
 import { registerAlgorithm } from '../../utils/api';
 
 export const RegistrationForm = ({ jupyterApp }) => {
   const [showModal, setShowModal] = useState(false);
+  const [showRegModal, setShowRegModal] = useState(false);
   const [token, setToken] = useState('');
 
   const handleClose = () => {
     setShowModal(false);
+  };
+
+  const handleCloseReg = () => {
+    setShowRegModal(false);
   };
 
   const handleTokenSubmit = e => {
@@ -44,23 +48,34 @@ export const RegistrationForm = ({ jupyterApp }) => {
       console.log(`${key}: ${value}`);
     });
     // TODO: local storage/session storage?
-    if (localStorage.hasOwnProperty('MAAP_PGT_TOKEN')) {
-      const token = localStorage['MAAP_PGT_TOKEN'];
-      localStorage.setItem(
-        'MAAP_PGT_TOKEN',
-        'PGT-468-yuLSppW3YCA1GMevGfx1y8gfpIQemxTJ3e-2d--XqV0CLK1YlJwOl8RIZg4o-NTRN5g-f60a6c0c154f'
-      );
-    } else {
+    if (!localStorage.hasOwnProperty('MAAP_PGT_TOKEN')) {
       // Modal requesting token
       console.log('no token detected');
       setShowModal(true);
+      localStorage.setItem('MAAP_PGT_TOKEN', token);
     }
 
     registerAlgorithm(formData);
+    setShowRegModal(true);
   };
 
   return (
     <>
+      <Dialog open={showRegModal} onClose={handleClose}>
+        <DialogTitle
+          sx={{ backgroundColor: 'green', color: 'white' }}
+        ></DialogTitle>
+        <DialogContent sx={{ paddingBottom: 0 }}>
+          <DialogContentText>
+            Algorithm submitted for registration.
+          </DialogContentText>
+          <DialogActions>
+            <Button type="submit" onClick={handleCloseReg}>
+              Close
+            </Button>
+          </DialogActions>
+        </DialogContent>
+      </Dialog>
       <Dialog open={showModal} onClose={handleClose}>
         <DialogTitle
           sx={{ backgroundColor: 'orange', color: 'white' }}
@@ -103,115 +118,170 @@ export const RegistrationForm = ({ jupyterApp }) => {
         <Typography variant="h5" gutterBottom>
           Algorithm Submission Form
         </Typography>
-        <Paper sx={{ p: 3 }}>
-          <form onSubmit={handleSubmit}>
-            <h3>Repository Information</h3>
-            <Table>
-              <TableBody>
-                <TableRow>
-                  <TableCell>Repository URL</TableCell>
-                  <TableCell>
-                    <Input
-                      type="text"
-                      name="repository_url"
-                      placeholder="Enter repository URL"
-                    />
-                  </TableCell>
-                </TableRow>
-                <TableRow>
-                  <TableCell>Repository Branch</TableCell>
-                  <TableCell>
-                    <Input
-                      type="text"
-                      name="repository_branch"
-                      placeholder="Enter repository branch"
-                    />
-                  </TableCell>
-                </TableRow>
-                <TableRow>
-                  <TableCell>Run Command</TableCell>
-                  <TableCell>
-                    <Input
-                      type="text"
-                      name="run_command"
-                      placeholder="Enter run command"
-                    />
-                  </TableCell>
-                </TableRow>
-              </TableBody>
-            </Table>
-            <h3>General Information</h3>
-            <Table>
-              <TableBody>
-                <TableRow>
-                  <TableCell>Algorithm Name</TableCell>
-                  <TableCell>
-                    <Input
-                      type="text"
-                      name="algorithm_name"
-                      placeholder="Enter algorithm name"
-                    />
-                  </TableCell>
-                </TableRow>
-                <TableRow>
-                  <TableCell>Algorithm Description</TableCell>
-                  <TableCell>
-                    <Input
-                      type="text"
-                      name="algorithm_description"
-                      placeholder="Enter algorithm description"
-                    />
-                  </TableCell>
-                </TableRow>
-                <TableRow>
-                  <TableCell>Disk Space (GB)</TableCell>
-                  <TableCell>
-                    <Input
-                      type="text"
-                      name="disc_space"
-                      placeholder="Enter disk space (GB)"
-                    />
-                  </TableCell>
-                </TableRow>
-                <TableRow>
-                  <TableCell>Minimum RAM</TableCell>
-                  <TableCell>
-                    <Input
-                      type="text"
-                      name="min_ram"
-                      placeholder="Enter minimum RAM"
-                    />
-                  </TableCell>
-                </TableRow>
-                <TableRow>
-                  <TableCell>Minimum Number of Cores</TableCell>
-                  <TableCell>
-                    <Input
-                      type="text"
-                      name="min_cores"
-                      placeholder="Enter minimum number of cores"
-                    />
-                  </TableCell>
-                </TableRow>
-                <TableRow>
-                  <TableCell>Container URL</TableCell>
-                  <TableCell>
-                    <Input
-                      type="text"
-                      name="container_url"
-                      placeholder="Enter container URL"
-                    />
-                  </TableCell>
-                </TableRow>
-              </TableBody>
-            </Table>
-            <Box mt={4}>
-              <Button type="submit" variant="contained" color="primary">
-                Submit
-              </Button>
-            </Box>
-          </form>
-        </Paper>
+        <Button
+          variant="contained"
+          color="primary"
+          style={{ textTransform: 'none' }}
+        >
+          Load Algorithm Configuration
+        </Button>
+        <form onSubmit={handleSubmit}>
+          <h3>Repository Information</h3>
+          <Table
+            size="small"
+            sx={{
+              mb: 2,
+              border: theme => `1px solid ${theme.palette.divider}`
+            }}
+          >
+            <TableBody>
+              <TableRow>
+                <TableCell>Repository URL</TableCell>
+                <TableCell>
+                  <Input
+                    type="text"
+                    name="repository_url"
+                    placeholder="Enter repository URL"
+                  />
+                </TableCell>
+              </TableRow>
+              <TableRow>
+                <TableCell>Repository Branch</TableCell>
+                <TableCell>
+                  <Input
+                    type="text"
+                    name="repository_branch"
+                    placeholder="Enter repository branch"
+                  />
+                </TableCell>
+              </TableRow>
+              <TableRow>
+                <TableCell>Run Command</TableCell>
+                <TableCell>
+                  <Input
+                    type="text"
+                    name="run_command"
+                    placeholder="Enter run command"
+                  />
+                </TableCell>
+              </TableRow>
+            </TableBody>
+          </Table>
+          <h3>General Information</h3>
+          <Table
+            size="small"
+            sx={{
+              mb: 2,
+              border: theme => `1px solid ${theme.palette.divider}`
+            }}
+          >
+            <TableBody>
+              <TableRow>
+                <TableCell>Algorithm Name</TableCell>
+                <TableCell>
+                  <Input
+                    type="text"
+                    name="algorithm_name"
+                    placeholder="Enter algorithm name"
+                    fullWidth
+                  />
+                </TableCell>
+              </TableRow>
+              <TableRow>
+                <TableCell>Algorithm Description</TableCell>
+                <TableCell>
+                  <Input
+                    type="text"
+                    name="algorithm_description"
+                    placeholder="Enter algorithm description"
+                    fullWidth
+                  />
+                </TableCell>
+              </TableRow>
+              <TableRow>
+                <TableCell>Disk Space (GB)</TableCell>
+                <TableCell>
+                  <Input
+                    type="text"
+                    name="disc_space"
+                    placeholder="Enter disk space (GB)"
+                    fullWidth
+                  />
+                </TableCell>
+              </TableRow>
+              <TableRow>
+                <TableCell>Minimum RAM</TableCell>
+                <TableCell>
+                  <Input
+                    type="text"
+                    name="min_ram"
+                    placeholder="Enter minimum RAM"
+                    fullWidth
+                  />
+                </TableCell>
+              </TableRow>
+              <TableRow>
+                <TableCell>Minimum Number of Cores</TableCell>
+                <TableCell>
+                  <Input
+                    type="text"
+                    name="min_cores"
+                    placeholder="Enter minimum number of cores"
+                    fullWidth
+                  />
+                </TableCell>
+              </TableRow>
+              <TableRow>
+                <TableCell>Container URL</TableCell>
+                <TableCell>
+                  <Input
+                    type="text"
+                    name="container_url"
+                    placeholder="Enter container URL"
+                    fullWidth
+                  />
+                </TableCell>
+              </TableRow>
+            </TableBody>
+          </Table>
+          <h3>Inputs</h3>
+          <Table
+            size="small"
+            sx={{
+              mb: 2,
+              border: theme => `1px solid ${theme.palette.divider}`
+            }}
+          >
+            <TableBody>
+              <TableRow>
+                <TableCell>
+                  <IconButton color="primary">
+                    <AddIcon />
+                  </IconButton>
+                </TableCell>
+                <TableCell>Name</TableCell>
+                <TableCell>Description</TableCell>
+                <TableCell>Default Value</TableCell>
+                <TableCell>Type</TableCell>
+              </TableRow>
+              <TableRow>
+                <TableCell>
+                  <i>No inputs specified</i>
+                </TableCell>
+              </TableRow>
+            </TableBody>
+          </Table>
+          <Box mt={4}>
+            <Button
+              type="submit"
+              variant="contained"
+              color="primary"
+              style={{ textTransform: 'none' }}
+            >
+              Register Algorithm
+            </Button>
+          </Box>
+        </form>
       </Box>
     </>
   );

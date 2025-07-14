@@ -43,7 +43,7 @@ export const registerAlgorithm = async (data: any): Promise<any> => {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
-      'ProxyTicket': localStorage.getItem('MAAP_PGT_TOKEN') || ''
+      'cpticket': localStorage.getItem('MAAP_PGT_TOKEN') || ''
     },
     body: JSON.stringify(data)
   });
