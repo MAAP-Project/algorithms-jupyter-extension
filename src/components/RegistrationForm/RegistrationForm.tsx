@@ -60,7 +60,7 @@ export const RegistrationForm = ({ jupyterApp }) => {
   };
 
   return (
-    <>
+    <div style={{ overflow: 'scroll' }}>
       <Dialog open={showRegModal} onClose={handleClose}>
         <DialogTitle
           sx={{ backgroundColor: 'green', color: 'white' }}
@@ -121,7 +121,7 @@ export const RegistrationForm = ({ jupyterApp }) => {
         <Button
           variant="contained"
           color="primary"
-          style={{ textTransform: 'none' }}
+          style={{ textTransform: 'none', backgroundColor: '#1976d2' }}
         >
           Load Algorithm Configuration
         </Button>
@@ -276,13 +276,13 @@ export const RegistrationForm = ({ jupyterApp }) => {
               type="submit"
               variant="contained"
               color="primary"
-              style={{ textTransform: 'none' }}
+              style={{ textTransform: 'none', backgroundColor: '#1976d2' }}
             >
               Register Algorithm
             </Button>
           </Box>
         </form>
       </Box>
-    </>
+    </div>
   );
 };
