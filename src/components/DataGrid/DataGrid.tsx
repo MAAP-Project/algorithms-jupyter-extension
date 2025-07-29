@@ -5,24 +5,14 @@ import {
   useMaterialReactTable,
   type MRT_ColumnDef
 } from 'material-react-table';
-import {
-  Box,
-  Button,
-  Link,
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableRow,
-  Typography
-} from '@mui/material';
-import '../../../style/ag-grid-stellar.css';
-import '../../../style/table-theme-stellar.css';
+import { Box, Typography } from '@mui/material';
 import { openRegisterAlgorithm } from '../../utils/utils';
 import { getProcess, getProcesses } from '../../utils/api';
 import { Process, ProcessDetailed } from '../../types/process';
 import { ExpandedState } from '@tanstack/react-table';
-// import "@nasa-jpl/react-stellar/dist/esm/stellar.css";
+import ContentCopyIcon from '@mui/icons-material/ContentCopy';
+import IconButton from '@mui/material/IconButton';
+import Tooltip from '@mui/material/Tooltip';
 
 export const DataGrid = ({ jupyterApp }) => {
   const [processes, setProcesses] = useState<Process[]>([]);
@@ -66,8 +56,12 @@ export const DataGrid = ({ jupyterApp }) => {
 
     // Update Set based on added/removed rows
     const updatedSet = new Set(expandedRowIds);
-    if (added) updatedSet.add(added);
-    if (removed) updatedSet.delete(removed);
+    if (added) {
+      updatedSet.add(added);
+    }
+    if (removed) {
+      updatedSet.delete(removed);
+    }
     setExpandedRowIds(updatedSet);
   };
 
@@ -92,23 +86,40 @@ export const DataGrid = ({ jupyterApp }) => {
         size: 50
       },
       {
+        accessorKey: 'version',
+        header: 'Version',
+        size: 50
+      },
+      {
         accessorKey: 'description',
         header: 'Description',
         Cell: ({ row }) => (
-          <Box
-            sx={{
-              overflow: 'hidden',
-              textOverflow: 'ellipsis',
-              whiteSpace: 'nowrap',
-              maxWidth: '500px'
-            }}
+          <Tooltip
+            title={row.original.description}
+            placement="top"
+            arrow
+            enterDelay={1000}
           >
-            {row.original.description}
-          </Box>
+            <Box
+              sx={{
+                overflow: 'hidden',
+                textOverflow: 'ellipsis',
+                whiteSpace: 'nowrap',
+                maxWidth: '500px',
+                cursor: 'pointer'
+              }}
+            >
+              {row.original.description}
+            </Box>
+          </Tooltip>
         )
       },
       {
         accessorKey: 'author',
+        header: 'Author'
+      },
+      {
+        accessorKey: 'deployedBy',
         header: 'Deployed By'
       },
       {
@@ -128,14 +139,12 @@ export const DataGrid = ({ jupyterApp }) => {
         muiTableHeadCellProps: {
           align: 'center'
         },
+        enableSorting: false,
         muiTableBodyCellProps: { align: 'center' },
         Cell: ({ row }) => (
-          <Button
-            variant="contained"
-            style={{ textTransform: 'none', backgroundColor: '#1976d2' }}
-          >
+          <button className="st-button" disabled={true}>
             Configure Job
-          </Button>
+          </button>
         )
       }
     ],
@@ -203,18 +212,12 @@ export const DataGrid = ({ jupyterApp }) => {
         <Typography variant="h6" sx={{ ml: 2, mr: 2 }}>
           Algorithm Search and Discovery
         </Typography>
-        <Button
-          variant="contained"
-          size="small"
-          style={{
-            textTransform: 'none',
-            backgroundColor: 'green',
-            marginLeft: '1rem'
-          }}
+        <button
+          className="st-button"
           onClick={() => openRegisterAlgorithm(jupyterApp, null)}
         >
           Register New Algorithm
-        </Button>
+        </button>
       </Box>
     ),
     renderDetailPanel: ({ row }) => {
@@ -238,84 +241,78 @@ export const DataGrid = ({ jupyterApp }) => {
             boxShadow: '0px 5px 10px lightgrey inset'
           }}
         >
-          <Table
-            size="small"
-            sx={{
-              mb: 2,
-              border: theme => `1px solid ${theme.palette.divider}`
-            }}
-          >
-            <TableBody>
-              <TableRow>
-                <TableCell>Code Repository</TableCell>
-                <TableCell>
-                  <Link
+          <table className="st-table">
+            <h4>General Information</h4>
+            <tbody>
+              <tr>
+                <td className="st-label-cell">Code Repository</td>
+                <td>
+                  <a
                     href={processDetails.githubUrl}
-                    underline="always"
-                    sx={{
-                      color: 'blue',
-                      '&:visited': {
-                        color: 'purple'
-                      },
-                      '&:hover': {
-                        color: 'darkblue'
-                      }
-                    }}
+                    style={{ color: '#1976d2' }}
                   >
                     {processDetails.githubUrl}
-                  </Link>
-                </TableCell>
-              </TableRow>
-              <TableRow>
-                <TableCell>Git Commit Hash</TableCell>
-                <TableCell>{processDetails.gitCommitHash}</TableCell>
-              </TableRow>
-              <TableRow>
-                <TableCell>CWL Link</TableCell>
-                <TableCell>{processDetails.cwlLink}</TableCell>
-              </TableRow>
-              <TableRow>
-                <TableCell>RAM Min</TableCell>
-                <TableCell>{processDetails.ramMin}</TableCell>
-              </TableRow>
-              <TableRow>
-                <TableCell>Cores Min</TableCell>
-                <TableCell>{processDetails.coresMin}</TableCell>
-              </TableRow>
-              <TableRow>
-                <TableCell>Base Command</TableCell>
-                <TableCell>{processDetails.baseCommand}</TableCell>
-              </TableRow>
-            </TableBody>
-          </Table>
+                  </a>
+                </td>
+              </tr>
+              <tr>
+                <td className="st-label-cell">Git Commit Hash</td>
+                <td>
+                  {processDetails.gitCommitHash ? (
+                    <span style={{ display: 'flex', alignItems: 'center' }}>
+                      {processDetails.gitCommitHash}
+                      <CopyHashButton hash={processDetails.gitCommitHash} />
+                    </span>
+                  ) : (
+                    '-'
+                  )}
+                </td>
+              </tr>
+              <tr>
+                <td className="st-label-cell">CWL Link</td>
+                <td>
+                  <a href={processDetails.cwlLink} style={{ color: '#1976d2' }}>
+                    {processDetails.cwlLink ?? '-'}
+                  </a>
+                </td>
+              </tr>
+              <tr>
+                <td className="st-label-cell">RAM Min</td>
+                <td>{processDetails.ramMin ?? '-'}</td>
+              </tr>
+              <tr>
+                <td className="st-label-cell">Cores Min</td>
+                <td>{processDetails.coresMin ?? '-'}</td>
+              </tr>
+              <tr>
+                <td className="st-label-cell">Base Command</td>
+                <td>{processDetails.baseCommand ?? '-'}</td>
+              </tr>
+            </tbody>
+          </table>
           {processDetails.inputs ? (
             <Box>
-              <Typography variant="h6" component="h5">
-                Input Parameters
-              </Typography>
-              <Table
-                size="small"
-                sx={{ border: theme => `1px solid ${theme.palette.divider}` }}
-              >
-                <TableHead>
-                  <TableRow>
-                    <TableCell>Name</TableCell>
-                    <TableCell>Description</TableCell>
-                    <TableCell>Type</TableCell>
-                    <TableCell>Default Value</TableCell>
-                  </TableRow>
-                </TableHead>
-                <TableBody>
+              <h4 className="margin-top-2">Input Parameters</h4>
+              <table className="st-table">
+                <thead>
+                  <tr>
+                    <th>Name</th>
+                    <th>Description</th>
+                    <th>Type</th>
+                    <th>Default Value</th>
+                  </tr>
+                </thead>
+                <tbody>
                   {Object.entries(processDetails.inputs).map(([key, value]) => (
-                    <TableRow key={key}>
-                      <TableCell>{value.title}</TableCell>
-                      <TableCell>{value.description}</TableCell>
-                      <TableCell>{value.type}</TableCell>
-                      <TableCell>{value.default ?? '-'}</TableCell>
-                    </TableRow>
+                    <tr key={key}>
+                      <td>{value.title}</td>
+                      <td>{value.description}</td>
+                      <td>{value.type}</td>
+                      <td>{value.default ?? '-'}</td>
+                    </tr>
                   ))}
-                </TableBody>
-              </Table>
+                </tbody>
+              </table>
             </Box>
           ) : null}
         </Box>
@@ -332,5 +329,30 @@ export const DataGrid = ({ jupyterApp }) => {
         <MaterialReactTable table={table} />
       </div>
     </>
+  );
+};
+
+const CopyHashButton = ({ hash }) => {
+  const [copied, setCopied] = React.useState(false);
+
+  const handleCopy = async () => {
+    try {
+      await navigator.clipboard.writeText(hash);
+      setCopied(true);
+      setTimeout(() => setCopied(false), 1200);
+    } catch (e) {
+      setCopied(false);
+    }
+  };
+
+  return (
+    <Tooltip title={copied ? 'Copied!' : 'Copy'} placement="top" arrow>
+      <IconButton size="small" onClick={handleCopy} sx={{ ml: 1 }}>
+        <ContentCopyIcon
+          fontSize="small"
+          color={copied ? 'success' : 'inherit'}
+        />
+      </IconButton>
+    </Tooltip>
   );
 };

@@ -3,3 +3,19 @@
 
     https://jupyterlab.readthedocs.io/en/stable/developer/css.html
 */
+
+@import url('./stellar/ag-grid-stellar.css');
+@import url('./stellar/badge.css');
+@import url('./stellar/button.css');
+@import url('./stellar/card.css');
+@import url('./stellar/input.css');
+@import url('./stellar/layout.css');
+@import url('./stellar/select.css');
+@import url('./stellar/table.css');
+@import url('./stellar/typography.css');
+@import url('./stellar/variables.css');
+@import url('./stellar-maap-extend.css');
+
+.lm-Widget {
+  overflow: scroll !important;
+}

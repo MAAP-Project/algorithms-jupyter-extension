@@ -1,0 +1,51 @@
+:root {
+    --input-width: 300px;
+    --input-width-compact: 200px;
+    --icon-width: 50px;
+}
+
+.st-input {
+    width: var(--input-width);
+}
+
+.st-input.compact{
+    width: var(--input-width-compact);
+}
+
+.btm-margin-3 {
+    margin-bottom: 3rem;
+}
+
+.margin-top-2 {
+    margin-top: 2rem;
+}
+
+.st-table td {
+    align-items: center;
+}
+
+.st-table td.st-label-cell {
+    width: 200px;
+}
+
+.st-table th {
+    align-items: center;
+}
+
+.inputs-table tr {
+    display: table-row;
+}
+
+.inputs-table th:not(.icon-cell) {
+    display: table-cell;
+    vertical-align: middle;
+    min-width: calc(var(--input-width-compact) + var(--st-grid-unit2x));
+}
+
+.inputs-table th:last-child {
+    min-width: calc(var(--input-width-compact) + var(--icon-width));
+}
+
+.inputs-table th.icon-cell {
+    min-width: var(--icon-width);
+}

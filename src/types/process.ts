@@ -18,6 +18,7 @@ export type InputObj = {
   [key: string]: Input;
 };
 
+// TODO: use this jargon for the registration form
 export type Process = {
   title?: string;
   description?: string;

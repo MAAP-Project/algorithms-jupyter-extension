@@ -20,16 +20,18 @@ export class AlgorithmsWidget extends ReactWidget {
 }
 
 export class RegisterAlgorithmsWidget extends ReactWidget {
-    jupyterApp: JupyterFrontEnd;
-    constructor(jupyterApp: JupyterFrontEnd) {
-      super();
-      this.jupyterApp = jupyterApp;
-    }
-  
-    render(): JSX.Element {
-      return (
-        // <ViewJobsContainer jupyterApp={this.jupyterApp} />
-        <RegistrationForm jupyterApp={this.jupyterApp} />
-      );
-    }
+  jupyterApp: JupyterFrontEnd;
+  constructor(jupyterApp: JupyterFrontEnd) {
+    super();
+    this.jupyterApp = jupyterApp;
   }
+
+  render(): JSX.Element {
+    return (
+      // <ViewJobsContainer jupyterApp={this.jupyterApp} />
+      <div style={{ overflow: 'scroll' }}>
+        <RegistrationForm jupyterApp={this.jupyterApp} />
+      </div>
+    );
+  }
+}

@@ -40,9 +40,7 @@ const algorithmsPlugin: JupyterFrontEndPlugin<void> = {
       });
     }
 
-    console.log(
-      'JupyterLab extension maap-algorithms-extension is activated!'
-    );
+    console.log('JupyterLab extension maap-algorithms-extension is activated!');
   }
 };
 
@@ -50,12 +48,11 @@ const registerAlgorithmsPlugin: JupyterFrontEndPlugin<void> = {
   id: JUPYTER_EXT.REGISTER_ALGORITHM_OPEN_COMMAND,
   autoStart: true,
   optional: [ILauncher],
-  activate: (app: JupyterFrontEnd, 
-             launcher: ILauncher) => {
-
+  activate: (app: JupyterFrontEnd, launcher: ILauncher) => {
     const { commands } = app;
 
-    let registerAlgorithmsWidget: MainAreaWidget<RegisterAlgorithmsWidget> | null = null;
+    let registerAlgorithmsWidget: MainAreaWidget<RegisterAlgorithmsWidget> | null =
+      null;
 
     const command = JUPYTER_EXT.REGISTER_ALGORITHM_OPEN_COMMAND;
 
@@ -65,22 +62,22 @@ const registerAlgorithmsPlugin: JupyterFrontEndPlugin<void> = {
       icon: args => (args['isPalette'] ? undefined : reactIcon),
       execute: () => {
         const content = new RegisterAlgorithmsWidget(app);
-        registerAlgorithmsWidget = new MainAreaWidget<RegisterAlgorithmsWidget>({ content });
-        registerAlgorithmsWidget.title.label = 'Algorithms';
+        registerAlgorithmsWidget = new MainAreaWidget<RegisterAlgorithmsWidget>(
+          { content }
+        );
+        registerAlgorithmsWidget.title.label = 'Algorithm Registration';
         registerAlgorithmsWidget.title.icon = reactIcon;
         app.shell.add(registerAlgorithmsWidget, 'main');
       }
     });
 
-    if (launcher) {
-      launcher.add({
-        command
-      });
-    }
+    // if (launcher) {
+    //   launcher.add({
+    //     command
+    //   });
+    // }
 
-    console.log(
-      'JupyterLab extension register-algorithms is activated!'
-    );
+    console.log('JupyterLab extension register-algorithms is activated!');
   }
 };
 
