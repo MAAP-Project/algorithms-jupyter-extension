@@ -112,6 +112,32 @@ export const RegistrationForm = ({ jupyterApp }) => {
     }
   };
 
+  const listHomeDirectory = async () => {
+    try {
+      // Get the contents manager
+      const contents = jupyterApp.serviceManager.contents;
+      console.log('Contents manager:', contents);
+      // List contents of the home directory (root workspace)
+      const model = await contents.get('/');
+      if (model.type === 'directory') {
+        const files = model.content as any[];
+        console.log('Files in home directory:');
+        files.forEach(item => {
+          if (item.type === 'file') {
+            console.log(`📄 ${item.name} (${item.path})`);
+          } else if (item.type === 'directory') {
+            console.log(`📁 ${item.name}/ (${item.path})`);
+          }
+        });
+        return files;
+      }
+      throw new Error('Home directory not found');
+    } catch (error) {
+      console.error('Error listing home directory:', error);
+      throw error;
+    }
+  };
+
   const populateFormWithConfig = config => {
     // Populate form fields based on the loaded configuration
     // This is a basic implementation - you can extend it based on your configuration format
@@ -384,7 +410,7 @@ export const RegistrationForm = ({ jupyterApp }) => {
         <Typography variant="h5" gutterBottom>
           Algorithm Registration Form
         </Typography>
-        <button className="st-button" onClick={loadAlgorithmConfiguration}>
+        <button className="st-button" onClick={listHomeDirectory}>
           Load Algorithm Configuration
         </button>
         <p className="st-typography-body-small">
