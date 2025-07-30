@@ -7,6 +7,12 @@ import { reactIcon } from '@jupyterlab/ui-components';
 import { MainAreaWidget } from '@jupyterlab/apputils';
 import { AlgorithmsWidget, RegisterAlgorithmsWidget } from './widgets';
 import { JUPYTER_EXT } from './constants';
+import {
+  FileDialog,
+  IDefaultFileBrowser,
+  IFileBrowserFactory
+} from '@jupyterlab/filebrowser';
+import { IDocumentManager } from '@jupyterlab/docmanager';
 
 /**
  * Initialization data for the maap_algorithms_jupyter_extension extension.
@@ -15,7 +21,7 @@ const algorithmsPlugin: JupyterFrontEndPlugin<void> = {
   id: 'maap_algorithms_jupyter_extension:plugin',
   description: 'A JupyterLab extension.',
   autoStart: true,
-  requires: [ILauncher],
+  requires: [ILauncher, IFileBrowserFactory],
   activate: (app: JupyterFrontEnd, launcher: ILauncher) => {
     const { commands } = app;
     const command = 'algorithms-widget';
@@ -48,7 +54,13 @@ const registerAlgorithmsPlugin: JupyterFrontEndPlugin<void> = {
   id: JUPYTER_EXT.REGISTER_ALGORITHM_OPEN_COMMAND,
   autoStart: true,
   optional: [ILauncher],
-  activate: (app: JupyterFrontEnd, launcher: ILauncher) => {
+  requires: [IFileBrowserFactory, IDocumentManager, IDefaultFileBrowser],
+  activate: (
+    app: JupyterFrontEnd,
+    fileBrowser: IDefaultFileBrowser,
+    docManager: IDocumentManager,
+    fileBrowserFactory: IFileBrowserFactory
+  ) => {
     const { commands } = app;
 
     let registerAlgorithmsWidget: MainAreaWidget<RegisterAlgorithmsWidget> | null =
@@ -61,13 +73,47 @@ const registerAlgorithmsPlugin: JupyterFrontEndPlugin<void> = {
       label: 'Register Algorithms',
       icon: args => (args['isPalette'] ? undefined : reactIcon),
       execute: () => {
-        const content = new RegisterAlgorithmsWidget(app);
+        const content = new RegisterAlgorithmsWidget(
+          app,
+          fileBrowser,
+          docManager
+        );
         registerAlgorithmsWidget = new MainAreaWidget<RegisterAlgorithmsWidget>(
           { content }
         );
         registerAlgorithmsWidget.title.label = 'Algorithm Registration';
         registerAlgorithmsWidget.title.icon = reactIcon;
         app.shell.add(registerAlgorithmsWidget, 'main');
+      }
+    });
+
+    app.commands.addCommand('file-dialog', {
+      label: 'file dialog',
+      execute: async () => {
+        const { contents } = app.serviceManager;
+        console.log('File browser:', docManager);
+        const result = await FileDialog.getOpenFiles({
+          manager: docManager,
+          title: 'file dialog',
+          filter: model => {
+            if (model.type !== 'file') {
+              return null;
+            }
+            const name = model.name.toLowerCase();
+            const isConfigFile =
+              name.endsWith('.json') ||
+              name.endsWith('.yaml') ||
+              name.endsWith('.yml') ||
+              name.endsWith('.txt') ||
+              name.endsWith('.cfg') ||
+              name.endsWith('.conf');
+            return isConfigFile ? { score: 1 } : null;
+          }
+        });
+        if (result.button.accept) {
+          const files = result.value;
+          console.log('Files:', files);
+        }
       }
     });
 

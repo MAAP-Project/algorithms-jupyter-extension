@@ -59,6 +59,7 @@
         "@emotion/react": "^11.14.0",
         "@emotion/styled": "^11.14.1",
         "@jupyterlab/application": "^4.0.0",
+        "@jupyterlab/filebrowser": "^4.0.0",
         "@jupyterlab/launcher": "^4.4.3",
         "@mui/icons-material": "^6.4.4",
         "@mui/material": "^6.4.4",

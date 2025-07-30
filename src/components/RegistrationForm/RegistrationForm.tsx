@@ -15,8 +15,19 @@ import AddIcon from '@mui/icons-material/Add';
 import DeleteIcon from '@mui/icons-material/Delete';
 import InfoIcon from '@mui/icons-material/Info';
 import { registerAlgorithm } from '../../utils/api';
+import { FileDialog, IDefaultFileBrowser } from '@jupyterlab/filebrowser';
+import { JupyterFrontEnd } from '@jupyterlab/application';
+import { IDocumentManager } from '@jupyterlab/docmanager';
 
-export const RegistrationForm = ({ jupyterApp }) => {
+export const RegistrationForm = ({
+  jupyterApp,
+  fileBrowser,
+  docManager
+}: {
+  jupyterApp: JupyterFrontEnd;
+  fileBrowser: IDefaultFileBrowser;
+  docManager: IDocumentManager;
+}) => {
   const [showModal, setShowModal] = useState(false);
   const [showRegModal, setShowRegModal] = useState(false);
   const [token, setToken] = useState('');
@@ -59,62 +70,86 @@ export const RegistrationForm = ({ jupyterApp }) => {
     );
   };
 
-  const loadAlgorithmConfiguration = async () => {
-    try {
-      // Get the file browser service from JupyterLab
-      const fileBrowser = jupyterApp.serviceManager.contents;
-      // Create a file input element to trigger file selection
-      const fileInput = document.createElement('input');
-      fileInput.type = 'file';
-      fileInput.accept = '.json,.yaml,.yml,.txt,.cfg,.conf';
-      fileInput.style.display = 'none';
-      fileInput.onchange = async event => {
-        const target = event.target as HTMLInputElement;
-        const file = target.files?.[0];
-        if (file) {
-          try {
-            const content = await file.text();
-            console.log('Loaded configuration file:', file.name);
-            console.log('File content:', content);
-            // Parse the configuration file based on its extension
-            let config;
-            if (file.name.endsWith('.json')) {
-              config = JSON.parse(content);
-            } else if (
-              file.name.endsWith('.yaml') ||
-              file.name.endsWith('.yml')
-            ) {
-              // For YAML files, you might want to add a YAML parser library
-              // For now, we'll just log the content
-              console.log('YAML content (parsing not implemented):', content);
-              config = { rawContent: content };
-            } else {
-              // For other file types, treat as plain text
-              config = { rawContent: content };
-            }
-            // Populate the form with the loaded configuration
-            populateFormWithConfig(config);
-          } catch (error) {
-            console.error('Error reading configuration file:', error);
-            alert(
-              'Error reading configuration file. Please check the file format.'
-            );
-          }
-        }
-      };
-      // Trigger file selection
-      document.body.appendChild(fileInput);
-      fileInput.click();
-      document.body.removeChild(fileInput);
-    } catch (error) {
-      console.error('Error loading algorithm configuration:', error);
-      alert('Error loading algorithm configuration. Please try again.');
-    }
+  const openFileDialog = async () => {
+    console.log('Opening file dialog');
+    jupyterApp.commands.execute('file-dialog');
   };
+
+  // const loadAlgorithmConfiguration = async () => {
+  //   try {
+  //     const browser = new FileBrowser({
+  //       id: 'custom-file-browser',
+  //       model: browserFactory.createFileBrowser('custom-id'),
+  //       restore: false
+  //     });
+  //     console.log('Browser:', browser);
+  //     // Get the default file browser
+  //     const fileBrowser = browserFactory.defaultBrowser;
+  //     console.log('Jupyter app::', jupyterApp);
+  //     console.log('Browser factory:', browserFactory);
+  //     // Create a file selection dialog using the file browser
+  //     const selectedFiles = await fileBrowser.selectFiles({
+  //       multiple: false,
+  //       filter: model => {
+  //         if (model.type !== 'file') {
+  //           return false;
+  //         }
+  //         const name = model.name.toLowerCase();
+  //         return (
+  //           name.endsWith('.json') ||
+  //           name.endsWith('.yaml') ||
+  //           name.endsWith('.yml') ||
+  //           name.endsWith('.txt') ||
+  //           name.endsWith('.cfg') ||
+  //           name.endsWith('.conf')
+  //         );
+  //       }
+  //     });
+  //     if (selectedFiles && selectedFiles.length > 0) {
+  //       const selectedFile = selectedFiles[0];
+  //       try {
+  //         // Read the selected file using the contents manager
+  //         const contents = jupyterApp.serviceManager.contents;
+  //         const fileModel = await contents.get(selectedFile.path, {
+  //           type: 'file'
+  //         });
+  //         if (fileModel.type === 'file' && fileModel.format === 'text') {
+  //           const content = fileModel.content as string;
+  //           console.log('Loaded configuration file:', selectedFile.name);
+  //           console.log('File content:', content);
+  //           // Parse the configuration file based on its extension
+  //           let config;
+  //           if (selectedFile.name.endsWith('.json')) {
+  //             config = JSON.parse(content);
+  //           } else if (
+  //             selectedFile.name.endsWith('.yaml') ||
+  //             selectedFile.name.endsWith('.yml')
+  //           ) {
+  //             // For YAML files, you might want to add a YAML parser library
+  //             console.log('YAML content (parsing not implemented):', content);
+  //             config = { rawContent: content };
+  //           } else {
+  //             // For other file types, treat as plain text
+  //             config = { rawContent: content };
+  //           }
+  //           // Populate the form with the loaded configuration
+  //           populateFormWithConfig(config);
+  //         }
+  //       } catch (error) {
+  //         console.error('Error reading configuration file:', error);
+  //         alert(
+  //           'Error reading configuration file. Please check the file format.'
+  //         );
+  //       }
+  //     }
+  //   } catch (error) {
+  //     console.error('Error loading algorithm configuration:', error);
+  //     alert('Error loading algorithm configuration. Please try again.');
+  //   }
+  // };
 
   const listHomeDirectory = async () => {
     try {
-      // Get the contents manager
       const contents = jupyterApp.serviceManager.contents;
       console.log('Contents manager:', contents);
       // List contents of the home directory (root workspace)
@@ -410,7 +445,7 @@ export const RegistrationForm = ({ jupyterApp }) => {
         <Typography variant="h5" gutterBottom>
           Algorithm Registration Form
         </Typography>
-        <button className="st-button" onClick={listHomeDirectory}>
+        <button className="st-button" onClick={openFileDialog}>
           Load Algorithm Configuration
         </button>
         <p className="st-typography-body-small">
