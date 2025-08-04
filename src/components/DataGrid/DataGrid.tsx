@@ -221,9 +221,7 @@ export const DataGrid = ({ jupyterApp }) => {
       </Box>
     ),
     renderDetailPanel: ({ row }) => {
-      console.log('Row id: ', row.id);
       const processDetails = rowDetails[row.id];
-      console.log('Inputs: ', processDetails?.inputs);
 
       if (!processDetails) {
         return (
@@ -297,6 +295,7 @@ export const DataGrid = ({ jupyterApp }) => {
                 <thead>
                   <tr>
                     <th>Name</th>
+                    <th>Label</th>
                     <th>Description</th>
                     <th>Type</th>
                     <th>Default Value</th>
@@ -306,6 +305,7 @@ export const DataGrid = ({ jupyterApp }) => {
                   {Object.entries(processDetails.inputs).map(([key, value]) => (
                     <tr key={key}>
                       <td>{value.title}</td>
+                      <td>{value.label ?? '-'}</td>
                       <td>{value.description}</td>
                       <td>{value.type}</td>
                       <td>{value.default ?? '-'}</td>

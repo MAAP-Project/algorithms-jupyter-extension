@@ -8,6 +8,7 @@ export type Link = {
 
 export type Input = {
   title: string;
+  label: string;
   description: string;
   type: string;
   placeholder: string;

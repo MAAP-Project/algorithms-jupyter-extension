@@ -13,6 +13,7 @@ import {
   IFileBrowserFactory
 } from '@jupyterlab/filebrowser';
 import { IDocumentManager } from '@jupyterlab/docmanager';
+import { parse, stringify } from 'yaml';
 
 /**
  * Initialization data for the maap_algorithms_jupyter_extension extension.
@@ -88,32 +89,31 @@ const registerAlgorithmsPlugin: JupyterFrontEndPlugin<void> = {
     });
 
     app.commands.addCommand('file-dialog', {
-      label: 'file dialog',
+      label: 'Select Algorithm Configuration File',
       execute: async () => {
         const { contents } = app.serviceManager;
-        console.log('File browser:', docManager);
         const result = await FileDialog.getOpenFiles({
           manager: docManager,
-          title: 'file dialog',
+          title: 'Select Algorithm Configuration File',
           filter: model => {
             if (model.type !== 'file') {
               return null;
             }
             const name = model.name.toLowerCase();
             const isConfigFile =
-              name.endsWith('.json') ||
-              name.endsWith('.yaml') ||
-              name.endsWith('.yml') ||
-              name.endsWith('.txt') ||
-              name.endsWith('.cfg') ||
-              name.endsWith('.conf');
+              name.endsWith('.yaml') || name.endsWith('.yml');
             return isConfigFile ? { score: 1 } : null;
           }
         });
-        if (result.button.accept) {
-          const files = result.value;
-          console.log('Files:', files);
+        if (result.button.accept && result.value && result.value.length > 0) {
+          const selectedFile = result.value[0];
+          const fileModel = await contents.get(selectedFile.path, {
+            type: 'file',
+            content: true
+          });
+          return parse(fileModel.content);
         }
+        return null;
       }
     });
 

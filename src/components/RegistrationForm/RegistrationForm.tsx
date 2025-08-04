@@ -35,6 +35,7 @@ export const RegistrationForm = ({
     Array<{
       id: number;
       name: string;
+      label: string;
       description: string;
       defaultValue: string;
       type: string;
@@ -53,6 +54,7 @@ export const RegistrationForm = ({
     const newRow = {
       id: Date.now(),
       name: '',
+      label: '',
       description: '',
       defaultValue: '',
       type: ''
@@ -72,162 +74,58 @@ export const RegistrationForm = ({
 
   const openFileDialog = async () => {
     console.log('Opening file dialog');
-    jupyterApp.commands.execute('file-dialog');
-  };
+    const result = await jupyterApp.commands.execute('file-dialog');
+    console.log('Result:', result);
 
-  // const loadAlgorithmConfiguration = async () => {
-  //   try {
-  //     const browser = new FileBrowser({
-  //       id: 'custom-file-browser',
-  //       model: browserFactory.createFileBrowser('custom-id'),
-  //       restore: false
-  //     });
-  //     console.log('Browser:', browser);
-  //     // Get the default file browser
-  //     const fileBrowser = browserFactory.defaultBrowser;
-  //     console.log('Jupyter app::', jupyterApp);
-  //     console.log('Browser factory:', browserFactory);
-  //     // Create a file selection dialog using the file browser
-  //     const selectedFiles = await fileBrowser.selectFiles({
-  //       multiple: false,
-  //       filter: model => {
-  //         if (model.type !== 'file') {
-  //           return false;
-  //         }
-  //         const name = model.name.toLowerCase();
-  //         return (
-  //           name.endsWith('.json') ||
-  //           name.endsWith('.yaml') ||
-  //           name.endsWith('.yml') ||
-  //           name.endsWith('.txt') ||
-  //           name.endsWith('.cfg') ||
-  //           name.endsWith('.conf')
-  //         );
-  //       }
-  //     });
-  //     if (selectedFiles && selectedFiles.length > 0) {
-  //       const selectedFile = selectedFiles[0];
-  //       try {
-  //         // Read the selected file using the contents manager
-  //         const contents = jupyterApp.serviceManager.contents;
-  //         const fileModel = await contents.get(selectedFile.path, {
-  //           type: 'file'
-  //         });
-  //         if (fileModel.type === 'file' && fileModel.format === 'text') {
-  //           const content = fileModel.content as string;
-  //           console.log('Loaded configuration file:', selectedFile.name);
-  //           console.log('File content:', content);
-  //           // Parse the configuration file based on its extension
-  //           let config;
-  //           if (selectedFile.name.endsWith('.json')) {
-  //             config = JSON.parse(content);
-  //           } else if (
-  //             selectedFile.name.endsWith('.yaml') ||
-  //             selectedFile.name.endsWith('.yml')
-  //           ) {
-  //             // For YAML files, you might want to add a YAML parser library
-  //             console.log('YAML content (parsing not implemented):', content);
-  //             config = { rawContent: content };
-  //           } else {
-  //             // For other file types, treat as plain text
-  //             config = { rawContent: content };
-  //           }
-  //           // Populate the form with the loaded configuration
-  //           populateFormWithConfig(config);
-  //         }
-  //       } catch (error) {
-  //         console.error('Error reading configuration file:', error);
-  //         alert(
-  //           'Error reading configuration file. Please check the file format.'
-  //         );
-  //       }
-  //     }
-  //   } catch (error) {
-  //     console.error('Error loading algorithm configuration:', error);
-  //     alert('Error loading algorithm configuration. Please try again.');
-  //   }
-  // };
-
-  const listHomeDirectory = async () => {
-    try {
-      const contents = jupyterApp.serviceManager.contents;
-      console.log('Contents manager:', contents);
-      // List contents of the home directory (root workspace)
-      const model = await contents.get('/');
-      if (model.type === 'directory') {
-        const files = model.content as any[];
-        console.log('Files in home directory:');
-        files.forEach(item => {
-          if (item.type === 'file') {
-            console.log(`📄 ${item.name} (${item.path})`);
-          } else if (item.type === 'directory') {
-            console.log(`📁 ${item.name}/ (${item.path})`);
-          }
-        });
-        return files;
-      }
-      throw new Error('Home directory not found');
-    } catch (error) {
-      console.error('Error listing home directory:', error);
-      throw error;
-    }
+    populateFormWithConfig(result);
   };
 
   const populateFormWithConfig = config => {
-    // Populate form fields based on the loaded configuration
-    // This is a basic implementation - you can extend it based on your configuration format
-    // Example: populate algorithm name
-    const nameInput = document.querySelector(
-      'input[name="algorithm_name"]'
-    ) as HTMLInputElement;
-    if (nameInput && config.name) {
-      nameInput.value = config.name;
+    // Helper function to set input values
+    const setInputValue = (name: string, value: any) => {
+      const inputElement = document.querySelector(
+        `input[name="${name}"]`
+      ) as HTMLInputElement;
+      if (inputElement) {
+        inputElement.value = value;
+        return true;
+      }
+      return false;
+    };
+
+    // Set top-level properties
+    Object.keys(config).forEach(key => {
+      if (typeof config[key] !== 'object' || config[key] === null) {
+        setInputValue(key, config[key]);
+      }
+    });
+
+    // Set nested object properties
+    if (config.resource_requirements) {
+      Object.keys(config.resource_requirements).forEach(key => {
+        setInputValue(key, config.resource_requirements[key]);
+      });
     }
-    // Example: populate version
-    const versionInput = document.querySelector(
-      'input[name="version"]'
-    ) as HTMLInputElement;
-    if (versionInput && config.version) {
-      versionInput.value = config.version;
+
+    if (config.metadata) {
+      Object.keys(config.metadata).forEach(key => {
+        setInputValue(key, config.metadata[key]);
+      });
     }
-    // Example: populate description
-    const descriptionInput = document.querySelector(
-      'textarea[name="algorithm_description"]'
-    ) as HTMLTextAreaElement;
-    if (descriptionInput && config.description) {
-      descriptionInput.value = config.description;
-    }
-    // Example: populate repository URL
-    const repoInput = document.querySelector(
-      'input[name="repository_url"]'
-    ) as HTMLInputElement;
-    if (repoInput && config.repository_url) {
-      repoInput.value = config.repository_url;
-    }
-    // Example: populate base command
-    const baseCommandInput = document.querySelector(
-      'input[name="base_command"]'
-    ) as HTMLInputElement;
-    if (baseCommandInput && config.base_command) {
-      baseCommandInput.value = config.base_command;
-    }
-    // Example: populate inputs if they exist in the config
+
+    // Handle inputs array
     if (config.inputs && Array.isArray(config.inputs)) {
-      // Clear existing input rows
-      setInputRows([]);
-      // Add new input rows from config
-      const newInputRows = config.inputs.map((input, index) => ({
-        id: Date.now() + index,
-        name: input.name || '',
-        description: input.description || '',
-        defaultValue: input.default_value || '',
-        type: input.type || ''
-      }));
-
-      setInputRows(newInputRows);
+      setInputRows(
+        config.inputs.map((input, index) => ({
+          id: Date.now() + index,
+          name: input.name || '',
+          label: input.label || '',
+          description: input.doc || '',
+          defaultValue: input.default_value || input.defaultValue || '',
+          type: input.type || ''
+        }))
+      );
     }
-
-    console.log('Form populated with configuration:', config);
   };
 
   const handleTokenSubmit = e => {
@@ -291,8 +189,8 @@ export const RegistrationForm = ({
     if (data.algorithm_description) {
       general.push(`description: ${data.algorithm_description}`);
     }
-    if (data.repository_url) {
-      general.push(`repository_url: ${data.repository_url}`);
+    if (data.code_repository) {
+      general.push(`code_repository: ${data.code_repository}`);
     }
     if (data.base_command) {
       general.push(`base_command: ${data.base_command}`);
@@ -356,7 +254,8 @@ export const RegistrationForm = ({
       const inputs = ['inputs:'];
       data.inputs.forEach(input => {
         inputs.push(`  - name: ${input.name || ''}`);
-        inputs.push(`    description: ${input.description || ''}`);
+        inputs.push(`    label: ${input.label || ''}`);
+        inputs.push(`    description: ${input.doc || ''}`);
         inputs.push(`    type: ${input.type || ''}`);
         inputs.push(`    default_value: ${input.default_value || ''}`);
       });
@@ -449,8 +348,7 @@ export const RegistrationForm = ({
           Load Algorithm Configuration
         </button>
         <p className="st-typography-body-small">
-          Register your algorithm to the MAAP to then be able to run your
-          algorithm jobs. See the{' '}
+          Register your algorithm to the MAAP to run algorithm jobs. See the{' '}
           <a
             href="https://docs.maap-project.org/en/latest/getting_started/running_at_scale.html#Register-an-Algorithm"
             style={{ color: '#1976d2', textDecoration: 'underline' }}
@@ -466,7 +364,7 @@ export const RegistrationForm = ({
               <tr>
                 <td>
                   Algorithm Name
-                  <Tooltip title="The name of your algorithm as it will appear in the system">
+                  <Tooltip title="The name of the algorithm.">
                     <IconButton
                       size="small"
                       style={{ marginLeft: '8px', padding: '1px' }}
@@ -487,7 +385,7 @@ export const RegistrationForm = ({
               <tr>
                 <td>
                   Version
-                  <Tooltip title="The version number of your algorithm (e.g., 1.0.0)">
+                  <Tooltip title="The version of the algorithm (e.g., develop, 1.0.0)">
                     <IconButton
                       size="small"
                       style={{ marginLeft: '8px', padding: '1px' }}
@@ -508,7 +406,7 @@ export const RegistrationForm = ({
               <tr>
                 <td>
                   Algorithm Description
-                  <Tooltip title="A brief description of what your algorithm does">
+                  <Tooltip title="Description of the algorithm.">
                     <IconButton
                       size="small"
                       style={{ marginLeft: '8px', padding: '1px' }}
@@ -529,7 +427,7 @@ export const RegistrationForm = ({
               <tr>
                 <td>
                   Repository URL
-                  <Tooltip title="The URL to your algorithm's source code repository">
+                  <Tooltip title="The URL to the algorithm source code repository.">
                     <IconButton
                       size="small"
                       style={{ marginLeft: '8px', padding: '1px' }}
@@ -541,8 +439,8 @@ export const RegistrationForm = ({
                 <td>
                   <input
                     type="text"
-                    name="repository_url"
-                    placeholder="Enter repository URL"
+                    name="code_repository"
+                    placeholder="Enter code repository URL"
                     className="st-input"
                   />
                 </td>
@@ -550,7 +448,7 @@ export const RegistrationForm = ({
               <tr>
                 <td>
                   Base Command
-                  <Tooltip title="The main command to execute your algorithm">
+                  <Tooltip title="The main command to execute your algorithm (e.g., /app/sardem-sarsen/sardem-sarsem.sh).">
                     <IconButton
                       size="small"
                       style={{ marginLeft: '8px', padding: '1px' }}
@@ -562,7 +460,7 @@ export const RegistrationForm = ({
                 <td>
                   <input
                     type="text"
-                    name="base_command"
+                    name="run_command"
                     placeholder="Enter base command"
                     className="st-input"
                   />
@@ -576,7 +474,7 @@ export const RegistrationForm = ({
               <tr>
                 <td>
                   Minimum RAM
-                  <Tooltip title="The minimum amount of RAM required to run your algorithm (e.g., 4GB)">
+                  <Tooltip title="The minimum amount of RAM (in GB) required to run your algorithm (e.g., 4).">
                     <IconButton
                       size="small"
                       style={{ marginLeft: '8px', padding: '1px' }}
@@ -588,7 +486,7 @@ export const RegistrationForm = ({
                 <td>
                   <input
                     type="text"
-                    name="min_ram"
+                    name="ram_min"
                     placeholder="Enter minimum RAM"
                     className="st-input"
                   />
@@ -597,7 +495,7 @@ export const RegistrationForm = ({
               <tr>
                 <td>
                   Minimum Number of Cores
-                  <Tooltip title="The minimum number of CPU cores required to run your algorithm">
+                  <Tooltip title="The minimum number of CPU cores required to run your algorithm (e.g., 1).">
                     <IconButton
                       size="small"
                       style={{ marginLeft: '8px', padding: '1px' }}
@@ -609,7 +507,7 @@ export const RegistrationForm = ({
                 <td>
                   <input
                     type="text"
-                    name="min_cores"
+                    name="cores_min"
                     placeholder="Enter minimum number of cores"
                     className="st-input"
                   />
@@ -618,7 +516,7 @@ export const RegistrationForm = ({
               <tr>
                 <td>
                   Container URL
-                  <Tooltip title="The URL to your algorithm's container image (Docker, Singularity, etc.)">
+                  <Tooltip title="The URL to the algorithm's container docker image.">
                     <IconButton
                       size="small"
                       style={{ marginLeft: '8px', padding: '1px' }}
@@ -644,7 +542,7 @@ export const RegistrationForm = ({
               <tr>
                 <td>
                   Author
-                  <Tooltip title="The primary author or creator of the algorithm">
+                  <Tooltip title="The primary author of the algorithm.">
                     <IconButton
                       size="small"
                       style={{ marginLeft: '8px', padding: '1px' }}
@@ -686,7 +584,7 @@ export const RegistrationForm = ({
               <tr>
                 <td>
                   License
-                  <Tooltip title="The license under which your algorithm is distributed">
+                  <Tooltip title="The license under which your algorithm is distributed.">
                     <IconButton
                       size="small"
                       style={{ marginLeft: '8px', padding: '1px' }}
@@ -707,7 +605,7 @@ export const RegistrationForm = ({
               <tr>
                 <td>
                   Release Notes
-                  <Tooltip title="Notes about this version of the algorithm">
+                  <Tooltip title="The URL to the release notes of the algorithm.">
                     <IconButton
                       size="small"
                       style={{ marginLeft: '8px', padding: '1px' }}
@@ -749,7 +647,7 @@ export const RegistrationForm = ({
               <tr>
                 <td>
                   Keywords
-                  <Tooltip title="Keywords to help users find your algorithm">
+                  <Tooltip title="Algorithm keywords.">
                     <IconButton
                       size="small"
                       style={{ marginLeft: '8px', padding: '1px' }}
@@ -783,6 +681,7 @@ export const RegistrationForm = ({
                   </IconButton>
                 </th>
                 <th>Name</th>
+                <th>Label</th>
                 <th>Description</th>
                 <th>Type</th>
                 <th>Default Value</th>
@@ -791,7 +690,13 @@ export const RegistrationForm = ({
             <tbody>
               {inputRows.length === 0 ? (
                 <tr>
-                  <td colSpan={6} style={{ textAlign: 'center' }}>
+                  <td
+                    colSpan={5}
+                    style={{
+                      textAlign: 'center',
+                      padding: '20px'
+                    }}
+                  >
                     <i>No inputs specified</i>
                   </td>
                 </tr>
@@ -808,6 +713,18 @@ export const RegistrationForm = ({
                         value={row.name}
                         onChange={e =>
                           updateInputRow(row.id, 'name', e.target.value)
+                        }
+                      />
+                    </td>
+                    <td>
+                      <input
+                        type="text"
+                        name={`input_${row.id}_label`}
+                        placeholder="Enter input label"
+                        className="st-input compact"
+                        value={row.label}
+                        onChange={e =>
+                          updateInputRow(row.id, 'label', e.target.value)
                         }
                       />
                     </td>
@@ -862,7 +779,7 @@ export const RegistrationForm = ({
             </tbody>
           </table>
           <Box mt={4}>
-            <button type="submit" className="st-button">
+            <button type="submit" className="st-button" disabled={true}>
               Register Algorithm
             </button>
           </Box>
