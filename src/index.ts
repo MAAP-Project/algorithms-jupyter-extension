@@ -4,28 +4,27 @@ import {
 } from '@jupyterlab/application';
 import { ILauncher } from '@jupyterlab/launcher';
 import { reactIcon } from '@jupyterlab/ui-components';
-import { MainAreaWidget } from '@jupyterlab/apputils';
+import { ICommandPalette, MainAreaWidget } from '@jupyterlab/apputils';
 import { AlgorithmsWidget, RegisterAlgorithmsWidget } from './widgets';
 import { JUPYTER_EXT } from './constants';
 import {
-  FileDialog,
   IDefaultFileBrowser,
   IFileBrowserFactory
 } from '@jupyterlab/filebrowser';
 import { IDocumentManager } from '@jupyterlab/docmanager';
-import { parse, stringify } from 'yaml';
 
-/**
- * Initialization data for the maap_algorithms_jupyter_extension extension.
- */
-const algorithmsPlugin: JupyterFrontEndPlugin<void> = {
-  id: 'maap_algorithms_jupyter_extension:plugin',
-  description: 'A JupyterLab extension.',
+const listAlgorithmsPlugin: JupyterFrontEndPlugin<void> = {
+  id: JUPYTER_EXT.LIST_ALGORITHMS_OPEN_COMMAND,
+  description: 'A MAAP JupyterLab plugin for viewing OGC-compliant algorithms.',
   autoStart: true,
-  requires: [ILauncher, IFileBrowserFactory],
-  activate: (app: JupyterFrontEnd, launcher: ILauncher) => {
+  requires: [ILauncher, IFileBrowserFactory, ICommandPalette],
+  activate: (
+    app: JupyterFrontEnd,
+    launcher: ILauncher,
+    palette: ICommandPalette
+  ) => {
     const { commands } = app;
-    const command = 'algorithms-widget';
+    const command = JUPYTER_EXT.LIST_ALGORITHMS_OPEN_COMMAND;
     let algorithmsWidget: MainAreaWidget<AlgorithmsWidget> | null = null;
 
     commands.addCommand(command, {
@@ -35,39 +34,40 @@ const algorithmsPlugin: JupyterFrontEndPlugin<void> = {
       execute: () => {
         const content = new AlgorithmsWidget(app);
         algorithmsWidget = new MainAreaWidget<AlgorithmsWidget>({ content });
-        algorithmsWidget.title.label = 'Algorithms';
-        algorithmsWidget.title.icon = reactIcon;
+        algorithmsWidget.title.label = 'List Algorithms';
         app.shell.add(algorithmsWidget, 'main');
       }
     });
 
     if (launcher) {
       launcher.add({
-        command
+        command,
+        category: 'MAAP Plugins'
       });
     }
 
-    console.log('JupyterLab extension maap-algorithms-extension is activated!');
+    console.log('JupyterLab MAAP plugin list-algorithms is activated!');
   }
 };
 
 const registerAlgorithmsPlugin: JupyterFrontEndPlugin<void> = {
-  id: JUPYTER_EXT.REGISTER_ALGORITHM_OPEN_COMMAND,
+  id: JUPYTER_EXT.REGISTER_ALGORITHMS_OPEN_COMMAND,
+  description:
+    'A MAAP JupyterLab plugin for registering OGC-compliant algorithms.',
   autoStart: true,
   optional: [ILauncher],
   requires: [IFileBrowserFactory, IDocumentManager, IDefaultFileBrowser],
   activate: (
     app: JupyterFrontEnd,
     fileBrowser: IDefaultFileBrowser,
-    docManager: IDocumentManager,
-    fileBrowserFactory: IFileBrowserFactory
+    docManager: IDocumentManager
   ) => {
     const { commands } = app;
 
     let registerAlgorithmsWidget: MainAreaWidget<RegisterAlgorithmsWidget> | null =
       null;
 
-    const command = JUPYTER_EXT.REGISTER_ALGORITHM_OPEN_COMMAND;
+    const command = JUPYTER_EXT.REGISTER_ALGORITHMS_OPEN_COMMAND;
 
     commands.addCommand(command, {
       caption: 'Register Algorithms',
@@ -82,49 +82,13 @@ const registerAlgorithmsPlugin: JupyterFrontEndPlugin<void> = {
         registerAlgorithmsWidget = new MainAreaWidget<RegisterAlgorithmsWidget>(
           { content }
         );
-        registerAlgorithmsWidget.title.label = 'Algorithm Registration';
-        registerAlgorithmsWidget.title.icon = reactIcon;
+        registerAlgorithmsWidget.title.label = 'Register Algorithms';
         app.shell.add(registerAlgorithmsWidget, 'main');
       }
     });
 
-    app.commands.addCommand('file-dialog', {
-      label: 'Select Algorithm Configuration File',
-      execute: async () => {
-        const { contents } = app.serviceManager;
-        const result = await FileDialog.getOpenFiles({
-          manager: docManager,
-          title: 'Select Algorithm Configuration File',
-          filter: model => {
-            if (model.type !== 'file') {
-              return null;
-            }
-            const name = model.name.toLowerCase();
-            const isConfigFile =
-              name.endsWith('.yaml') || name.endsWith('.yml');
-            return isConfigFile ? { score: 1 } : null;
-          }
-        });
-        if (result.button.accept && result.value && result.value.length > 0) {
-          const selectedFile = result.value[0];
-          const fileModel = await contents.get(selectedFile.path, {
-            type: 'file',
-            content: true
-          });
-          return parse(fileModel.content);
-        }
-        return null;
-      }
-    });
-
-    // if (launcher) {
-    //   launcher.add({
-    //     command
-    //   });
-    // }
-
-    console.log('JupyterLab extension register-algorithms is activated!');
+    console.log('JupyterLab MAAP plugin register-algorithms is activated!');
   }
 };
 
-export default [algorithmsPlugin, registerAlgorithmsPlugin];
+export default [listAlgorithmsPlugin, registerAlgorithmsPlugin];

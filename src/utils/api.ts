@@ -1,6 +1,8 @@
+import { HOST_URL } from '../constants';
+
 // TODO: make promise type the type of the ogc request, of which processes is only a single key
 export const getProcesses = async (): Promise<any> => {
-  const url = 'https://api.dit.maap-project.org/api/ogc/processes';
+  const url = `${HOST_URL}/api/ogc/processes`;
 
   const response = await fetch(url);
 
@@ -16,7 +18,7 @@ export const getProcesses = async (): Promise<any> => {
 };
 
 export const getProcess = async (processResource: string): Promise<any> => {
-  const url = `https://api.dit.maap-project.org/api/${processResource}`;
+  const url = `${HOST_URL}/api/${processResource}`;
 
   const response = await fetch(url);
 
@@ -37,12 +39,13 @@ export const getProcess = async (processResource: string): Promise<any> => {
  * @returns
  */
 export const registerAlgorithm = async (data: any): Promise<any> => {
-  const url = 'https://api.dit.maap-project.org/api/mas/algorithm';
+  const url = `${HOST_URL}/api/mas/algorithm`;
 
   const response = await fetch(url, {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
+      // eslint-disable-next-line prettier/prettier
       'cpticket': localStorage.getItem('MAAP_PGT_TOKEN') || ''
     },
     body: JSON.stringify(data)

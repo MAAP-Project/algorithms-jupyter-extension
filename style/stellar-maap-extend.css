@@ -12,12 +12,16 @@
     width: var(--input-width-compact);
 }
 
-.btm-margin-3 {
+.margin-bottom-3 {
     margin-bottom: 3rem;
 }
 
 .margin-top-2 {
     margin-top: 2rem;
+}
+
+.st-table {
+    display: inline-table;
 }
 
 .st-table td {
@@ -33,7 +37,7 @@
 }
 
 .inputs-table tr {
-    display: table-row;
+    display: table;
 }
 
 .inputs-table th:not(.icon-cell) {

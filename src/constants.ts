@@ -1,53 +1,122 @@
+import { RegistrationFormInput } from './types/registration';
+
+/**  JUPYTER  */
 export const JUPYTER_EXT = {
-  REGISTER_ALGORITHM_OPEN_COMMAND: 'register-algorithm-open-command'
+  LIST_ALGORITHMS_OPEN_COMMAND: 'list-algorithms-open-command',
+  REGISTER_ALGORITHMS_OPEN_COMMAND: 'register-algorithms-open-command'
 };
 
-// Fields for algo registration
-// TODO: inputs should match what is needed to create the ogc cwl
-export const algorithmFields = {
-  repositoryURL: {
-    title: 'Repository URL',
-    placeHolder: 'Enter repository URL',
-    description: 'The URL for the repository'
-  },
-  repositoryBranch: {
-    title: 'Repository Branch',
-    placeHolder: 'Enter repository branch',
-    description: 'The repository branch'
-  },
-  runCommand: {
-    title: 'Run Command',
-    placeHolder: 'Enter run command',
-    description: 'The algorithm run command'
-  },
+/** MAAP */
+export const HOST_URL = 'https://api.dit.maap-project.org';
+export const MAAP_PROFILE_URL = 'https://dit.maap-project.org/profile/';
+export const MAAP_DOCS_REGISTER_ALGORITHM_URL =
+  'https://docs.maap-project.org/en/latest/getting_started/running_at_scale.html#Register-an-Algorithm';
+
+/**
+ * Algorithm registration form fields
+ * See AlgorithmData type in src/types/registration.ts
+ * TODO: minRam vs ramMin -- check syntax
+ */
+export const FORM_FIELDS = {
   algorithmName: {
-    title: 'Algorithm Name',
-    placeHolder: 'Enter algorithm name',
-    description: 'The algorithm name'
-  },
-  algorithmDescription: {
-    title: 'Algorithm Description',
-    placeHolder: 'Enter algorithm description',
-    description: 'The algorithm description'
-  },
-  containerURL: {
-    title: 'Container URL',
-    placeHolder: 'Enter container URL',
-    description: 'The algorithm container URL'
-  },
-  discSpace: {
-    title: 'Disc Space (GB)',
-    placeHolder: 'Enter disc space',
-    description: 'The disc space required to run the algorithm'
-  },
-  minRam: {
-    title: 'Minimum RAM',
-    placeHolder: 'Enter minimum RAM',
-    description: 'Minimum RAM required'
-  },
-  minCoreNum: {
-    title: 'Minimum Number of Cores',
-    placeHolder: 'Enter minimum number of cores',
-    description: 'Number of cores'
-  }
+    name: 'algorithmName',
+    pythonic_name: 'algorithm_name',
+    label: 'Algorithm Name',
+    tooltip: 'The name of the algorithm.',
+    placeholder: 'Enter algorithm name'
+  } as RegistrationFormInput,
+  version: {
+    name: 'algorithmVersion',
+    pythonic_name: 'algorithm_version',
+    label: 'Version',
+    tooltip: 'The version of the algorithm (e.g., develop, 1.0.0)',
+    placeholder: 'Enter algorithm version'
+  } as RegistrationFormInput,
+  description: {
+    name: 'algorithmDescription',
+    pythonic_name: 'algorithm_description',
+    label: 'Algorithm Description',
+    tooltip: 'Description of the algorithm.',
+    placeholder: 'Enter algorithm description'
+  } as RegistrationFormInput,
+  codeRepository: {
+    name: 'codeRepository',
+    pythonic_name: 'code_repository',
+    label: 'Repository URL',
+    tooltip: 'The URL to the algorithm source code repository',
+    placeholder: 'Enter code repository URL'
+  } as RegistrationFormInput,
+  baseCommand: {
+    name: 'baseCommand',
+    pythonic_name: 'base_command',
+    label: 'Base Command',
+    tooltip:
+      'The main command to execute your algorithm (e.g., /app/sardem-sarsen/sardem-sarsem.sh)',
+    placeholder: 'Enter base command'
+  } as RegistrationFormInput,
+  minRAM: {
+    name: 'minRAM',
+    pythonic_name: 'min_ram',
+    label: 'Minimum RAM',
+    tooltip:
+      'The minimum amount of RAM (in GB) required to run your algorithm (e.g., 4)',
+    placeholder: 'Enter minimum RAM'
+  } as RegistrationFormInput,
+  minCores: {
+    name: 'minCores',
+    pythonic_name: 'min_cores',
+    label: 'Minimum Number of Cores',
+    tooltip:
+      'The minimum number of CPU cores required to run your algorithm (e.g., 1)',
+    placeholder: 'Enter minimum number of cores'
+  } as RegistrationFormInput,
+  containerUrl: {
+    name: 'containerUrl',
+    pythonic_name: 'container_url',
+    label: 'Container URL',
+    tooltip: "The URL to the algorithm's container docker image",
+    placeholder: 'Enter container URL'
+  } as RegistrationFormInput,
+  author: {
+    name: 'author',
+    pythonic_name: 'author',
+    label: 'Author',
+    tooltip: 'The primary author of the algorithm',
+    placeholder: 'Enter author name'
+  } as RegistrationFormInput,
+  contributor: {
+    name: 'contributor',
+    pythonic_name: 'contributor',
+    label: 'Contributor',
+    tooltip: 'Additional contributors to the algorithm development',
+    placeholder: 'Enter contributor name'
+  } as RegistrationFormInput,
+  license: {
+    name: 'license',
+    pythonic_name: 'license',
+    label: 'License',
+    tooltip: 'The license under which your algorithm is distributed',
+    placeholder: 'Enter license information'
+  } as RegistrationFormInput,
+  releaseNotes: {
+    name: 'releaseNotes',
+    pythonic_name: 'release_notes',
+    label: 'Release Notes',
+    tooltip: 'The URL to the release notes of the algorithm',
+    placeholder: 'Enter release notes'
+  } as RegistrationFormInput,
+  citation: {
+    name: 'citation',
+    pythonic_name: 'citation',
+    label: 'Citation',
+    tooltip: 'How to cite this algorithm in publications',
+    placeholder: 'Enter citation information'
+  } as RegistrationFormInput,
+  keywords: {
+    name: 'keywords',
+    pythonic_name: 'keywords',
+    label: 'Keywords',
+    tooltip: 'Comma-separated keywords to associate with this algorithm',
+    placeholder: 'Enter keywords'
+  } as RegistrationFormInput
 };

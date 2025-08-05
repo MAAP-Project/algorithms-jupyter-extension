@@ -6,7 +6,7 @@ export type Link = {
   title: string;
 };
 
-export type Input = {
+export type ProcessInput = {
   title: string;
   label: string;
   description: string;
@@ -16,7 +16,7 @@ export type Input = {
 };
 
 export type InputObj = {
-  [key: string]: Input;
+  [key: string]: ProcessInput;
 };
 
 // TODO: use this jargon for the registration form

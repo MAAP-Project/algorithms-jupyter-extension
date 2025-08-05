@@ -4,6 +4,8 @@
 maap_algorithms_jupyter_extension/labextension
 maap_algorithms_jupyter_extension/_version.py
 
+algorithm_configs/
+
 
 ### Python ###
 # Byte-compiled / optimized / DLL files
