@@ -40,6 +40,6 @@ export type ProcessDetailed = Process & {
   gitCommitHash?: string;
   ramMin?: number;
   coresMin?: number;
-  baseCommand?: string;
+  runCommand?: string;
   inputs?: InputObj;
 };

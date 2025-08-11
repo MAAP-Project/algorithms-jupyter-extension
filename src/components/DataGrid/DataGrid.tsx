@@ -283,8 +283,8 @@ export const DataGrid = ({ jupyterApp }) => {
                 <td>{processDetails.coresMin ?? '-'}</td>
               </tr>
               <tr>
-                <td className="st-label-cell">Base Command</td>
-                <td>{processDetails.baseCommand ?? '-'}</td>
+                <td className="st-label-cell">Run Command</td>
+                <td>{processDetails.runCommand ?? '-'}</td>
               </tr>
             </tbody>
           </table>

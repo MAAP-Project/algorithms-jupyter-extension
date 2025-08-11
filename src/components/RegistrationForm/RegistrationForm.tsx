@@ -45,6 +45,7 @@ export const RegistrationForm = ({
   const [showFileDialog, setShowFileDialog] = useState(false);
   const [token, setToken] = useState('');
   const [inputRows, setInputRows] = useState<Array<AlgorithmInputRow>>([]);
+  const [useAlgorithmContainer, setUseAlgorithmContainer] = useState(false);
 
   const handleCloseTokenModal = () => {
     setShowTokenModal(false);
@@ -140,10 +141,12 @@ export const RegistrationForm = ({
       algorithmVersion: '',
       algorithmDescription: '',
       codeRepository: '',
-      baseCommand: '',
+      runCommand: '',
       minRAM: '',
       minCores: '',
-      containerURL: '',
+      buildCommand: '',
+      baseContainerURL: '',
+      algorithmContainerURL: '',
       author: '',
       contributor: '',
       license: '',
@@ -264,11 +267,53 @@ export const RegistrationForm = ({
           <h3>General Information</h3>
           <table className="st-table margin-bottom-3">
             <tbody>
-              <FormRow formInput={FORM_FIELDS.algorithmName} />
-              <FormRow formInput={FORM_FIELDS.version} />
-              <FormRow formInput={FORM_FIELDS.description} />
+              <FormRow
+                key={FORM_FIELDS.algorithmName.name}
+                formInput={FORM_FIELDS.algorithmName}
+              />
+              <FormRow
+                key={FORM_FIELDS.version.name}
+                formInput={FORM_FIELDS.version}
+              />
+              <FormRow
+                key={FORM_FIELDS.description.name}
+                formInput={FORM_FIELDS.description}
+              />
               <FormRow formInput={FORM_FIELDS.codeRepository} />
-              <FormRow formInput={FORM_FIELDS.baseCommand} />
+              <FormRow
+                key={FORM_FIELDS.runCommand.name}
+                formInput={FORM_FIELDS.runCommand}
+              />
+            </tbody>
+          </table>
+          <h3>Build Information</h3>
+          <div style={{ marginBottom: '16px' }}>
+            <input
+              type="checkbox"
+              checked={useAlgorithmContainer}
+              onChange={() => setUseAlgorithmContainer(!useAlgorithmContainer)}
+            />
+            <label>Use pre-built algorithm container</label>
+          </div>
+          <table className="st-table margin-bottom-3">
+            <tbody>
+              {useAlgorithmContainer ? (
+                <FormRow
+                  key={FORM_FIELDS.algorithmContainerURL.name}
+                  formInput={FORM_FIELDS.algorithmContainerURL}
+                />
+              ) : (
+                <>
+                  <FormRow
+                    key={FORM_FIELDS.baseContainerURL.name}
+                    formInput={FORM_FIELDS.baseContainerURL}
+                  />
+                  <FormRow
+                    key={FORM_FIELDS.buildCommand.name}
+                    formInput={FORM_FIELDS.buildCommand}
+                  />
+                </>
+              )}
             </tbody>
           </table>
           <h3>Resource Requirements</h3>
@@ -276,7 +321,6 @@ export const RegistrationForm = ({
             <tbody>
               <FormRow formInput={FORM_FIELDS.minRAM} />
               <FormRow formInput={FORM_FIELDS.minCores} />
-              <FormRow formInput={FORM_FIELDS.containerUrl} />
             </tbody>
           </table>
           <h3>Metadata</h3>
@@ -401,7 +445,7 @@ export const RegistrationForm = ({
             </tbody>
           </table>
           <Box mt={4}>
-            <button type="submit" className="st-button" disabled={true}>
+            <button type="submit" className="st-button" disabled={false}>
               Register Algorithm
             </button>
           </Box>

@@ -24,7 +24,7 @@ export const FormRow = ({ formInput }: FormRowProps) => {
       <td>
         <input
           type="text"
-          name={formInput.pythonic_name}
+          name={formInput.name}
           placeholder={formInput.placeholder}
           className="st-input"
         />

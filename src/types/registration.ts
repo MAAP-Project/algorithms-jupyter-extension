@@ -23,10 +23,12 @@ export type AlgorithmData = {
   algorithmVersion: string;
   algorithmDescription: string;
   codeRepository: string;
-  baseCommand: string;
+  runCommand: string;
   minRAM: string;
   minCores: string;
-  containerURL: string;
+  buildCommand?: string;
+  baseContainerURL?: string;
+  algorithmContainerURL?: string;
   author: string;
   contributor: string;
   license: string;

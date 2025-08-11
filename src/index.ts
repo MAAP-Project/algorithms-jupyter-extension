@@ -4,7 +4,7 @@ import {
 } from '@jupyterlab/application';
 import { ILauncher } from '@jupyterlab/launcher';
 import { reactIcon } from '@jupyterlab/ui-components';
-import { ICommandPalette, MainAreaWidget } from '@jupyterlab/apputils';
+import { MainAreaWidget } from '@jupyterlab/apputils';
 import { AlgorithmsWidget, RegisterAlgorithmsWidget } from './widgets';
 import { JUPYTER_EXT } from './constants';
 import {
@@ -17,19 +17,15 @@ const listAlgorithmsPlugin: JupyterFrontEndPlugin<void> = {
   id: JUPYTER_EXT.LIST_ALGORITHMS_OPEN_COMMAND,
   description: 'A MAAP JupyterLab plugin for viewing OGC-compliant algorithms.',
   autoStart: true,
-  requires: [ILauncher, IFileBrowserFactory, ICommandPalette],
-  activate: (
-    app: JupyterFrontEnd,
-    launcher: ILauncher,
-    palette: ICommandPalette
-  ) => {
+  requires: [ILauncher, IFileBrowserFactory],
+  activate: (app: JupyterFrontEnd, launcher: ILauncher) => {
     const { commands } = app;
     const command = JUPYTER_EXT.LIST_ALGORITHMS_OPEN_COMMAND;
     let algorithmsWidget: MainAreaWidget<AlgorithmsWidget> | null = null;
 
     commands.addCommand(command, {
-      caption: 'Algorithms',
-      label: 'Algorithms',
+      caption: 'List Algorithms',
+      label: 'List Algorithms',
       icon: args => (args['isPalette'] ? undefined : reactIcon),
       execute: () => {
         const content = new AlgorithmsWidget(app);

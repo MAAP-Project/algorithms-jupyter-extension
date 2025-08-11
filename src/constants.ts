@@ -46,13 +46,13 @@ export const FORM_FIELDS = {
     tooltip: 'The URL to the algorithm source code repository',
     placeholder: 'Enter code repository URL'
   } as RegistrationFormInput,
-  baseCommand: {
-    name: 'baseCommand',
-    pythonic_name: 'base_command',
-    label: 'Base Command',
+  runCommand: {
+    name: 'runCommand',
+    pythonic_name: 'run_command',
+    label: 'Run Command',
     tooltip:
       'The main command to execute your algorithm (e.g., /app/sardem-sarsen/sardem-sarsem.sh)',
-    placeholder: 'Enter base command'
+    placeholder: 'Enter run command'
   } as RegistrationFormInput,
   minRAM: {
     name: 'minRAM',
@@ -70,12 +70,13 @@ export const FORM_FIELDS = {
       'The minimum number of CPU cores required to run your algorithm (e.g., 1)',
     placeholder: 'Enter minimum number of cores'
   } as RegistrationFormInput,
-  containerUrl: {
-    name: 'containerUrl',
-    pythonic_name: 'container_url',
-    label: 'Container URL',
-    tooltip: "The URL to the algorithm's container docker image",
-    placeholder: 'Enter container URL'
+  baseContainerURL: {
+    name: 'baseContainerURL',
+    pythonic_name: 'base_container_url',
+    label: 'Base Container URL',
+    tooltip:
+      'The URL to the base docker image (see docs here for a list of available base containers)',
+    placeholder: 'Enter base container URL'
   } as RegistrationFormInput,
   author: {
     name: 'author',
@@ -118,5 +119,20 @@ export const FORM_FIELDS = {
     label: 'Keywords',
     tooltip: 'Comma-separated keywords to associate with this algorithm',
     placeholder: 'Enter keywords'
+  } as RegistrationFormInput,
+  algorithmContainerURL: {
+    name: 'algorithmContainerURL',
+    pythonic_name: 'algorithm_container_url',
+    label: 'Algorithm Container URL',
+    tooltip: 'The URL to the pre-built algorithm container image',
+    placeholder: 'Enter algorithm container URL'
+  } as RegistrationFormInput,
+  buildCommand: {
+    name: 'buildCommand',
+    pythonic_name: 'build_command',
+    label: 'Build Command',
+    tooltip:
+      'The command to build the algorithm environment in the base container',
+    placeholder: 'Enter build command'
   } as RegistrationFormInput
 };

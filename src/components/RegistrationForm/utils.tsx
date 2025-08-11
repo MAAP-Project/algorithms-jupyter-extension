@@ -4,6 +4,8 @@ import { AlgorithmData } from '../../types/registration';
 export const formatAlgorithmData = (data: AlgorithmData): string => {
   const configData: string[] = [];
 
+  console.log('data', data);
+
   if (data.algorithmName) {
     configData.push(`algorithm_name: ${data.algorithmName}`);
   }
@@ -16,8 +18,8 @@ export const formatAlgorithmData = (data: AlgorithmData): string => {
   if (data.codeRepository) {
     configData.push(`code_repository: ${data.codeRepository}`);
   }
-  if (data.baseCommand) {
-    configData.push(`base_command: ${data.baseCommand}`);
+  if (data.runCommand) {
+    configData.push(`run_command: ${data.runCommand}`);
   }
   if (data.author) {
     configData.push(`author: ${data.author}`);
@@ -28,8 +30,8 @@ export const formatAlgorithmData = (data: AlgorithmData): string => {
   if (data.contributor) {
     configData.push(`contributor: ${data.contributor}`);
   }
-  if (data.containerURL) {
-    configData.push(`container_url: ${data.containerURL}`);
+  if (data.baseContainerURL) {
+    configData.push(`base_container_url: ${data.baseContainerURL}`);
   }
   if (data.keywords) {
     configData.push(`keywords: ${data.keywords}`);
@@ -45,6 +47,12 @@ export const formatAlgorithmData = (data: AlgorithmData): string => {
   }
   if (data.minCores) {
     configData.push(`min_cores: ${data.minCores}`);
+  }
+  if (data.buildCommand) {
+    configData.push(`build_command: ${data.buildCommand}`);
+  }
+  if (data.algorithmContainerURL) {
+    configData.push(`algorithm_container_url: ${data.algorithmContainerURL}`);
   }
 
   if (data.inputs && data.inputs.length > 0) {
