@@ -23,7 +23,7 @@ export const FormRow = ({ formInput }: FormRowProps) => {
       </td>
       <td>
         <input
-          type="text"
+          type={formInput.type}
           name={formInput.name}
           placeholder={formInput.placeholder}
           className="st-input"

@@ -6,15 +6,25 @@ export type AlgorithmConfigInput = {
   default_value: string;
 };
 
+export type AlgorithmConfigOutput = {
+  name: string;
+  label?: string;
+  doc?: string;
+  type: string;
+  default_value?: string;
+};
+
 export type AlgorithmConfig = {
   algorithm_name: string;
   algorithm_version: string;
   algorithm_description: string;
   code_repository: string;
-  base_command: string;
-  min_ram: string;
-  min_cores: string;
-  container_url: string;
+  run_command: string;
+  build_command: string;
+  min_ram: number;
+  min_cores: number;
+  algorithm_container_url: string;
+  base_container_url: string;
   author: string;
   contributor: string;
   license: string;
@@ -22,4 +32,6 @@ export type AlgorithmConfig = {
   citation: string;
   keywords: string;
   inputs: AlgorithmConfigInput[];
+  outputs: AlgorithmConfigOutput[];
+  outdir_max: number;
 };

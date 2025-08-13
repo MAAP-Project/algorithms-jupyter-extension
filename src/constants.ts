@@ -23,28 +23,32 @@ export const FORM_FIELDS = {
     pythonic_name: 'algorithm_name',
     label: 'Algorithm Name',
     tooltip: 'The name of the algorithm.',
-    placeholder: 'Enter algorithm name'
+    placeholder: 'Enter algorithm name',
+    type: 'text'
   } as RegistrationFormInput,
-  version: {
+  algorithmVersion: {
     name: 'algorithmVersion',
     pythonic_name: 'algorithm_version',
-    label: 'Version',
+    label: 'Algorithm Version',
     tooltip: 'The version of the algorithm (e.g., develop, 1.0.0)',
-    placeholder: 'Enter algorithm version'
+    placeholder: 'Enter algorithm version',
+    type: 'text'
   } as RegistrationFormInput,
-  description: {
+  algorithmDescription: {
     name: 'algorithmDescription',
     pythonic_name: 'algorithm_description',
     label: 'Algorithm Description',
     tooltip: 'Description of the algorithm.',
-    placeholder: 'Enter algorithm description'
+    placeholder: 'Enter algorithm description',
+    type: 'text'
   } as RegistrationFormInput,
   codeRepository: {
     name: 'codeRepository',
     pythonic_name: 'code_repository',
     label: 'Repository URL',
-    tooltip: 'The URL to the algorithm source code repository',
-    placeholder: 'Enter code repository URL'
+    tooltip: 'The public URL to the algorithm source code repository',
+    placeholder: 'Enter code repository URL',
+    type: 'text'
   } as RegistrationFormInput,
   runCommand: {
     name: 'runCommand',
@@ -52,80 +56,91 @@ export const FORM_FIELDS = {
     label: 'Run Command',
     tooltip:
       'The main command to execute your algorithm (e.g., /app/sardem-sarsen/sardem-sarsem.sh)',
-    placeholder: 'Enter run command'
+    placeholder: 'Enter run command',
+    type: 'text'
   } as RegistrationFormInput,
   minRAM: {
     name: 'minRAM',
     pythonic_name: 'min_ram',
-    label: 'Minimum RAM',
+    label: 'Minimum RAM (GB)',
     tooltip:
-      'The minimum amount of RAM (in GB) required to run your algorithm (e.g., 4)',
-    placeholder: 'Enter minimum RAM'
+      'The minimum amount of RAM (in GB) required to run your algorithm. Max is 128. (e.g., 16)',
+    placeholder: 'Enter minimum RAM',
+    type: 'number'
   } as RegistrationFormInput,
   minCores: {
     name: 'minCores',
     pythonic_name: 'min_cores',
     label: 'Minimum Number of Cores',
     tooltip:
-      'The minimum number of CPU cores required to run your algorithm (e.g., 1)',
-    placeholder: 'Enter minimum number of cores'
+      'The minimum number of CPU cores required to run your algorithm. Max 32 cores. (e.g., 1)',
+    placeholder: 'Enter minimum number of cores',
+    type: 'number'
   } as RegistrationFormInput,
   baseContainerURL: {
     name: 'baseContainerURL',
     pythonic_name: 'base_container_url',
     label: 'Base Container URL',
-    tooltip:
-      'The URL to the base docker image (see docs here for a list of available base containers)',
-    placeholder: 'Enter base container URL'
+    tooltip: 'The URL to the base docker image',
+    placeholder: 'Enter base container URL',
+    type: 'text'
   } as RegistrationFormInput,
   author: {
     name: 'author',
     pythonic_name: 'author',
     label: 'Author',
     tooltip: 'The primary author of the algorithm',
-    placeholder: 'Enter author name'
+    placeholder: 'Enter author name',
+    type: 'text'
   } as RegistrationFormInput,
   contributor: {
     name: 'contributor',
     pythonic_name: 'contributor',
     label: 'Contributor',
     tooltip: 'Additional contributors to the algorithm development',
-    placeholder: 'Enter contributor name'
+    placeholder: 'Enter contributor name',
+    type: 'text'
   } as RegistrationFormInput,
   license: {
     name: 'license',
     pythonic_name: 'license',
     label: 'License',
     tooltip: 'The license under which your algorithm is distributed',
-    placeholder: 'Enter license information'
+    placeholder: 'Enter license information',
+    type: 'text'
   } as RegistrationFormInput,
   releaseNotes: {
     name: 'releaseNotes',
     pythonic_name: 'release_notes',
     label: 'Release Notes',
     tooltip: 'The URL to the release notes of the algorithm',
-    placeholder: 'Enter release notes'
+    placeholder: 'Enter release notes',
+    type: 'text'
   } as RegistrationFormInput,
   citation: {
     name: 'citation',
     pythonic_name: 'citation',
     label: 'Citation',
     tooltip: 'How to cite this algorithm in publications',
-    placeholder: 'Enter citation information'
+    placeholder: 'Enter citation information',
+    type: 'text'
   } as RegistrationFormInput,
   keywords: {
     name: 'keywords',
     pythonic_name: 'keywords',
     label: 'Keywords',
-    tooltip: 'Comma-separated keywords to associate with this algorithm',
-    placeholder: 'Enter keywords'
+    tooltip:
+      'Comma-separated keywords to associate with this algorithm. (e.g. sar, ogc)',
+    placeholder: 'Enter keywords',
+    type: 'text'
   } as RegistrationFormInput,
   algorithmContainerURL: {
     name: 'algorithmContainerURL',
     pythonic_name: 'algorithm_container_url',
     label: 'Algorithm Container URL',
-    tooltip: 'The URL to the pre-built algorithm container image',
-    placeholder: 'Enter algorithm container URL'
+    tooltip: 'The public URL to the pre-built algorithm container image',
+    placeholder: 'Enter algorithm container URL',
+    type: 'text'
   } as RegistrationFormInput,
   buildCommand: {
     name: 'buildCommand',
@@ -133,6 +148,7 @@ export const FORM_FIELDS = {
     label: 'Build Command',
     tooltip:
       'The command to build the algorithm environment in the base container',
-    placeholder: 'Enter build command'
+    placeholder: 'Enter build command',
+    type: 'text'
   } as RegistrationFormInput
 };

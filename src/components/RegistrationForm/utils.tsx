@@ -1,77 +1,229 @@
-import { AlgorithmConfigInput } from '../../types/algorithmConfig';
+import { FORM_FIELDS } from '../../constants';
+import {
+  AlgorithmConfig,
+  AlgorithmConfigInput
+} from '../../types/algorithmConfig';
 import { AlgorithmData } from '../../types/registration';
+import { getPythonFromJSName } from '../../utils/utils';
+import * as yaml from 'yaml';
 
-export const formatAlgorithmData = (data: AlgorithmData): string => {
-  const configData: string[] = [];
+const _validateMinRAM = (minRAM: any) => {
+  let msg = '';
+  if (!minRAM) {
+    msg = 'min_ram is required';
+    console.error(msg);
+    alert(msg);
+    return false;
+  }
 
+  if (minRAM > 128 || minRAM < 1) {
+    msg = 'min_ram must be between 1 and 128';
+    console.error(msg);
+    alert(msg);
+    return false;
+  }
+  return true;
+};
+
+const _validateMinCores = (minCores: any) => {
+  let msg = '';
+  if (!minCores) {
+    msg = 'min_cores is required';
+    console.error(msg);
+    alert(msg);
+    return false;
+  }
+
+  if (minCores > 32 || minCores < 1) {
+    msg = 'min_cores must be between 1 and 32';
+    console.error(msg);
+    alert(msg);
+    return false;
+  }
+  return true;
+};
+
+const _validateAlgorithmName = (algorithmName: string) => {
+  let msg = '';
+  if (!algorithmName) {
+    msg = 'algorithm_name is required';
+    console.error(msg);
+    alert(msg);
+    return false;
+  }
+
+  if (algorithmName.length < 2 || algorithmName.length > 255) {
+    msg = 'algorithm_name must be between 2 and 255 characters long';
+    console.error(msg);
+    alert(msg);
+    return false;
+  }
+
+  const pattern = /^[a-z0-9_-]+$/;
+  if (!pattern.test(algorithmName)) {
+    msg =
+      'algorithm_name can only contain lowercase letters, digits, hyphens (-), and underscores (_)';
+    console.error(msg);
+    alert(msg);
+    return false;
+  }
+  return true;
+};
+
+const _validateAlgorithmVersion = (algorithmVersion: string) => {
+  let msg = '';
+  if (!algorithmVersion) {
+    msg = 'algorithm_version is required';
+    console.error(msg);
+    alert(msg);
+    return false;
+  }
+
+  if (algorithmVersion.length > 128) {
+    msg = 'algorithm_version can be up to 128 characters long';
+    console.error(msg);
+    alert(msg);
+    return false;
+  }
+
+  const pattern = /^[a-zA-Z0-9_][a-zA-Z0-9._-]{0,127}$/;
+  if (!pattern.test(algorithmVersion)) {
+    msg =
+      'algorithm_version must start with a letter, digit, or underscore and can only contain letters, digits, underscores (_), periods (.), and dashes (-)';
+    console.error(msg);
+    alert(msg);
+    return false;
+  }
+  return true;
+};
+
+// need to differentiate between valid for loading into the UI (does not need all fields to be present as user may modify)
+// versus valid for submission, where we need to check for missing fields.)
+export const isValidAlgorithmConfig = (
+  config: AlgorithmConfig,
+  checkIsValidForSubmit: boolean
+): boolean => {
+  let msg = '';
+  if (
+    config.algorithm_container_url &&
+    (config.base_container_url || config.build_command)
+  ) {
+    msg =
+      "INVALID ALGORITHM CONFIG: Either 'algorithm_container_url' or 'base_container_url' and 'build_command' must be provided";
+  }
+
+  if (checkIsValidForSubmit) {
+    if (!_validateAlgorithmName(config.algorithm_name)) {
+      return false;
+    }
+    if (!_validateAlgorithmVersion(config.algorithm_version)) {
+      return false;
+    }
+    if (!_validateMinRAM(config.min_ram)) {
+      return false;
+    }
+    if (!_validateMinCores(config.min_cores)) {
+      return false;
+    }
+  }
+
+  if (msg) {
+    console.error(msg);
+    alert(msg);
+    return false;
+  }
+
+  return true;
+};
+
+export const buildAlgorithmConfig = (data: AlgorithmData): string => {
   console.log('data', data);
+  const configData: AlgorithmConfig = {
+    algorithm_name: '',
+    algorithm_version: '',
+    algorithm_description: '',
+    code_repository: '',
+    run_command: '',
+    build_command: '',
+    min_ram: 0,
+    min_cores: 0,
+    algorithm_container_url: '',
+    base_container_url: '',
+    author: '',
+    contributor: '',
+    license: '',
+    release_notes: '',
+    citation: '',
+    keywords: '',
+    inputs: [],
+    outputs: [],
+    outdir_max: 0
+  };
 
-  if (data.algorithmName) {
-    configData.push(`algorithm_name: ${data.algorithmName}`);
-  }
-  if (data.algorithmVersion) {
-    configData.push(`algorithm_version: ${data.algorithmVersion}`);
-  }
-  if (data.algorithmDescription) {
-    configData.push(`algorithm_description: ${data.algorithmDescription}`);
-  }
-  if (data.codeRepository) {
-    configData.push(`code_repository: ${data.codeRepository}`);
-  }
-  if (data.runCommand) {
-    configData.push(`run_command: ${data.runCommand}`);
-  }
-  if (data.author) {
-    configData.push(`author: ${data.author}`);
-  }
-  if (data.citation) {
-    configData.push(`citation: ${data.citation}`);
-  }
-  if (data.contributor) {
-    configData.push(`contributor: ${data.contributor}`);
-  }
-  if (data.baseContainerURL) {
-    configData.push(`base_container_url: ${data.baseContainerURL}`);
-  }
-  if (data.keywords) {
-    configData.push(`keywords: ${data.keywords}`);
-  }
-  if (data.license) {
-    configData.push(`license: ${data.license}`);
-  }
-  if (data.releaseNotes) {
-    configData.push(`release_notes: ${data.releaseNotes}`);
-  }
-  if (data.minRAM) {
-    configData.push(`min_ram: ${data.minRAM}`);
-  }
-  if (data.minCores) {
-    configData.push(`min_cores: ${data.minCores}`);
-  }
-  if (data.buildCommand) {
-    configData.push(`build_command: ${data.buildCommand}`);
-  }
-  if (data.algorithmContainerURL) {
-    configData.push(`algorithm_container_url: ${data.algorithmContainerURL}`);
-  }
+  Object.keys(data).forEach(key => {
+    const pythonName = getPythonFromJSName(key);
+    if (pythonName !== '') {
+      configData[pythonName] = data[key];
+    }
+  });
 
   if (data.inputs && data.inputs.length > 0) {
-    const inputs = ['inputs:'];
+    configData.inputs = [];
     data.inputs.forEach((input: AlgorithmConfigInput) => {
-      inputs.push(`  - name: ${input.name || ''}`);
-      inputs.push(`    label: ${input.label || ''}`);
-      inputs.push(`    description: ${input.doc || ''}`);
-      inputs.push(`    type: ${input.type || ''}`);
-      inputs.push(`    default_value: ${input.default_value || ''}`);
+      configData.inputs.push({
+        name: input.name || '',
+        label: input.label || '',
+        doc: input.doc || '',
+        type: input.type || '',
+        default_value: input.default_value || ''
+      });
     });
-    configData.push(inputs.join('\n'));
   }
 
-  // TODO: update to be configurable once backend supports this
-  configData.push('outdir_max: 20');
-  configData.push('outputs:');
-  configData.push('  - name: out');
-  configData.push('    type: Directory');
+  // Remove empty string entries
+  Object.keys(configData).forEach(key => {
+    if (configData[key] === '') {
+      delete configData[key];
+    }
+  });
 
-  return configData.join('\n');
+  if (configData.inputs && configData.inputs.length > 0) {
+    Object.keys(configData.inputs).forEach(key => {
+      Object.keys(configData.inputs[key]).forEach(subKey => {
+        if (configData.inputs[key][subKey] === '') {
+          delete configData.inputs[key][subKey];
+        }
+      });
+    });
+  }
+
+  configData.outdir_max = 20;
+  configData.outputs.push({
+    name: 'out',
+    type: 'Directory'
+  });
+
+  // TODO: order yml keys
+
+  if (!isValidAlgorithmConfig(configData, true)) {
+    console.error('Invalid algorithm config');
+    return '';
+  }
+
+  return yaml.stringify(configData);
+};
+
+export const setInputValue = (name: string, value: any) => {
+  // for each formfield that has pythonic name match, get that name
+  const formFields = Object.values(FORM_FIELDS);
+  const formField = formFields.find(field => field.pythonic_name === name);
+  if (formField) {
+    const inputElement = document.querySelector(
+      `input[name="${formField.name}"]`
+    ) as HTMLInputElement;
+    if (inputElement) {
+      inputElement.value = value;
+    }
+  }
+  return false;
 };

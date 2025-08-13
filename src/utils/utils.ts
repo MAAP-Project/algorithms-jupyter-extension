@@ -1,4 +1,4 @@
-import { JUPYTER_EXT } from '../constants';
+import { FORM_FIELDS, JUPYTER_EXT } from '../constants';
 import { Notification } from '@jupyterlab/apputils';
 
 export const openRegisterAlgorithm = (jupyterApp, data) => {
@@ -50,4 +50,25 @@ export const createDirectory = async (path: string, jupyterApp) => {
   } catch (error) {
     console.error('Error creating directory:', error);
   }
+};
+
+export const getJSFromPythonName = (pythonName: string) => {
+  const formFields = Object.values(FORM_FIELDS);
+  const formField = formFields.find(
+    field => field.pythonic_name === pythonName
+  );
+  if (!formField || !formField.name) {
+    console.warn(`Form field not found for ${pythonName}`);
+    return '';
+  }
+  return formField.name;
+};
+
+export const getPythonFromJSName = (jsName: string) => {
+  const pythonName = FORM_FIELDS[jsName]?.pythonic_name;
+  if (!pythonName) {
+    console.warn(`Form field not found for ${jsName}`);
+    return '';
+  }
+  return pythonName;
 };

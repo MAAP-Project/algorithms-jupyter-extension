@@ -23,7 +23,11 @@ import {
 } from '../../constants';
 import { FormRow } from './FormRow';
 import { AlgorithmData, AlgorithmInputRow } from '../../types/registration';
-import { formatAlgorithmData } from './utils';
+import {
+  buildAlgorithmConfig,
+  isValidAlgorithmConfig,
+  setInputValue
+} from './utils';
 import { createDirectory, createFile } from '../../utils/utils';
 import {
   AlgorithmConfig,
@@ -86,16 +90,13 @@ export const RegistrationForm = ({
   };
 
   const populateFormWithConfig = (config: AlgorithmConfig) => {
-    const setInputValue = (name: string, value: any) => {
-      const inputElement = document.querySelector(
-        `input[name="${name}"]`
-      ) as HTMLInputElement;
-      if (inputElement) {
-        inputElement.value = value;
-        return true;
-      }
-      return false;
-    };
+    if (!isValidAlgorithmConfig(config, true)) {
+      return;
+    }
+
+    config.algorithm_container_url
+      ? handleSetUseAlgorithmContainer(true)
+      : handleSetUseAlgorithmContainer(false);
 
     Object.keys(config).forEach(key => {
       if (typeof config[key] !== 'object' || config[key] === null) {
@@ -117,6 +118,13 @@ export const RegistrationForm = ({
         }))
       );
     }
+  };
+
+  const handleSetUseAlgorithmContainer = (value: boolean) => {
+    setUseAlgorithmContainer(value);
+    setInputValue(FORM_FIELDS.algorithmContainerURL.pythonic_name, '');
+    setInputValue(FORM_FIELDS.buildCommand.pythonic_name, '');
+    setInputValue(FORM_FIELDS.baseContainerURL.pythonic_name, '');
   };
 
   const handleTokenModalSubmit = async () => {
@@ -142,8 +150,8 @@ export const RegistrationForm = ({
       algorithmDescription: '',
       codeRepository: '',
       runCommand: '',
-      minRAM: '',
-      minCores: '',
+      minRAM: 0,
+      minCores: 0,
       buildCommand: '',
       baseContainerURL: '',
       algorithmContainerURL: '',
@@ -159,6 +167,14 @@ export const RegistrationForm = ({
       algorithmData[key] = value;
     });
 
+    // Convert numeric fields back to numbers
+    if (algorithmData.minRAM) {
+      algorithmData.minRAM = Number(algorithmData.minRAM);
+    }
+    if (algorithmData.minCores) {
+      algorithmData.minCores = Number(algorithmData.minCores);
+    }
+
     if (inputRows.length > 0) {
       algorithmData.inputs = inputRows.map(row => ({
         name: row.name,
@@ -169,8 +185,10 @@ export const RegistrationForm = ({
       }));
     }
 
-    // Create algorithm_config directory then create algorithm config YAML file
-    const yamlContent = formatAlgorithmData(algorithmData);
+    const yamlContent = buildAlgorithmConfig(algorithmData);
+    if (yamlContent === '') {
+      return;
+    }
     const path = await createDirectory('algorithm_configs/', jupyterApp);
     const filePath =
       path +
@@ -179,7 +197,7 @@ export const RegistrationForm = ({
         : 'algorithm_config.yml');
     yamlContent && (await createFile(yamlContent, filePath, jupyterApp));
 
-    await registerAlgorithm(algorithmData);
+    //await registerAlgorithm(algorithmData);
     setShowRegistrationModal(true);
   };
 
@@ -272,12 +290,12 @@ export const RegistrationForm = ({
                 formInput={FORM_FIELDS.algorithmName}
               />
               <FormRow
-                key={FORM_FIELDS.version.name}
-                formInput={FORM_FIELDS.version}
+                key={FORM_FIELDS.algorithmVersion.name}
+                formInput={FORM_FIELDS.algorithmVersion}
               />
               <FormRow
-                key={FORM_FIELDS.description.name}
-                formInput={FORM_FIELDS.description}
+                key={FORM_FIELDS.algorithmDescription.name}
+                formInput={FORM_FIELDS.algorithmDescription}
               />
               <FormRow formInput={FORM_FIELDS.codeRepository} />
               <FormRow
@@ -291,29 +309,34 @@ export const RegistrationForm = ({
             <input
               type="checkbox"
               checked={useAlgorithmContainer}
-              onChange={() => setUseAlgorithmContainer(!useAlgorithmContainer)}
+              onChange={() =>
+                handleSetUseAlgorithmContainer(!useAlgorithmContainer)
+              }
             />
             <label>Use pre-built algorithm container</label>
           </div>
           <table className="st-table margin-bottom-3">
             <tbody>
-              {useAlgorithmContainer ? (
+              <div
+                style={{ display: useAlgorithmContainer ? 'block' : 'none' }}
+              >
                 <FormRow
                   key={FORM_FIELDS.algorithmContainerURL.name}
                   formInput={FORM_FIELDS.algorithmContainerURL}
                 />
-              ) : (
-                <>
-                  <FormRow
-                    key={FORM_FIELDS.baseContainerURL.name}
-                    formInput={FORM_FIELDS.baseContainerURL}
-                  />
-                  <FormRow
-                    key={FORM_FIELDS.buildCommand.name}
-                    formInput={FORM_FIELDS.buildCommand}
-                  />
-                </>
-              )}
+              </div>
+              <div
+                style={{ display: useAlgorithmContainer ? 'none' : 'block' }}
+              >
+                <FormRow
+                  key={FORM_FIELDS.baseContainerURL.name}
+                  formInput={FORM_FIELDS.baseContainerURL}
+                />
+                <FormRow
+                  key={FORM_FIELDS.buildCommand.name}
+                  formInput={FORM_FIELDS.buildCommand}
+                />
+              </div>
             </tbody>
           </table>
           <h3>Resource Requirements</h3>

@@ -1,9 +1,12 @@
+export type RegistrationFormInputType = 'text' | 'number';
+
 export type RegistrationFormInput = {
   name: string;
   pythonic_name: string;
   label: string;
   tooltip: string;
   placeholder: string;
+  type: RegistrationFormInputType;
 };
 
 export type AlgorithmInput = {
@@ -24,8 +27,8 @@ export type AlgorithmData = {
   algorithmDescription: string;
   codeRepository: string;
   runCommand: string;
-  minRAM: string;
-  minCores: string;
+  minRAM: number;
+  minCores: number;
   buildCommand?: string;
   baseContainerURL?: string;
   algorithmContainerURL?: string;
