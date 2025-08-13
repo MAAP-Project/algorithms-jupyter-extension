@@ -137,7 +137,6 @@ export const isValidAlgorithmConfig = (
 };
 
 export const buildAlgorithmConfig = (data: AlgorithmData): string => {
-  console.log('data', data);
   const configData: AlgorithmConfig = {
     algorithm_name: '',
     algorithm_version: '',

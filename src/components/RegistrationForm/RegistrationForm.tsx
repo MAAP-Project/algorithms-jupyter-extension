@@ -90,7 +90,7 @@ export const RegistrationForm = ({
   };
 
   const populateFormWithConfig = (config: AlgorithmConfig) => {
-    if (!isValidAlgorithmConfig(config, true)) {
+    if (!isValidAlgorithmConfig(config, false)) {
       return;
     }
 
