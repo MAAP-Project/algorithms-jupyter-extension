@@ -18,10 +18,14 @@ import {
   TextField
 } from '@mui/material';
 import { openRegisterAlgorithm } from '../../utils/utils';
-import { getBuilds, getDeployments, getBuildStatus, getDeploymentStatus } from '../../utils/api';
+import {
+  getBuilds,
+  getBuildStatus,
+  getDeploymentStatus as getDeploymentStatusFromAPI
+} from '../../utils/api';
 import { hasMaapToken, setMaapToken } from '../../utils/auth';
 import { MAAP_PROFILE_URL } from '../../constants';
-import { Build, Deployment, BuildDeploymentItem } from '../../types/build';
+import { Build, BuildDeploymentItem } from '../../types/build';
 import { ExpandedState } from '@tanstack/react-table';
 import IconButton from '@mui/material/IconButton';
 import Tooltip from '@mui/material/Tooltip';
@@ -83,6 +87,65 @@ export const BuildsDeploymentsGrid = ({ jupyterApp }) => {
     setExpandedRowIds(updatedSet);
   };
 
+  const extractDeploymentId = (deploymentHref: string): string | null => {
+    try {
+      // Extract deployment ID from href like "/ogc/deploymentJobs/123" or "/api/ogc/deploymentJobs/123"
+      const match = deploymentHref.match(/\/deploymentJobs\/(\w+)/);
+      return match ? match[1] : null;
+    } catch (error) {
+      console.error(
+        'Error extracting deployment ID from href:',
+        deploymentHref,
+        error
+      );
+      return null;
+    }
+  };
+
+  const getDefaultDeploymentStatus = (build: Build): string => {
+    if (!build.deploymentLink) {
+      return 'N/A';
+    }
+    return 'Loading...'; // Will be updated from deployment endpoint
+  };
+
+  const fetchDeploymentDataForBuilds = async (
+    items: BuildDeploymentItem[]
+  ): Promise<BuildDeploymentItem[]> => {
+    const updatedItems = await Promise.all(
+      items.map(async item => {
+        if (item.deploymentLink?.href) {
+          const deploymentId = extractDeploymentId(item.deploymentLink.href);
+          if (deploymentId) {
+            try {
+              const deploymentData =
+                await getDeploymentStatusFromAPI(deploymentId);
+              return {
+                ...item,
+                deploymentStatus: deploymentData.status,
+                deploymentPipelineLink:
+                  deploymentData.pipeline?.processPipelineLink || undefined,
+                deploymentError: deploymentData.error || null
+              };
+            } catch (error) {
+              console.warn(
+                `Failed to fetch deployment status for deployment ${deploymentId}:`,
+                error
+              );
+              return {
+                ...item,
+                deploymentStatus: 'Error',
+                deploymentError: 'Failed to fetch deployment status'
+              };
+            }
+          }
+        }
+        return item;
+      })
+    );
+    return updatedItems;
+  };
+
   const transformBuildsToItems = (builds: Build[]): BuildDeploymentItem[] => {
     return builds.map(build => ({
       id: build.build_id,
@@ -97,30 +160,21 @@ export const BuildsDeploymentsGrid = ({ jupyterApp }) => {
       version: build.branch_ref,
       links: build.links,
       pipelineLink: build.pipelineLink,
-      deploymentLink: build.deploymentLink,
-      deploymentError: build.deploymentError
-    }));
-  };
-
-  const transformDeploymentsToItems = (
-    deployments: Deployment[]
-  ): BuildDeploymentItem[] => {
-    return deployments.map(deployment => ({
-      id: deployment.job_id.toString(),
-      type: 'deployment' as const,
-      name: deployment.id || deployment.process_id || 'Unknown Process',
-      status: deployment.status,
-      created: deployment.created || '',
-      repository_url: deployment.github_url,
-      version: deployment.version,
-      links: [],
-      description: deployment.description,
-      author: deployment.author
+      deploymentLink: build.deploymentLink, // Keep as-is (deployment endpoint link)
+      deploymentPipelineLink: undefined, // Will be set from deployment response
+      deploymentError: build.deploymentError,
+      deploymentStatus: getDefaultDeploymentStatus(build)
     }));
   };
 
   const isNonFinalState = (status: string) => {
-    const finalStates = ['successful', 'failed', 'canceled', 'cancelled', 'dismissed'];
+    const finalStates = [
+      'successful',
+      'failed',
+      'canceled',
+      'cancelled',
+      'dismissed'
+    ];
     return !finalStates.includes(status.toLowerCase());
   };
 
@@ -131,55 +185,79 @@ export const BuildsDeploymentsGrid = ({ jupyterApp }) => {
 
     setIsRefreshing(true);
     try {
-      console.log('Refreshing builds and deployments...');
-      
-      // First, fetch fresh data to get any new builds/deployments
-      const [buildsResponse, deploymentsResponse] = await Promise.allSettled([
-        getBuilds(),
-        getDeployments().catch(() => ({ deploymentJobs: [] }))
-      ]);
+      console.log('Refreshing builds...');
 
-      const builds = buildsResponse.status === 'fulfilled' ? buildsResponse.value.builds : [];
-      const deployments = deploymentsResponse.status === 'fulfilled' ? deploymentsResponse.value.deploymentJobs : [];
+      // First, fetch fresh data to get any new builds
+      const buildsResponse = await getBuilds();
+      const builds = buildsResponse.builds;
 
       const freshBuildItems = transformBuildsToItems(builds);
-      const freshDeploymentItems = transformDeploymentsToItems(deployments);
-      const freshAllItems = [...freshBuildItems, ...freshDeploymentItems];
+      const freshAllItems = freshBuildItems;
 
       // Create a map of existing items for comparison
       const existingItemsMap = new Map(items.map(item => [item.id, item]));
-      
+
       // Identify new items and items that need status updates
-      const newItems = freshAllItems.filter(item => !existingItemsMap.has(item.id));
-      const itemsToRefresh = freshAllItems.filter(item => 
-        existingItemsMap.has(item.id) && isNonFinalState(item.status)
+      const newItems = freshAllItems.filter(
+        item => !existingItemsMap.has(item.id)
+      );
+      const itemsToRefresh = freshAllItems.filter(
+        item => existingItemsMap.has(item.id) && isNonFinalState(item.status)
       );
 
-      console.log(`Found ${newItems.length} new items and ${itemsToRefresh.length} items to refresh`);
+      console.log(
+        `Found ${newItems.length} new items and ${itemsToRefresh.length} items to refresh`
+      );
 
       if (newItems.length > 0) {
-        console.log('New items found:', newItems.map(item => `${item.type} ${item.id}`));
+        console.log(
+          'New items found:',
+          newItems.map(item => `${item.type} ${item.id}`)
+        );
       }
 
       // For items that need status refresh, get individual status
-      const refreshPromises = itemsToRefresh.map(async (item) => {
+      const refreshPromises = itemsToRefresh.map(async item => {
         try {
-          let updatedData;
-          if (item.type === 'build') {
-            updatedData = await getBuildStatus(item.id);
-          } else {
-            updatedData = await getDeploymentStatus(item.id);
+          // Always get build status first (since we only have builds now)
+          const buildData = await getBuildStatus(item.id);
+
+          let deploymentData: any = null;
+          // If build has deployment link, fetch deployment status to get pipeline info
+          if (buildData.deploymentLink?.href) {
+            const deploymentId = extractDeploymentId(
+              buildData.deploymentLink.href
+            );
+            if (deploymentId) {
+              try {
+                deploymentData = await getDeploymentStatusFromAPI(deploymentId);
+              } catch (deploymentError) {
+                console.warn(
+                  `Failed to fetch deployment status for deployment ${deploymentId}:`,
+                  deploymentError
+                );
+              }
+            }
           }
-          return { 
-            id: item.id, 
-            status: updatedData.status,
-            updated: updatedData.updated,
-            pipelineLink: updatedData.pipelineLink,
-            deploymentLink: updatedData.deploymentLink,
-            deploymentError: updatedData.deploymentError
+
+          return {
+            id: item.id,
+            status: buildData.status,
+            updated: buildData.updated,
+            pipelineLink: buildData.pipelineLink,
+            deploymentLink: buildData.deploymentLink, // Keep original deployment link
+            deploymentPipelineLink:
+              deploymentData?.pipeline?.processPipelineLink ||
+              item.deploymentPipelineLink,
+            deploymentError: buildData.deploymentError,
+            deploymentStatus:
+              deploymentData?.status || getDefaultDeploymentStatus(buildData)
           };
         } catch (error) {
-          console.error(`Failed to refresh status for ${item.type} ${item.id}:`, error);
+          console.error(
+            `Failed to refresh status for build ${item.id}:`,
+            error
+          );
           return { id: item.id, status: item.status }; // Keep current status on error
         }
       });
@@ -190,15 +268,27 @@ export const BuildsDeploymentsGrid = ({ jupyterApp }) => {
       // Combine fresh data with updated statuses
       const updatedItems = freshAllItems.map(item => {
         const refreshedItem = refreshMap.get(item.id);
-        if (refreshedItem && refreshedItem.status !== item.status) {
-          console.log(`Updated ${item.type} ${item.id} status: ${item.status} -> ${refreshedItem.status}`);
-          return { 
-            ...item, 
+        if (
+          refreshedItem &&
+          (refreshedItem.status !== item.status ||
+            refreshedItem.deploymentStatus !== item.deploymentStatus)
+        ) {
+          console.log(
+            `Updated ${item.type} ${item.id} status: ${item.status} -> ${refreshedItem.status}, deployment: ${item.deploymentStatus} -> ${refreshedItem.deploymentStatus}`
+          );
+          return {
+            ...item,
             status: refreshedItem.status,
             updated: refreshedItem.updated || item.updated,
             pipelineLink: refreshedItem.pipelineLink || item.pipelineLink,
             deploymentLink: refreshedItem.deploymentLink || item.deploymentLink,
-            deploymentError: refreshedItem.deploymentError || item.deploymentError
+            deploymentPipelineLink:
+              refreshedItem.deploymentPipelineLink ||
+              item.deploymentPipelineLink,
+            deploymentError:
+              refreshedItem.deploymentError || item.deploymentError,
+            deploymentStatus:
+              refreshedItem.deploymentStatus || item.deploymentStatus
           };
         }
         return item;
@@ -213,7 +303,12 @@ export const BuildsDeploymentsGrid = ({ jupyterApp }) => {
 
       setItems(sortedItems);
 
-      if (newItems.length > 0 || refreshedData.some(item => item.status !== items.find(i => i.id === item.id)?.status)) {
+      if (
+        newItems.length > 0 ||
+        refreshedData.some(
+          item => item.status !== items.find(i => i.id === item.id)?.status
+        )
+      ) {
         console.log('Refresh completed with updates');
       } else {
         console.log('Refresh completed - no changes detected');
@@ -233,41 +328,31 @@ export const BuildsDeploymentsGrid = ({ jupyterApp }) => {
     }
 
     try {
-      console.log('Fetching builds and deployments...');
-      
-      // Fetch builds and deployments separately to see individual errors
+      console.log('Fetching builds...');
+
       const buildsResponse = await getBuilds();
       console.log('Builds response:', buildsResponse);
-      
-      let deploymentsResponse;
-      try {
-        deploymentsResponse = await getDeployments();
-        console.log('Deployments response:', deploymentsResponse);
-      } catch (deploymentError) {
-        console.error('Deployments fetch failed:', deploymentError);
-        // Create empty response if deployments fail
-        deploymentsResponse = { deploymentJobs: [] };
-      }
 
       const buildItems = transformBuildsToItems(buildsResponse.builds);
       console.log('Transformed build items:', buildItems);
-      
-      const deploymentItems = transformDeploymentsToItems(
-        deploymentsResponse.deploymentJobs
-      );
-      console.log('Transformed deployment items:', deploymentItems);
 
-      // Combine and sort by created date (most recent first)
-      const allItems = [...buildItems, ...deploymentItems].sort((a, b) => {
+      // Sort by created date (most recent first)
+      const sortedItems = buildItems.sort((a, b) => {
         const dateA = new Date(a.created).getTime();
         const dateB = new Date(b.created).getTime();
         return dateB - dateA;
       });
 
-      console.log('Final items to display:', allItems);
-      setItems(allItems);
+      console.log('Initial items to display:', sortedItems);
+      setItems(sortedItems);
+
+      // Fetch deployment data asynchronously for builds with deployment links
+      const itemsWithDeploymentData =
+        await fetchDeploymentDataForBuilds(sortedItems);
+      console.log('Items with deployment data:', itemsWithDeploymentData);
+      setItems(itemsWithDeploymentData);
     } catch (err) {
-      console.error('Failed to load builds and deployments:', err);
+      console.error('Failed to load builds:', err);
     }
   };
 
@@ -297,6 +382,29 @@ export const BuildsDeploymentsGrid = ({ jupyterApp }) => {
     }
   };
 
+  const getDeploymentStatusColor = (status: string) => {
+    switch (status.toLowerCase()) {
+      case 'deployed':
+      case 'successful':
+      case 'success':
+        return 'success';
+      case 'failed':
+      case 'error':
+        return 'error';
+      case 'running':
+      case 'accepted':
+        return 'primary';
+      case 'pending':
+        return 'warning';
+      case 'not started':
+        return 'default'; // Grey color
+      case 'n/a':
+        return 'default';
+      default:
+        return 'default';
+    }
+  };
+
   const columns = useMemo<MRT_ColumnDef<BuildDeploymentItem>[]>(
     () => [
       {
@@ -304,12 +412,7 @@ export const BuildsDeploymentsGrid = ({ jupyterApp }) => {
         header: 'Type',
         size: 80,
         Cell: ({ row }) => (
-          <Chip
-            label={row.original.type === 'build' ? 'Build' : 'Deploy'}
-            size="small"
-            variant="outlined"
-            color={row.original.type === 'build' ? 'primary' : 'secondary'}
-          />
+          <Chip label="Build" size="small" variant="outlined" color="primary" />
         )
       },
       {
@@ -319,7 +422,7 @@ export const BuildsDeploymentsGrid = ({ jupyterApp }) => {
       },
       {
         accessorKey: 'status',
-        header: 'Status',
+        header: 'Build Status',
         size: 100,
         Cell: ({ row }) => (
           <Chip
@@ -328,6 +431,21 @@ export const BuildsDeploymentsGrid = ({ jupyterApp }) => {
             color={getStatusColor(row.original.status, row.original.type)}
           />
         )
+      },
+      {
+        accessorKey: 'deploymentStatus',
+        header: 'Deployment Status',
+        size: 130,
+        Cell: ({ row }) => {
+          const deploymentStatus = row.original.deploymentStatus;
+          return (
+            <Chip
+              label={deploymentStatus || 'Unknown'}
+              size="small"
+              color={getDeploymentStatusColor(deploymentStatus || 'Unknown')}
+            />
+          );
+        }
       },
       {
         accessorKey: 'version',
@@ -380,12 +498,15 @@ export const BuildsDeploymentsGrid = ({ jupyterApp }) => {
                 </IconButton>
               </Tooltip>
             )}
-            {row.original.deploymentLink && (
-              <Tooltip title="View Deployment" placement="top" arrow>
+            {row.original.deploymentPipelineLink && (
+              <Tooltip title="View Deployment Pipeline" placement="top" arrow>
                 <IconButton
                   size="small"
                   onClick={() =>
-                    window.open(row.original.deploymentLink?.href, '_blank')
+                    window.open(
+                      row.original.deploymentPipelineLink?.href,
+                      '_blank'
+                    )
                   }
                 >
                   <LaunchIcon fontSize="small" color="secondary" />
@@ -400,7 +521,7 @@ export const BuildsDeploymentsGrid = ({ jupyterApp }) => {
   );
 
   console.log('Rendering table with items:', items);
-  
+
   const table = useMaterialReactTable({
     columns,
     data: items,
@@ -460,7 +581,7 @@ export const BuildsDeploymentsGrid = ({ jupyterApp }) => {
     renderTopToolbarCustomActions: () => (
       <Box sx={{ display: 'flex', alignItems: 'center', height: '100%' }}>
         <Typography variant="h6" sx={{ ml: 2, mr: 2 }}>
-          My Builds & Deployments
+          My Builds
         </Typography>
         <Tooltip title="Refresh non-final states" placement="top" arrow>
           <IconButton
@@ -501,14 +622,14 @@ export const BuildsDeploymentsGrid = ({ jupyterApp }) => {
           }}
         >
           <table className="st-table">
-            <h4>{item.type === 'build' ? 'Build' : 'Deployment'} Details</h4>
+            <h4>Build Details</h4>
             <tbody>
               <tr>
                 <td className="st-label-cell">ID</td>
                 <td>{item.id}</td>
               </tr>
               <tr>
-                <td className="st-label-cell">Status</td>
+                <td className="st-label-cell">Build Status</td>
                 <td>
                   <Chip
                     label={item.status}
@@ -517,6 +638,18 @@ export const BuildsDeploymentsGrid = ({ jupyterApp }) => {
                   />
                 </td>
               </tr>
+              {item.deploymentStatus && (
+                <tr>
+                  <td className="st-label-cell">Deployment Status</td>
+                  <td>
+                    <Chip
+                      label={item.deploymentStatus}
+                      size="small"
+                      color={getDeploymentStatusColor(item.deploymentStatus)}
+                    />
+                  </td>
+                </tr>
+              )}
               {item.repository_url && (
                 <tr>
                   <td className="st-label-cell">Repository</td>
@@ -569,7 +702,7 @@ export const BuildsDeploymentsGrid = ({ jupyterApp }) => {
             </tbody>
           </table>
 
-          {(item.pipelineLink || item.deploymentLink) && (
+          {(item.pipelineLink || item.deploymentPipelineLink) && (
             <Box sx={{ mt: 2 }}>
               <h4>Actions</h4>
               <Box sx={{ display: 'flex', gap: 1 }}>
@@ -583,14 +716,14 @@ export const BuildsDeploymentsGrid = ({ jupyterApp }) => {
                     View Pipeline
                   </button>
                 )}
-                {item.deploymentLink && (
+                {item.deploymentPipelineLink && (
                   <button
                     className="st-button"
                     onClick={() =>
-                      window.open(item.deploymentLink?.href, '_blank')
+                      window.open(item.deploymentPipelineLink?.href, '_blank')
                     }
                   >
-                    View Deployment
+                    View Deployment Pipeline
                   </button>
                 )}
               </Box>
