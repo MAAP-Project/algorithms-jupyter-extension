@@ -32,7 +32,9 @@ export type Build = {
   links: Link[];
   pipelineLink?: PipelineLink;
   deploymentLink?: DeploymentLink;
+  deploymentPipelineLink?: DeploymentLink;
   deploymentError?: string;
+  deploymentStatus?: string;
 };
 
 export type BuildsResponse = {
@@ -78,7 +80,9 @@ export type BuildDeploymentItem = {
   links: Link[];
   pipelineLink?: PipelineLink;
   deploymentLink?: DeploymentLink;
+  deploymentPipelineLink?: DeploymentLink;
   deploymentError?: string;
+  deploymentStatus?: string;
   description?: string;
   author?: string;
 };
