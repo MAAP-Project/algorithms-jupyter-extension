@@ -71,7 +71,7 @@ const fetchWithAuth = async (url: string, options: RequestInit = {}) => {
     ...options,
     headers: {
       ...options.headers,
-      'cpticket': token,
+      cpticket: token,
       'Content-Type': 'application/json'
     }
   });
@@ -111,7 +111,9 @@ export const getDeployments = async (): Promise<DeploymentsResponse> => {
       errorText = await response.text();
     }
     const message = `HTTP ${response.status}: ${response.statusText}`;
-    console.error(`Deployments request failed: ${message}\nDetails: ${errorText}`);
+    console.error(
+      `Deployments request failed: ${message}\nDetails: ${errorText}`
+    );
     throw new Error(message);
   }
 
@@ -132,7 +134,9 @@ export const getBuildStatus = async (buildId: string): Promise<any> => {
       errorText = await response.text();
     }
     const message = `HTTP ${response.status}: ${response.statusText}`;
-    console.error(`Build status request failed: ${message}\nDetails: ${errorText}`);
+    console.error(
+      `Build status request failed: ${message}\nDetails: ${errorText}`
+    );
     throw new Error(message);
   }
 
@@ -140,7 +144,9 @@ export const getBuildStatus = async (buildId: string): Promise<any> => {
   return data;
 };
 
-export const getDeploymentStatus = async (deploymentId: string): Promise<any> => {
+export const getDeploymentStatus = async (
+  deploymentId: string
+): Promise<any> => {
   const url = `${HOST_URL}/api/ogc/deploymentJobs/${deploymentId}`;
 
   const response = await fetchWithAuth(url);
@@ -153,7 +159,9 @@ export const getDeploymentStatus = async (deploymentId: string): Promise<any> =>
       errorText = await response.text();
     }
     const message = `HTTP ${response.status}: ${response.statusText}`;
-    console.error(`Deployment status request failed: ${message}\nDetails: ${errorText}`);
+    console.error(
+      `Deployment status request failed: ${message}\nDetails: ${errorText}`
+    );
     throw new Error(message);
   }
 

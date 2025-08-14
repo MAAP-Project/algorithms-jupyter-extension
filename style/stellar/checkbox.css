@@ -6,6 +6,7 @@
     color: var(--st-react-checkbox-label-color);
     cursor: pointer;
   }
+
   &:hover .st-react-checkbox--label {
     color: var(--st-react-checkbox-label-hover-color);
   }
@@ -41,6 +42,7 @@
     background: var(--st-react-checkbox-checked-background);
     border-color: var(--st-react-checkbox-checked-border-color);
     color: var(--st-react-checkbox-checked-color);
+
     &:hover {
       background: var(--st-react-checkbox-checked-hover-background);
       border-color: var(--st-react-checkbox-checked-hover-border-color);
