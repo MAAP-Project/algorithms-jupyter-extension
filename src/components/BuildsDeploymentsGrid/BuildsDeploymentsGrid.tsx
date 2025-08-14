@@ -18,7 +18,7 @@ import {
   TextField
 } from '@mui/material';
 import { openRegisterAlgorithm } from '../../utils/utils';
-import { getBuilds, getDeployments } from '../../utils/api';
+import { getBuilds, getDeployments, getBuildStatus, getDeploymentStatus } from '../../utils/api';
 import { hasMaapToken, setMaapToken } from '../../utils/auth';
 import { MAAP_PROFILE_URL } from '../../constants';
 import { Build, Deployment, BuildDeploymentItem } from '../../types/build';
@@ -26,6 +26,7 @@ import { ExpandedState } from '@tanstack/react-table';
 import IconButton from '@mui/material/IconButton';
 import Tooltip from '@mui/material/Tooltip';
 import LaunchIcon from '@mui/icons-material/Launch';
+import RefreshIcon from '@mui/icons-material/Refresh';
 
 export const BuildsDeploymentsGrid = ({ jupyterApp }) => {
   const [items, setItems] = useState<BuildDeploymentItem[]>([]);
@@ -35,6 +36,7 @@ export const BuildsDeploymentsGrid = ({ jupyterApp }) => {
   >({});
   const [showTokenModal, setShowTokenModal] = useState(false);
   const [token, setToken] = useState('');
+  const [isRefreshing, setIsRefreshing] = useState(false);
 
   const handleCloseTokenModal = () => {
     setShowTokenModal(false);
@@ -117,6 +119,112 @@ export const BuildsDeploymentsGrid = ({ jupyterApp }) => {
     }));
   };
 
+  const isNonFinalState = (status: string) => {
+    const finalStates = ['successful', 'failed', 'canceled', 'cancelled', 'dismissed'];
+    return !finalStates.includes(status.toLowerCase());
+  };
+
+  const refreshNonFinalStates = async () => {
+    if (!hasMaapToken() || isRefreshing) {
+      return;
+    }
+
+    setIsRefreshing(true);
+    try {
+      console.log('Refreshing builds and deployments...');
+      
+      // First, fetch fresh data to get any new builds/deployments
+      const [buildsResponse, deploymentsResponse] = await Promise.allSettled([
+        getBuilds(),
+        getDeployments().catch(() => ({ deploymentJobs: [] }))
+      ]);
+
+      const builds = buildsResponse.status === 'fulfilled' ? buildsResponse.value.builds : [];
+      const deployments = deploymentsResponse.status === 'fulfilled' ? deploymentsResponse.value.deploymentJobs : [];
+
+      const freshBuildItems = transformBuildsToItems(builds);
+      const freshDeploymentItems = transformDeploymentsToItems(deployments);
+      const freshAllItems = [...freshBuildItems, ...freshDeploymentItems];
+
+      // Create a map of existing items for comparison
+      const existingItemsMap = new Map(items.map(item => [item.id, item]));
+      
+      // Identify new items and items that need status updates
+      const newItems = freshAllItems.filter(item => !existingItemsMap.has(item.id));
+      const itemsToRefresh = freshAllItems.filter(item => 
+        existingItemsMap.has(item.id) && isNonFinalState(item.status)
+      );
+
+      console.log(`Found ${newItems.length} new items and ${itemsToRefresh.length} items to refresh`);
+
+      if (newItems.length > 0) {
+        console.log('New items found:', newItems.map(item => `${item.type} ${item.id}`));
+      }
+
+      // For items that need status refresh, get individual status
+      const refreshPromises = itemsToRefresh.map(async (item) => {
+        try {
+          let updatedData;
+          if (item.type === 'build') {
+            updatedData = await getBuildStatus(item.id);
+          } else {
+            updatedData = await getDeploymentStatus(item.id);
+          }
+          return { 
+            id: item.id, 
+            status: updatedData.status,
+            updated: updatedData.updated,
+            pipelineLink: updatedData.pipelineLink,
+            deploymentLink: updatedData.deploymentLink,
+            deploymentError: updatedData.deploymentError
+          };
+        } catch (error) {
+          console.error(`Failed to refresh status for ${item.type} ${item.id}:`, error);
+          return { id: item.id, status: item.status }; // Keep current status on error
+        }
+      });
+
+      const refreshedData = await Promise.all(refreshPromises);
+      const refreshMap = new Map(refreshedData.map(item => [item.id, item]));
+
+      // Combine fresh data with updated statuses
+      const updatedItems = freshAllItems.map(item => {
+        const refreshedItem = refreshMap.get(item.id);
+        if (refreshedItem && refreshedItem.status !== item.status) {
+          console.log(`Updated ${item.type} ${item.id} status: ${item.status} -> ${refreshedItem.status}`);
+          return { 
+            ...item, 
+            status: refreshedItem.status,
+            updated: refreshedItem.updated || item.updated,
+            pipelineLink: refreshedItem.pipelineLink || item.pipelineLink,
+            deploymentLink: refreshedItem.deploymentLink || item.deploymentLink,
+            deploymentError: refreshedItem.deploymentError || item.deploymentError
+          };
+        }
+        return item;
+      });
+
+      // Sort by created date (most recent first)
+      const sortedItems = updatedItems.sort((a, b) => {
+        const dateA = new Date(a.created).getTime();
+        const dateB = new Date(b.created).getTime();
+        return dateB - dateA;
+      });
+
+      setItems(sortedItems);
+
+      if (newItems.length > 0 || refreshedData.some(item => item.status !== items.find(i => i.id === item.id)?.status)) {
+        console.log('Refresh completed with updates');
+      } else {
+        console.log('Refresh completed - no changes detected');
+      }
+    } catch (error) {
+      console.error('Error during refresh:', error);
+    } finally {
+      setIsRefreshing(false);
+    }
+  };
+
   const fetchData = async () => {
     if (!hasMaapToken()) {
       console.warn('No MAAP PGT token detected.');
@@ -177,9 +285,10 @@ export const BuildsDeploymentsGrid = ({ jupyterApp }) => {
       case 'error':
         return 'error';
       case 'running':
-      case 'pending':
       case 'accepted':
         return 'primary';
+      case 'pending':
+        return 'warning'; // This will be mustard/orange color
       case 'canceled':
       case 'cancelled':
         return 'warning';
@@ -353,6 +462,16 @@ export const BuildsDeploymentsGrid = ({ jupyterApp }) => {
         <Typography variant="h6" sx={{ ml: 2, mr: 2 }}>
           My Builds & Deployments
         </Typography>
+        <Tooltip title="Refresh non-final states" placement="top" arrow>
+          <IconButton
+            size="small"
+            onClick={refreshNonFinalStates}
+            disabled={isRefreshing}
+            sx={{ mr: 2 }}
+          >
+            <RefreshIcon fontSize="small" />
+          </IconButton>
+        </Tooltip>
         <button
           className="st-button"
           onClick={() => openRegisterAlgorithm(jupyterApp, null)}

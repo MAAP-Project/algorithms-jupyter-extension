@@ -118,3 +118,45 @@ export const getDeployments = async (): Promise<DeploymentsResponse> => {
   const data = await response.json();
   return data;
 };
+
+export const getBuildStatus = async (buildId: string): Promise<any> => {
+  const url = `${HOST_URL}/api/build/${buildId}`;
+
+  const response = await fetchWithAuth(url);
+
+  if (!response.ok) {
+    let errorText: string;
+    try {
+      errorText = await response.json();
+    } catch (e) {
+      errorText = await response.text();
+    }
+    const message = `HTTP ${response.status}: ${response.statusText}`;
+    console.error(`Build status request failed: ${message}\nDetails: ${errorText}`);
+    throw new Error(message);
+  }
+
+  const data = await response.json();
+  return data;
+};
+
+export const getDeploymentStatus = async (deploymentId: string): Promise<any> => {
+  const url = `${HOST_URL}/api/ogc/deploymentJobs/${deploymentId}`;
+
+  const response = await fetchWithAuth(url);
+
+  if (!response.ok) {
+    let errorText: string;
+    try {
+      errorText = await response.json();
+    } catch (e) {
+      errorText = await response.text();
+    }
+    const message = `HTTP ${response.status}: ${response.statusText}`;
+    console.error(`Deployment status request failed: ${message}\nDetails: ${errorText}`);
+    throw new Error(message);
+  }
+
+  const data = await response.json();
+  return data;
+};
