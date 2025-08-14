@@ -5,6 +5,7 @@ import { IDefaultFileBrowser } from '@jupyterlab/filebrowser';
 import { IDocumentManager } from '@jupyterlab/docmanager';
 import { DataGrid } from './components/DataGrid/DataGrid';
 import { RegistrationForm } from './components/RegistrationForm/RegistrationForm';
+import { BuildsDeploymentsGrid } from './components/BuildsDeploymentsGrid/BuildsDeploymentsGrid';
 
 export class AlgorithmsWidget extends ReactWidget {
   jupyterApp: JupyterFrontEnd;
@@ -47,5 +48,17 @@ export class RegisterAlgorithmsWidget extends ReactWidget {
         />
       </div>
     );
+  }
+}
+
+export class BuildsDeploymentsWidget extends ReactWidget {
+  jupyterApp: JupyterFrontEnd;
+  constructor(jupyterApp: JupyterFrontEnd) {
+    super();
+    this.jupyterApp = jupyterApp;
+  }
+
+  render(): JSX.Element {
+    return <BuildsDeploymentsGrid jupyterApp={this.jupyterApp} />;
   }
 }

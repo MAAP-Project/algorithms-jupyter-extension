@@ -5,7 +5,11 @@ import {
 import { ILauncher } from '@jupyterlab/launcher';
 import { reactIcon } from '@jupyterlab/ui-components';
 import { MainAreaWidget } from '@jupyterlab/apputils';
-import { AlgorithmsWidget, RegisterAlgorithmsWidget } from './widgets';
+import {
+  AlgorithmsWidget,
+  RegisterAlgorithmsWidget,
+  BuildsDeploymentsWidget
+} from './widgets';
 import { JUPYTER_EXT } from './constants';
 import {
   IDefaultFileBrowser,
@@ -87,4 +91,45 @@ const registerAlgorithmsPlugin: JupyterFrontEndPlugin<void> = {
   }
 };
 
-export default [listAlgorithmsPlugin, registerAlgorithmsPlugin];
+const buildsDeploymentsPlugin: JupyterFrontEndPlugin<void> = {
+  id: JUPYTER_EXT.BUILDS_DEPLOYMENTS_OPEN_COMMAND,
+  description:
+    'A MAAP JupyterLab plugin for viewing user builds and deployments.',
+  autoStart: true,
+  requires: [ILauncher, IFileBrowserFactory],
+  activate: (app: JupyterFrontEnd, launcher: ILauncher) => {
+    const { commands } = app;
+    const command = JUPYTER_EXT.BUILDS_DEPLOYMENTS_OPEN_COMMAND;
+    let buildsDeploymentsWidget: MainAreaWidget<BuildsDeploymentsWidget> | null =
+      null;
+
+    commands.addCommand(command, {
+      caption: 'My Builds & Deployments',
+      label: 'My Builds & Deployments',
+      icon: args => (args['isPalette'] ? undefined : reactIcon),
+      execute: () => {
+        const content = new BuildsDeploymentsWidget(app);
+        buildsDeploymentsWidget = new MainAreaWidget<BuildsDeploymentsWidget>({
+          content
+        });
+        buildsDeploymentsWidget.title.label = 'My Builds & Deployments';
+        app.shell.add(buildsDeploymentsWidget, 'main');
+      }
+    });
+
+    if (launcher) {
+      launcher.add({
+        command,
+        category: 'MAAP Plugins'
+      });
+    }
+
+    console.log('JupyterLab MAAP plugin builds-deployments is activated!');
+  }
+};
+
+export default [
+  listAlgorithmsPlugin,
+  registerAlgorithmsPlugin,
+  buildsDeploymentsPlugin
+];
