@@ -32,14 +32,25 @@ import Tooltip from '@mui/material/Tooltip';
 import LaunchIcon from '@mui/icons-material/Launch';
 import RefreshIcon from '@mui/icons-material/Refresh';
 
+/**
+ * BuildsDeploymentsGrid Component
+ *
+ * Displays algorithm builds and their deployment statuses in a data grid.
+ * Supports refreshing, expanding rows for details, and managing authentication tokens.
+ */
 export const BuildsDeploymentsGrid = ({ jupyterApp }) => {
+  // Main data state - holds all build/deployment items displayed in the grid
   const [items, setItems] = useState<BuildDeploymentItem[]>([]);
+  // Track which table rows are expanded to show details
   const [expandedRowIds, setExpandedRowIds] = useState<Set<string>>(new Set());
+  // Cache expanded row details for performance
   const [rowDetails, setRowDetails] = useState<
     Record<string, BuildDeploymentItem | null>
   >({});
+  // Controls token authentication modal visibility
   const [showTokenModal, setShowTokenModal] = useState(false);
   const [token, setToken] = useState('');
+  // Prevents multiple simultaneous refresh operations
   const [isRefreshing, setIsRefreshing] = useState(false);
 
   const handleCloseTokenModal = () => {
@@ -53,6 +64,10 @@ export const BuildsDeploymentsGrid = ({ jupyterApp }) => {
     fetchData();
   };
 
+  /**
+   * Handles row expansion/collapse in the data grid
+   * Manages which rows show detailed information
+   */
   const handleRowExpand = async (
     updater: ExpandedState | ((old: ExpandedState) => ExpandedState)
   ) => {
@@ -87,6 +102,10 @@ export const BuildsDeploymentsGrid = ({ jupyterApp }) => {
     setExpandedRowIds(updatedSet);
   };
 
+  /**
+   * Utility function to extract deployment ID from API href URLs
+   * Handles both "/ogc/deploymentJobs/123" and "/api/ogc/deploymentJobs/123" formats
+   */
   const extractDeploymentId = (deploymentHref: string): string | null => {
     try {
       // Extract deployment ID from href like "/ogc/deploymentJobs/123" or "/api/ogc/deploymentJobs/123"
@@ -102,13 +121,36 @@ export const BuildsDeploymentsGrid = ({ jupyterApp }) => {
     }
   };
 
-  const getDefaultDeploymentStatus = (build: Build): string => {
+  /**
+   * Determines the initial deployment status for a build item
+   * Key feature: Preserves existing final deployment statuses to prevent UI flickering during refresh
+   */
+  const getDefaultDeploymentStatus = (
+    build: Build,
+    existingDeploymentStatus?: string
+  ): string => {
     if (!build.deploymentLink) {
+      // If build is successful but has no deployment link, it should show "Not found"
+      if (build.status.toLowerCase() === 'successful') {
+        return 'Not found';
+      }
       return 'N/A';
+    }
+    // If we have an existing deployment status that's in a final state, preserve it
+    // This prevents "Loading..." from showing for deployments that are already completed
+    if (
+      existingDeploymentStatus &&
+      isDeploymentInFinalState(existingDeploymentStatus)
+    ) {
+      return existingDeploymentStatus;
     }
     return 'Loading...'; // Will be updated from deployment endpoint
   };
 
+  /**
+   * Fetches deployment status and pipeline data for builds that have deployment links
+   * Called asynchronously after initial build data is loaded
+   */
   const fetchDeploymentDataForBuilds = async (
     items: BuildDeploymentItem[]
   ): Promise<BuildDeploymentItem[]> => {
@@ -146,27 +188,51 @@ export const BuildsDeploymentsGrid = ({ jupyterApp }) => {
     return updatedItems;
   };
 
-  const transformBuildsToItems = (builds: Build[]): BuildDeploymentItem[] => {
-    return builds.map(build => ({
-      id: build.build_id,
-      type: 'build' as const,
-      name:
-        build.repository_url?.split('/').pop()?.replace('.git', '') ||
-        build.build_id,
-      status: build.status,
-      created: build.created,
-      updated: build.updated,
-      repository_url: build.repository_url,
-      version: build.branch_ref,
-      links: build.links,
-      pipelineLink: build.pipelineLink,
-      deploymentLink: build.deploymentLink, // Keep as-is (deployment endpoint link)
-      deploymentPipelineLink: undefined, // Will be set from deployment response
-      deploymentError: build.deploymentError,
-      deploymentStatus: getDefaultDeploymentStatus(build)
-    }));
+  /**
+   * Transforms raw build data from API into grid display items
+   * Preserves existing deployment statuses and pipeline links when available
+   */
+  const transformBuildsToItems = (
+    builds: Build[],
+    existingItems?: BuildDeploymentItem[]
+  ): BuildDeploymentItem[] => {
+    // Create a map of existing items for quick lookup during transformation
+    const existingItemsMap = existingItems
+      ? new Map(existingItems.map(item => [item.id, item]))
+      : new Map();
+
+    return builds.map(build => {
+      const existingItem = existingItemsMap.get(build.build_id);
+      return {
+        id: build.build_id,
+        type: 'build' as const,
+        name:
+          build.repository_url?.split('/').pop()?.replace('.git', '') ||
+          build.build_id,
+        status: build.status,
+        created: build.created,
+        updated: build.updated,
+        repository_url: build.repository_url,
+        version: build.branch_ref,
+        links: build.links,
+        pipelineLink: build.pipelineLink,
+        deploymentLink: build.deploymentLink, // Keep as-is (deployment endpoint link)
+        deploymentPipelineLink:
+          existingItem?.deploymentPipelineLink || undefined, // Preserve existing pipeline link
+        deploymentError: build.deploymentError,
+        // Key: Pass existing deployment status to prevent "Loading..." for final states
+        deploymentStatus: getDefaultDeploymentStatus(
+          build,
+          existingItem?.deploymentStatus
+        )
+      };
+    });
   };
 
+  /**
+   * Determines if a build status requires periodic refresh updates
+   * Used to identify which builds need status polling
+   */
   const isNonFinalState = (status: string) => {
     const finalStates = [
       'successful',
@@ -178,6 +244,36 @@ export const BuildsDeploymentsGrid = ({ jupyterApp }) => {
     return !finalStates.includes(status.toLowerCase());
   };
 
+  /**
+   * Checks if a deployment status represents a completed/final state
+   * Final states should be preserved during refresh to prevent UI flickering
+   */
+  const isDeploymentInFinalState = (deploymentStatus: string) => {
+    if (
+      !deploymentStatus ||
+      deploymentStatus === 'Loading...' ||
+      deploymentStatus === 'N/A'
+    ) {
+      return false;
+    }
+    const finalDeploymentStates = [
+      'deployed',
+      'successful',
+      'failed',
+      'error',
+      'canceled',
+      'cancelled',
+      'dismissed',
+      'not found'
+    ];
+    return finalDeploymentStates.includes(deploymentStatus.toLowerCase());
+  };
+
+  /**
+   * Refresh function triggered by the refresh button
+   * Only updates builds with non-final states to avoid unnecessary API calls
+   * Preserves final deployment statuses to prevent UI flickering
+   */
   const refreshNonFinalStates = async () => {
     if (!hasMaapToken() || isRefreshing) {
       return;
@@ -191,18 +287,25 @@ export const BuildsDeploymentsGrid = ({ jupyterApp }) => {
       const buildsResponse = await getBuilds();
       const builds = buildsResponse.builds;
 
-      const freshBuildItems = transformBuildsToItems(builds);
+      // Transform builds while preserving existing deployment statuses
+      const freshBuildItems = transformBuildsToItems(builds, items);
       const freshAllItems = freshBuildItems;
 
       // Create a map of existing items for comparison
       const existingItemsMap = new Map(items.map(item => [item.id, item]));
 
       // Identify new items and items that need status updates
+      // Refresh items that are in non-final states OR successful builds with non-final deployment status
       const newItems = freshAllItems.filter(
         item => !existingItemsMap.has(item.id)
       );
       const itemsToRefresh = freshAllItems.filter(
-        item => existingItemsMap.has(item.id) && isNonFinalState(item.status)
+        item =>
+          existingItemsMap.has(item.id) &&
+          (isNonFinalState(item.status) ||
+            (item.status.toLowerCase() === 'successful' &&
+              item.deploymentStatus &&
+              !isDeploymentInFinalState(item.deploymentStatus)))
       );
 
       console.log(
@@ -216,7 +319,7 @@ export const BuildsDeploymentsGrid = ({ jupyterApp }) => {
         );
       }
 
-      // For items that need status refresh, get individual status
+      // For items that need status refresh, fetch updated build and deployment data
       const refreshPromises = itemsToRefresh.map(async item => {
         try {
           // Always get build status first (since we only have builds now)
@@ -266,6 +369,7 @@ export const BuildsDeploymentsGrid = ({ jupyterApp }) => {
       const refreshMap = new Map(refreshedData.map(item => [item.id, item]));
 
       // Combine fresh data with updated statuses
+      // Only update items that actually have status changes
       const updatedItems = freshAllItems.map(item => {
         const refreshedItem = refreshMap.get(item.id);
         if (
@@ -320,6 +424,10 @@ export const BuildsDeploymentsGrid = ({ jupyterApp }) => {
     }
   };
 
+  /**
+   * Initial data loading function called on component mount
+   * Fetches builds and then asynchronously loads deployment data
+   */
   const fetchData = async () => {
     if (!hasMaapToken()) {
       console.warn('No MAAP PGT token detected.');
@@ -333,7 +441,8 @@ export const BuildsDeploymentsGrid = ({ jupyterApp }) => {
       const buildsResponse = await getBuilds();
       console.log('Builds response:', buildsResponse);
 
-      const buildItems = transformBuildsToItems(buildsResponse.builds);
+      // Transform builds, preserving any existing deployment data
+      const buildItems = transformBuildsToItems(buildsResponse.builds, items);
       console.log('Transformed build items:', buildItems);
 
       // Sort by created date (most recent first)
@@ -347,6 +456,7 @@ export const BuildsDeploymentsGrid = ({ jupyterApp }) => {
       setItems(sortedItems);
 
       // Fetch deployment data asynchronously for builds with deployment links
+      // This updates deployment statuses from "Loading..." to actual values
       const itemsWithDeploymentData =
         await fetchDeploymentDataForBuilds(sortedItems);
       console.log('Items with deployment data:', itemsWithDeploymentData);
@@ -360,6 +470,9 @@ export const BuildsDeploymentsGrid = ({ jupyterApp }) => {
     fetchData();
   }, []);
 
+  /**
+   * Returns Material-UI color theme for build status chips
+   */
   const getStatusColor = (status: string, type: string) => {
     switch (status.toLowerCase()) {
       case 'successful':
@@ -382,6 +495,9 @@ export const BuildsDeploymentsGrid = ({ jupyterApp }) => {
     }
   };
 
+  /**
+   * Returns Material-UI color theme for deployment status chips
+   */
   const getDeploymentStatusColor = (status: string) => {
     switch (status.toLowerCase()) {
       case 'deployed':
@@ -405,6 +521,7 @@ export const BuildsDeploymentsGrid = ({ jupyterApp }) => {
     }
   };
 
+  // Table column definitions for Material React Table
   const columns = useMemo<MRT_ColumnDef<BuildDeploymentItem>[]>(
     () => [
       {
@@ -423,27 +540,58 @@ export const BuildsDeploymentsGrid = ({ jupyterApp }) => {
       {
         accessorKey: 'status',
         header: 'Build Status',
-        size: 100,
+        size: 150,
         Cell: ({ row }) => (
-          <Chip
-            label={row.original.status}
-            size="small"
-            color={getStatusColor(row.original.status, row.original.type)}
-          />
+          <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+            <Chip
+              label={row.original.status}
+              size="small"
+              color={getStatusColor(row.original.status, row.original.type)}
+            />
+            {row.original.pipelineLink && (
+              <Tooltip title="View Build Pipeline" placement="top" arrow>
+                <IconButton
+                  size="small"
+                  onClick={() =>
+                    window.open(row.original.pipelineLink?.href, '_blank')
+                  }
+                >
+                  <LaunchIcon fontSize="small" />
+                </IconButton>
+              </Tooltip>
+            )}
+          </Box>
         )
       },
       {
         accessorKey: 'deploymentStatus',
         header: 'Deployment Status',
-        size: 130,
+        size: 180,
         Cell: ({ row }) => {
           const deploymentStatus = row.original.deploymentStatus;
           return (
-            <Chip
-              label={deploymentStatus || 'Unknown'}
-              size="small"
-              color={getDeploymentStatusColor(deploymentStatus || 'Unknown')}
-            />
+            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+              <Chip
+                label={deploymentStatus || 'Unknown'}
+                size="small"
+                color={getDeploymentStatusColor(deploymentStatus || 'Unknown')}
+              />
+              {row.original.deploymentPipelineLink && (
+                <Tooltip title="View Deployment Pipeline" placement="top" arrow>
+                  <IconButton
+                    size="small"
+                    onClick={() =>
+                      window.open(
+                        row.original.deploymentPipelineLink?.href,
+                        '_blank'
+                      )
+                    }
+                  >
+                    <LaunchIcon fontSize="small" color="secondary" />
+                  </IconButton>
+                </Tooltip>
+              )}
+            </Box>
           );
         }
       },
@@ -475,46 +623,6 @@ export const BuildsDeploymentsGrid = ({ jupyterApp }) => {
             : '-';
           return formatted;
         }
-      },
-      {
-        accessorKey: 'actions',
-        header: 'Actions',
-        muiTableHeadCellProps: {
-          align: 'center'
-        },
-        enableSorting: false,
-        muiTableBodyCellProps: { align: 'center' },
-        Cell: ({ row }) => (
-          <Box sx={{ display: 'flex', gap: 1, justifyContent: 'center' }}>
-            {row.original.pipelineLink && (
-              <Tooltip title="View Pipeline" placement="top" arrow>
-                <IconButton
-                  size="small"
-                  onClick={() =>
-                    window.open(row.original.pipelineLink?.href, '_blank')
-                  }
-                >
-                  <LaunchIcon fontSize="small" />
-                </IconButton>
-              </Tooltip>
-            )}
-            {row.original.deploymentPipelineLink && (
-              <Tooltip title="View Deployment Pipeline" placement="top" arrow>
-                <IconButton
-                  size="small"
-                  onClick={() =>
-                    window.open(
-                      row.original.deploymentPipelineLink?.href,
-                      '_blank'
-                    )
-                  }
-                >
-                  <LaunchIcon fontSize="small" color="secondary" />
-                </IconButton>
-              </Tooltip>
-            )}
-          </Box>
-        )
       }
     ],
     []
@@ -522,6 +630,7 @@ export const BuildsDeploymentsGrid = ({ jupyterApp }) => {
 
   console.log('Rendering table with items:', items);
 
+  // Material React Table configuration with custom styling and behavior
   const table = useMaterialReactTable({
     columns,
     data: items,
