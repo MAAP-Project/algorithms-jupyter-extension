@@ -43,6 +43,8 @@ export const registerAlgorithm = async (data: any): Promise<any> => {
   const url = `${HOST_URL}/api/build`;
   let message = '';
 
+  console.log('Data to register algorithm: ', data);
+
   const response = await fetch(url, {
     method: 'POST',
     headers: {
@@ -61,7 +63,7 @@ export const registerAlgorithm = async (data: any): Promise<any> => {
   }
 
   const rsp = await response.json();
-  console.log('Response from algo reg: ', rsp);
+  console.log('Response from algorithm registration submission:: ', rsp);
   if (rsp.status === 'accepted') {
     message = `Algorithm successfully submitted for registration. Build ID: ${rsp.build_id}. View progress here.`;
     Notification.success(message, { autoClose: false });

@@ -175,7 +175,7 @@ export const RegistrationForm = ({
       algorithmData.inputs = inputRows.map(row => ({
         name: row.name,
         label: row.label,
-        description: row.description,
+        doc: row.description,
         type: row.type,
         default_value: row.defaultValue
       }));
