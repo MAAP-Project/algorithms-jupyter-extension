@@ -1,5 +1,7 @@
 import { HOST_URL } from '../constants';
 import { Notification } from '@jupyterlab/apputils';
+import { BuildsResponse, DeploymentsResponse } from '../types/build';
+import { getMaapToken } from './auth';
 
 // TODO: make promise type the type of the ogc request, of which processes is only a single key
 export const getProcesses = async (): Promise<any> => {
@@ -45,13 +47,8 @@ export const registerAlgorithm = async (data: any): Promise<any> => {
 
   console.log('Data to register algorithm: ', data);
 
-  const response = await fetch(url, {
+  const response = await fetchWithAuth(url, {
     method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-      // eslint-disable-next-line prettier/prettier
-      'cpticket': localStorage.getItem('MAAP_PGT_TOKEN') || ''
-    },
     body: data
   });
 
@@ -68,4 +65,113 @@ export const registerAlgorithm = async (data: any): Promise<any> => {
     message = `Algorithm successfully submitted for registration. Build ID: ${rsp.build_id}. View progress here.`;
     Notification.success(message, { autoClose: false });
   }
+};
+
+// Helper function for authenticated requests using cpticket header
+const fetchWithAuth = async (url: string, options: RequestInit = {}) => {
+  const token = getMaapToken();
+  if (!token) {
+    throw new Error('No authentication token available');
+  }
+
+  return fetch(url, {
+    ...options,
+    headers: {
+      ...options.headers,
+      cpticket: token,
+      'Content-Type': 'application/json'
+    }
+  });
+};
+
+export const getBuilds = async (): Promise<BuildsResponse> => {
+  const url = `${HOST_URL}/api/build`;
+
+  const response = await fetchWithAuth(url);
+
+  if (!response.ok) {
+    let errorText: string;
+    try {
+      errorText = await response.json();
+    } catch (e) {
+      errorText = await response.text();
+    }
+    const message = `HTTP ${response.status}: ${response.statusText}`;
+    console.error(`Builds request failed: ${message}\nDetails: ${errorText}`);
+    throw new Error(message);
+  }
+
+  const data = await response.json();
+  return data;
+};
+
+export const getDeployments = async (): Promise<DeploymentsResponse> => {
+  const url = `${HOST_URL}/api/ogc/deploymentJobs`;
+
+  const response = await fetchWithAuth(url);
+
+  if (!response.ok) {
+    let errorText: string;
+    try {
+      errorText = await response.json();
+    } catch (e) {
+      errorText = await response.text();
+    }
+    const message = `HTTP ${response.status}: ${response.statusText}`;
+    console.error(
+      `Deployments request failed: ${message}\nDetails: ${errorText}`
+    );
+    throw new Error(message);
+  }
+
+  const data = await response.json();
+  return data;
+};
+
+export const getBuildStatus = async (buildId: string): Promise<any> => {
+  const url = `${HOST_URL}/api/build/${buildId}`;
+
+  const response = await fetchWithAuth(url);
+
+  if (!response.ok) {
+    let errorText: string;
+    try {
+      errorText = await response.json();
+    } catch (e) {
+      errorText = await response.text();
+    }
+    const message = `HTTP ${response.status}: ${response.statusText}`;
+    console.error(
+      `Build status request failed: ${message}\nDetails: ${errorText}`
+    );
+    throw new Error(message);
+  }
+
+  const data = await response.json();
+  return data;
+};
+
+export const getDeploymentStatus = async (
+  deploymentId: string
+): Promise<any> => {
+  const url = `${HOST_URL}/api/ogc/deploymentJobs/${deploymentId}`;
+
+  const response = await fetchWithAuth(url);
+
+  if (!response.ok) {
+    let errorText: string;
+    try {
+      errorText = await response.json();
+    } catch (e) {
+      errorText = await response.text();
+    }
+    const message = `HTTP ${response.status}: ${response.statusText}`;
+    console.error(
+      `Deployment status request failed: ${message}\nDetails: ${errorText}`
+    );
+    throw new Error(message);
+  }
+
+  const data = await response.json();
+  return data;
 };
