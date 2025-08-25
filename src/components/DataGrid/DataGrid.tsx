@@ -243,6 +243,10 @@ export const DataGrid = ({ jupyterApp }) => {
             <h4>General Information</h4>
             <tbody>
               <tr>
+                <td className="st-label-cell">Algorithm ID</td>
+                <td>{processDetails.processID ?? '-'}</td>
+              </tr>
+              <tr>
                 <td className="st-label-cell">Code Repository</td>
                 <td>
                   <a
@@ -284,7 +288,7 @@ export const DataGrid = ({ jupyterApp }) => {
               </tr>
               <tr>
                 <td className="st-label-cell">Run Command</td>
-                <td>{processDetails.runCommand ?? '-'}</td>
+                <td>{processDetails.baseCommand ?? '-'}</td>
               </tr>
             </tbody>
           </table>
