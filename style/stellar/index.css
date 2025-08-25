@@ -8,7 +8,9 @@
   --st-white: #fff;
   --st-yellow: #ffdd5c;
   --st-yellow-light: #ffc93e;
+
   /* Gray Color Pallette. */
+
   /* When used as text, these are accessible on white and the lightest gray (#F8F8F8). */
   --st-gray-100: #1b1d1e;
   --st-gray-100-RGB: 27, 29, 30;
@@ -20,6 +22,7 @@
   --st-gray-70-RGB: 68, 76, 80, 1;
   --st-gray-60: #545f64;
   --st-gray-60-RGB: 84, 95, 100;
+
   /* When used as text, these are accessible on black and the darkest gray (#1B1D1E). */
   --st-gray-50: #969696;
   --st-gray-50-RGB: 150, 150, 150;
@@ -33,6 +36,7 @@
   --st-gray-15-RGB: 241, 242, 243;
   --st-gray-10: #f8f8f8;
   --st-gray-10-RGB: 248, 248, 248;
+
   /* Primary Color Pallette. */
   --st-primary-100: #0d2b4a;
   --st-primary-90: #133a5f;
@@ -49,17 +53,20 @@
   --st-primary-inverse-background-color: var(--st-gray-10);
   --st-primary-inverse-text-color: var(--st-white);
   --st-primary-text-color: var(--st-gray-10);
+
   /* Utility Colors */
-  --st-button-stroke: rgba(0, 0, 0, 0.16);
+  --st-button-stroke: rgb(0 0 0 / 16%);
   --st-error-red: #db5139;
   --st-success-green: #0eaf0a;
+
   /* Layout. */
   --st-grid-unit: 6px;
   --st-grid-unit2x: calc(var(--st-grid-unit) * 2);
   --st-grid-unit3x: calc(var(--st-grid-unit) * 3);
   --st-grid-unit4x: calc(var(--st-grid-unit) * 4);
+
   /* Typography. */
-  --st-typography-font-family: Inter, Roboto, Arial, Helvetica, sans-serif;
+  --st-typography-font-family: inter, roboto, arial, helvetica, sans-serif;
   --st-typography-header-font-family: var(--st-typography-font-family);
   --st-typography-header-color: var(--st-gray-100);
   --st-typography-header-font-weight: 500;
@@ -67,13 +74,13 @@
   --st-typography-header-line-height: 24px;
   --st-typography-header-letter-spacing: -0.00011em;
   --st-typography-label-font-family: var(--st-typography-font-family);
-  --st-typography-label-color: rgba(var(--st-gray-100-RGB), 0.65);
+  --st-typography-label-color: rgb(var(--st-gray-100-RGB) 0.65);
   --st-typography-label-font-weight: 500;
   --st-typography-label-font-size: 12px;
   --st-typography-label-line-height: 16px;
   --st-typography-label-letter-spacing: 0.01em;
   --st-typography-body-font-family: var(--st-typography-font-family);
-  --st-typography-body-color: rgba(var(--st-gray-100-RGB), 0.9);
+  --st-typography-body-color: rgb(var(--st-gray-100-RGB) 0.9);
   --st-typography-body-font-weight: 400;
   --st-typography-body-font-size: 12px;
   --st-typography-body-line-height: 16px;
@@ -91,7 +98,7 @@
   --st-typography-bold-line-height: 15px;
   --st-typography-bold-letter-spacing: 0.015em;
   --st-typography-small-caps-font-family: var(--st-typography-font-family);
-  --st-typography-small-caps-color: rgba(var(--st-gray-100-RGB), 0.65);
+  --st-typography-small-caps-color: rgb(var(--st-gray-100-RGB) 0.65);
   --st-typography-small-caps-font-weight: 700;
   --st-typography-small-caps-font-size: 11px;
   --st-typography-small-caps-line-height: 16px;
@@ -120,6 +127,7 @@
   --st-typography-display-body-font-size: 16px;
   --st-typography-display-body-line-height: 22px;
   --st-typography-display-body-letter-spacing: -0.011em;
+
   /* Button. */
   --st-button-disabled-opacity: 50%;
   --st-button-font-family: var(--st-typography-font-family);
@@ -129,17 +137,18 @@
   --st-button-letter-spacing: var(--st-typography-medium-letter-spacing);
   --st-button-primary-background-color: var(--st-primary-80);
   --st-button-primary-border: 1px solid var(--st-button-stroke);
-  --st-button-primary-color: rgba(var(--st-gray-10-RGB), 0.96);
+  --st-button-primary-color: rgb(var(--st-gray-10-RGB) 0.96);
   --st-button-primary-hover-background-color: var(--st-primary-90);
   --st-button-secondary-background-color: var(--st-white);
   --st-button-secondary-border: 1px solid var(--st-gray-20);
-  --st-button-secondary-color: rgba(var(--st-gray-80-RGB), 0.96);
+  --st-button-secondary-color: rgb(var(--st-gray-80-RGB) 0.96);
   --st-button-secondary-hover-background-color: var(--st-gray-10);
-  --st-button-tertiary-color: rgba(var(--st-gray-80-RGB), 0.96);
+  --st-button-tertiary-color: rgb(var(--st-gray-80-RGB) 0.96);
   --st-button-tertiary-hover-background-color: var(--st-gray-10);
   --st-button-icon-color: var(--st-gray-80);
   --st-button-icon-hover-background-color: var(--st-gray-10);
   --st-button-icon-min-width: var(--st-grid-unit3x);
+
   /* Input. */
   --st-input-border: 1px solid var(--st-gray-20);
   --st-input-background-color: var(--st-gray-10);
@@ -156,6 +165,7 @@
   --st-input-warning-background-color: rgb(253 180 98 / 20%);
   --st-input-textarea-min-width: calc(var(--st-grid-unit) * 14);
   --st-input-textarea-min-height: calc(var(--st-grid-unit) * 7);
+
   /* Select. */
   --st-select-background: var(--st-white);
   --st-select-border: 1px solid var(--st-button-stroke);
@@ -168,10 +178,11 @@
   --st-select-hover-background: var(--st-gray-10);
   --st-select-letter-spacing: var(--st-typography-label-letter-spacing);
   --st-select-line-height: var(--st-typography-label-line-height);
+
   /* Table. */
   --st-table-th-padding: var(--st-grid-unit);
   --st-table-th-background: var(--st-gray-10);
-  --st-table-th-box-shadow: inset 0px -1px 0px rgba(0, 0, 0, 0.09);
+  --st-table-th-box-shadow: inset 0px -1px 0px rgb(0 0 0 / 9%);
   --st-table-th-color: var(--st-gray-100);
   --st-table-th-font-family: var(--st-typography-font-family);
   --st-table-th-font-weight: var(--st-typography-medium-font-weight);
@@ -186,8 +197,10 @@
   --st-table-td-font-size: var(--st-typography-body-font-size);
   --st-table-td-line-height: var(--st-typography-body-line-height);
   --st-table-td-letter-spacing: var(--st-typography-body-letter-spacing);
+
   /* Card (not represented in design system). */
   --st-card-border: 1px solid rgb(0 0 0 / 12.5%);
+
   /* Badge */
   --st-badge-background: var(--st-primary-10);
   --st-badge-color: var(--st-gray-100);
@@ -220,36 +233,45 @@
   padding: 0 var(--st-grid-unit);
   user-select: none;
 }
+
 .st-button.large {
   height: var(--st-grid-unit4x);
   padding: var(--st-grid-unit) var(--st-grid-unit2x);
 }
+
 .st-button.large.icon {
   min-width: calc(var(--st-button-icon-min-width) + var(--st-grid-unit));
 }
+
 .st-button.secondary {
   background-color: var(--st-button-secondary-background-color);
   border: var(--st-button-secondary-border);
   color: var(--st-button-secondary-color);
 }
+
 .st-button.secondary:hover:not([disabled]) {
   background-color: var(--st-button-secondary-hover-background-color);
 }
+
 .st-button.tertiary {
   background-color: transparent;
   border: 0;
   color: var(--st-button-tertiary-color);
 }
+
 .st-button.tertiary:hover:not([disabled]) {
   background-color: var(--st-button-tertiary-hover-background-color);
 }
+
 .st-button:disabled {
   cursor: not-allowed;
   opacity: var(--st-button-disabled-opacity);
 }
+
 .st-button:hover:not([disabled]) {
   background-color: var(--st-button-primary-hover-background-color);
 }
+
 .st-button.icon {
   background-color: transparent;
   border: 0;
@@ -257,6 +279,7 @@
   min-width: var(--st-button-icon-min-width);
   padding: 0;
 }
+
 .st-button.icon:hover:not([disabled]) {
   background-color: var(--st-button-icon-hover-background-color);
 }
@@ -283,44 +306,54 @@
   line-height: var(--st-input-line-height);
   padding: var(--st-input-padding);
 }
+
 .st-input::placeholder {
   color: var(--st-input-placeholder-color);
 }
+
 .st-input:disabled {
   cursor: not-allowed;
   opacity: 0.5;
 }
+
 .st-input.error {
   background-color: var(--st-input-error-background-color);
   border: 1px solid var(--st-red);
   color: var(--st-red);
 }
+
 .st-input.error::placeholder {
   color: var(--st-red);
 }
+
 .st-input.error:disabled {
   background-color: var(--st-input-disabled-background-color);
   border: 1px solid var(--st-red);
   color: var(--st-input-disabled-color);
   cursor: not-allowed;
 }
+
 .st-input.error:disabled::placeholder {
   color: var(--st-input-disabled-color);
 }
+
 .st-input.warning {
   background-color: var(--st-input-warning-background-color);
   border: 1px solid var(--st-orange);
   color: var(--st-orange);
 }
+
 .st-input.warning::placeholder {
   color: var(--st-orange);
 }
+
 .st-input.warning:disabled {
   background-color: var(--st-input-disabled-background-color);
   border: 1px solid var(--st-orange);
   color: var(--st-input-disabled-color);
   cursor: not-allowed;
 }
+
 .st-input.warning:disabled::placeholder {
   color: var(--st-input-disabled-color);
 }
@@ -329,6 +362,7 @@ textarea.st-input {
   min-height: var(--st-input-textarea-min-height);
   min-width: var(--st-input-textarea-min-width);
 }
+
 textarea.st-input.no-resize {
   resize: none;
 }
@@ -346,13 +380,16 @@ textarea.st-input.no-resize {
   letter-spacing: var(--st-select-letter-spacing);
   line-height: var(--st-select-line-height);
 }
+
 .st-select:disabled {
   cursor: not-allowed;
   opacity: 0.5;
 }
+
 .st-select:hover:not([disabled], .error) {
   background: var(--st-select-hover-background);
 }
+
 .st-select.error {
   background-color: var(--st-select-error-background-color);
   border: 1px solid var(--st-red);
@@ -365,6 +402,7 @@ textarea.st-input.no-resize {
   flex-direction: column;
   width: 100%;
 }
+
 .st-table th {
   background: var(--st-table-th-background);
   box-shadow: var(--st-table-th-box-shadow);
@@ -376,17 +414,20 @@ textarea.st-input.no-resize {
   line-height: var(--st-table-th-line-height);
   padding: var(--st-table-th-padding);
 }
+
 .st-table tr {
   display: flex;
   flex: 1;
   width: 100%;
 }
+
 .st-table th,
 .st-table td {
   text-align: left;
   vertical-align: top;
   width: 100%;
 }
+
 .st-table td {
   box-shadow: var(--st-table-td-box-shadow);
   color: var(--st-table-td-color);
@@ -556,39 +597,45 @@ html {
   --st-primary-inverse-background-color: var(--st-gray-10);
   --st-primary-inverse-text-color: var(--st-white);
   --st-primary-text-color: var(--st-gray-10);
+
   /* Typography. */
   --st-typography-header-color: var(--st-gray-10);
-  --st-typography-label-color: rgba(var(--st-gray-10-RGB), 0.65);
-  --st-typography-body-color: rgba(var(--st-gray-10-RGB), 0.9);
+  --st-typography-label-color: rgb(var(--st-gray-10-RGB) 0.65);
+  --st-typography-body-color: rgb(var(--st-gray-10-RGB) 0.9);
   --st-typography-medium-color: var(--st-gray-10);
   --st-typography-bold-color: var(--st-gray-10);
-  --st-typography-small-caps-color: rgb(var(--st-gray-10-RGB), 0.65);
+  --st-typography-small-caps-color: rgb(var(--st-gray-10-RGB) 0.65);
   --st-typography-display-h1-color: var(--st-gray-10);
   --st-typography-display-h2-color: var(--st-gray-10);
   --st-typography-display-h3-color: var(--st-gray-10);
   --st-typography-display-body-color: var(--st-gray-10);
+
   /* Button. */
   --st-button-primary-background-color: var(--st-primary-70);
   --st-button-primary-hover-background-color: var(--st-primary-60);
-  --st-button-secondary-color: rgb(var(--st-gray-10-RGB), 0.96);
+  --st-button-secondary-color: rgb(var(--st-gray-10-RGB) 0.96);
   --st-button-secondary-background-color: var(--st-gray-70);
   --st-button-secondary-border: none;
   --st-button-secondary-hover-background-color: var(--st-gray-60);
-  --st-button-tertiary-color: rgb(var(--st-gray-10-RGB), 0.96);
+  --st-button-tertiary-color: rgb(var(--st-gray-10-RGB) 0.96);
   --st-button-tertiary-hover-background-color: var(--st-gray-80);
-  --st-button-icon-color: rgb(var(--st-gray-10-RGB), 0.96);
+  --st-button-icon-color: rgb(var(--st-gray-10-RGB) 0.96);
   --st-button-icon-hover-background-color: var(--st-gray-80);
+
   /* Input. */
   --st-input-background-color: var(--st-gray-70);
   --st-input-border: 1px solid var(--st-gray-60);
   --st-input-color: var(--st-gray-10);
   --st-input-placeholder-color: var(--st-gray-50);
+
   /* Select. */
   --st-select-background: var(--st-gray-70);
   --st-select-color: var(--st-gray-30);
   --st-select-hover-background: var(--st-gray-60);
+
   /* Card (not represented in design system). */
   --st-card-border: 1px solid rgb(255 255 255 / 12.5%);
+
   /* Table */
   --st-table-th-background: var(--st-gray-90);
   --st-table-th-box-shadow: inset 0px -1px 0px var(--st-gray-70);
@@ -596,6 +643,7 @@ html {
   --st-table-td-background: var(--st-gray-90);
   --st-table-td-color: var(--st-gray-10);
   --st-table-td-box-shadow: inset 0px -1px 0px var(--st-gray-70);
+
   /* Badge */
   --st-badge-background: var(--st-primary-40);
 }
