@@ -34,6 +34,7 @@ import {
   AlgorithmConfigInput
 } from '../../types/algorithmConfig';
 import { CustomFileDialog } from '../CustomFileDialog/CustomFileDialog';
+import * as yaml from 'yaml';
 
 export const RegistrationForm = ({
   jupyterApp,
@@ -45,7 +46,6 @@ export const RegistrationForm = ({
   docManager: IDocumentManager;
 }) => {
   const [showTokenModal, setShowTokenModal] = useState(false);
-  const [showRegistrationModal, setShowRegistrationModal] = useState(false);
   const [showFileDialog, setShowFileDialog] = useState(false);
   const [token, setToken] = useState('');
   const [inputRows, setInputRows] = useState<Array<AlgorithmInputRow>>([]);
@@ -53,10 +53,6 @@ export const RegistrationForm = ({
 
   const handleCloseTokenModal = () => {
     setShowTokenModal(false);
-  };
-
-  const handleCloseRegistrationModal = () => {
-    setShowRegistrationModal(false);
   };
 
   const addInputRow = () => {
@@ -197,8 +193,10 @@ export const RegistrationForm = ({
         : 'algorithm_config.yml');
     yamlContent && (await createFile(yamlContent, filePath, jupyterApp));
 
-    await registerAlgorithm(algorithmData);
-    setShowRegistrationModal(true);
+    const yamlObject = yaml.parse(yamlContent);
+    const jsonContent = JSON.stringify(yamlObject, null, 2);
+
+    await registerAlgorithm(jsonContent);
   };
 
   return (
@@ -211,24 +209,6 @@ export const RegistrationForm = ({
         fileBrowser={fileBrowser}
         docManager={docManager}
       />
-      <Dialog
-        open={showRegistrationModal}
-        onClose={handleCloseRegistrationModal}
-      >
-        <DialogTitle
-          sx={{ backgroundColor: 'green', color: 'white' }}
-        ></DialogTitle>
-        <DialogContent sx={{ paddingBottom: 0 }}>
-          <DialogContentText>
-            Algorithm submitted for registration.
-          </DialogContentText>
-          <DialogActions>
-            <Button type="submit" onClick={handleCloseRegistrationModal}>
-              Close
-            </Button>
-          </DialogActions>
-        </DialogContent>
-      </Dialog>
       <Dialog open={showTokenModal} onClose={handleCloseTokenModal}>
         <DialogTitle sx={{ backgroundColor: 'orange', color: 'white' }}>
           MAAP PGT Token Required

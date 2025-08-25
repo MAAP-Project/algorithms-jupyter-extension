@@ -10,7 +10,8 @@ import * as yaml from 'yaml';
 const _validateRAMMin = (ramMin: any) => {
   let msg = '';
   if (!ramMin) {
-    msg = 'Please specify the minimum amount of RAM required for the algorithm.';
+    msg =
+      'Please specify the minimum amount of RAM required for the algorithm.';
     console.error(msg);
     alert(msg);
     return false;

@@ -1,4 +1,5 @@
 import { HOST_URL } from '../constants';
+import { Notification } from '@jupyterlab/apputils';
 
 // TODO: make promise type the type of the ogc request, of which processes is only a single key
 export const getProcesses = async (): Promise<any> => {
@@ -40,6 +41,7 @@ export const getProcess = async (processResource: string): Promise<any> => {
  */
 export const registerAlgorithm = async (data: any): Promise<any> => {
   const url = `${HOST_URL}/api/build`;
+  let message = '';
 
   const response = await fetch(url, {
     method: 'POST',
@@ -48,17 +50,20 @@ export const registerAlgorithm = async (data: any): Promise<any> => {
       // eslint-disable-next-line prettier/prettier
       'cpticket': localStorage.getItem('MAAP_PGT_TOKEN') || ''
     },
-    body: JSON.stringify(data)
+    body: data
   });
 
   if (!response.ok) {
-    const errorText = await response.json();
-    const message = `HTTP ${response.status}: ${response.statusText}`;
-    console.error(`Request failed: ${message}\nDetails: ${errorText}`);
+    message = `Failed to submit algorithm for registration: \nHTTP ${response.status}: ${response.statusText}`;
+    Notification.error(message, { autoClose: false });
+    console.error(`Request failed: ${message}`);
     throw new Error(message);
   }
 
   const rsp = await response.json();
   console.log('Response from algo reg: ', rsp);
-  //return data;
+  if (rsp.status === 'accepted') {
+    message = `Algorithm successfully submitted for registration. Build ID: ${rsp.build_id}. View progress here.`;
+    Notification.success(message, { autoClose: false });
+  }
 };
