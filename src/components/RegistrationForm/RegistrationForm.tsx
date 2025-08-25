@@ -196,7 +196,7 @@ export const RegistrationForm = ({
     const yamlObject = yaml.parse(yamlContent);
     const jsonContent = JSON.stringify(yamlObject, null, 2);
 
-    await registerAlgorithm(jsonContent);
+    await registerAlgorithm(jsonContent, jupyterApp);
   };
 
   return (

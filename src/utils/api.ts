@@ -1,7 +1,8 @@
-import { HOST_URL } from '../constants';
+import { HOST_URL, JUPYTER_EXT } from '../constants';
 import { Notification } from '@jupyterlab/apputils';
 import { BuildsResponse, DeploymentsResponse } from '../types/build';
 import { getMaapToken } from './auth';
+import { openBuildDeploymentDashboard } from './utils';
 
 // TODO: make promise type the type of the ogc request, of which processes is only a single key
 export const getProcesses = async (): Promise<any> => {
@@ -41,11 +42,12 @@ export const getProcess = async (processResource: string): Promise<any> => {
  * @param processResource
  * @returns
  */
-export const registerAlgorithm = async (data: any): Promise<any> => {
+export const registerAlgorithm = async (
+  data: any,
+  jupyterApp?: any
+): Promise<any> => {
   const url = `${HOST_URL}/api/build`;
   let message = '';
-
-  console.log('Data to register algorithm: ', data);
 
   const response = await fetchWithAuth(url, {
     method: 'POST',
@@ -62,8 +64,24 @@ export const registerAlgorithm = async (data: any): Promise<any> => {
   const rsp = await response.json();
   console.log('Response from algorithm registration submission:: ', rsp);
   if (rsp.status === 'accepted') {
-    message = `Algorithm successfully submitted for registration. Build ID: ${rsp.build_id}. View progress here.`;
-    Notification.success(message, { autoClose: false });
+    message = `Algorithm successfully submitted for registration. Build ID: ${rsp.build_id}. `;
+
+    if (jupyterApp) {
+      Notification.success(message, {
+        autoClose: false,
+        actions: [
+          {
+            label: 'View build & deployment status',
+            callback: () => {
+              openBuildDeploymentDashboard(jupyterApp, null);
+            }
+          }
+        ]
+      });
+    } else {
+      // Fallback to plain text if no jupyterApp provided
+      Notification.success(message, { autoClose: false });
+    }
   }
 };
 

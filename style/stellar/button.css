@@ -3,7 +3,7 @@
   background-color: var(--st-button-primary-background-color);
   border: var(--st-button-primary-border);
   border-radius: 4px;
-  color: var(--st-button-primary-color);
+  color: var(--st-gray-10);
   cursor: pointer;
   display: inline-flex;
   font-family: var(--st-button-font-family);

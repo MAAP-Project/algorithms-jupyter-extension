@@ -137,7 +137,7 @@
   --st-button-letter-spacing: var(--st-typography-medium-letter-spacing);
   --st-button-primary-background-color: var(--st-primary-50);
   --st-button-primary-border: 1px solid var(--st-button-stroke);
-  --st-button-primary-color: rgb(var(--st-gray-10-RGB) 0.96);
+  --st-button-primary-color: rgb(--st-red 0.96);
   --st-button-primary-hover-background-color: var(--st-primary-90);
   --st-button-secondary-background-color: var(--st-white);
   --st-button-secondary-border: 1px solid var(--st-gray-20);

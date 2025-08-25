@@ -19,6 +19,24 @@ export const openRegisterAlgorithm = (jupyterApp, data) => {
   }
 };
 
+export const openBuildDeploymentDashboard = (jupyterApp, data) => {
+  if (
+    jupyterApp.commands.hasCommand(JUPYTER_EXT.BUILDS_DEPLOYMENTS_OPEN_COMMAND)
+  ) {
+    if (data === null) {
+      jupyterApp.commands.execute(
+        JUPYTER_EXT.BUILDS_DEPLOYMENTS_OPEN_COMMAND,
+        null
+      );
+    } else {
+      jupyterApp.commands.execute(
+        JUPYTER_EXT.BUILDS_DEPLOYMENTS_OPEN_COMMAND,
+        data
+      );
+    }
+  }
+};
+
 export const createFile = async (
   fileContent: string,
   filePath: string,
