@@ -12,6 +12,7 @@ export const FormRow = ({ formInput }: FormRowProps) => {
     <tr>
       <td>
         {formInput.label}
+        {formInput.required && <span style={{ color: 'red' }}> *</span>}
         <Tooltip title={formInput.tooltip}>
           <IconButton
             size="small"
@@ -27,6 +28,7 @@ export const FormRow = ({ formInput }: FormRowProps) => {
           name={formInput.name}
           placeholder={formInput.placeholder}
           className="st-input"
+          required={formInput.required}
         />
       </td>
     </tr>

@@ -15,7 +15,6 @@ export const MAAP_DOCS_REGISTER_ALGORITHM_URL =
 /**
  * Algorithm registration form fields
  * See AlgorithmData type in src/types/registration.ts
- * TODO: minRam vs ramMin -- check syntax
  */
 export const FORM_FIELDS = {
   algorithmName: {
@@ -24,6 +23,7 @@ export const FORM_FIELDS = {
     label: 'Algorithm Name',
     tooltip: 'The name of the algorithm.',
     placeholder: 'Enter algorithm name',
+    required: true,
     type: 'text'
   } as RegistrationFormInput,
   algorithmVersion: {
@@ -32,6 +32,7 @@ export const FORM_FIELDS = {
     label: 'Algorithm Version',
     tooltip: 'The version of the algorithm (e.g., develop, 1.0.0)',
     placeholder: 'Enter algorithm version',
+    required: true,
     type: 'text'
   } as RegistrationFormInput,
   algorithmDescription: {
@@ -40,6 +41,7 @@ export const FORM_FIELDS = {
     label: 'Algorithm Description',
     tooltip: 'Description of the algorithm.',
     placeholder: 'Enter algorithm description',
+    required: true,
     type: 'text'
   } as RegistrationFormInput,
   codeRepository: {
@@ -48,6 +50,7 @@ export const FORM_FIELDS = {
     label: 'Repository URL',
     tooltip: 'The public URL to the algorithm source code repository',
     placeholder: 'Enter code repository URL',
+    required: true,
     type: 'text'
   } as RegistrationFormInput,
   runCommand: {
@@ -57,24 +60,27 @@ export const FORM_FIELDS = {
     tooltip:
       'The main command to execute your algorithm (e.g., /app/sardem-sarsen/sardem-sarsem.sh)',
     placeholder: 'Enter run command',
+    required: true,
     type: 'text'
   } as RegistrationFormInput,
-  minRAM: {
-    name: 'minRAM',
-    pythonic_name: 'min_ram',
+  ramMin: {
+    name: 'ramMin',
+    pythonic_name: 'ram_min',
     label: 'Minimum RAM (GB)',
     tooltip:
       'The minimum amount of RAM (in GB) required to run your algorithm. Max is 128. (e.g., 16)',
     placeholder: 'Enter minimum RAM',
+    required: true,
     type: 'number'
   } as RegistrationFormInput,
-  minCores: {
-    name: 'minCores',
-    pythonic_name: 'min_cores',
+  coresMin: {
+    name: 'coresMin',
+    pythonic_name: 'cores_min',
     label: 'Minimum Number of Cores',
     tooltip:
       'The minimum number of CPU cores required to run your algorithm. Max 32 cores. (e.g., 1)',
     placeholder: 'Enter minimum number of cores',
+    required: true,
     type: 'number'
   } as RegistrationFormInput,
   baseContainerURL: {

@@ -39,7 +39,7 @@ export const getProcess = async (processResource: string): Promise<any> => {
  * @returns
  */
 export const registerAlgorithm = async (data: any): Promise<any> => {
-  const url = `${HOST_URL}/api/mas/algorithm`;
+  const url = `${HOST_URL}/api/build`;
 
   const response = await fetch(url, {
     method: 'POST',

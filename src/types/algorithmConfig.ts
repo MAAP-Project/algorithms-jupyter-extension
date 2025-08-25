@@ -21,8 +21,8 @@ export type AlgorithmConfig = {
   code_repository: string;
   run_command: string;
   build_command: string;
-  min_ram: number;
-  min_cores: number;
+  ram_min: number;
+  cores_min: number;
   algorithm_container_url: string;
   base_container_url: string;
   author: string;

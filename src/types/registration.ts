@@ -7,6 +7,7 @@ export type RegistrationFormInput = {
   tooltip: string;
   placeholder: string;
   type: RegistrationFormInputType;
+  required: boolean;
 };
 
 export type AlgorithmInput = {
@@ -27,8 +28,8 @@ export type AlgorithmData = {
   algorithmDescription: string;
   codeRepository: string;
   runCommand: string;
-  minRAM: number;
-  minCores: number;
+  ramMin: number;
+  coresMin: number;
   buildCommand?: string;
   baseContainerURL?: string;
   algorithmContainerURL?: string;

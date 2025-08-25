@@ -150,8 +150,8 @@ export const RegistrationForm = ({
       algorithmDescription: '',
       codeRepository: '',
       runCommand: '',
-      minRAM: 0,
-      minCores: 0,
+      ramMin: 0,
+      coresMin: 0,
       buildCommand: '',
       baseContainerURL: '',
       algorithmContainerURL: '',
@@ -168,11 +168,11 @@ export const RegistrationForm = ({
     });
 
     // Convert numeric fields back to numbers
-    if (algorithmData.minRAM) {
-      algorithmData.minRAM = Number(algorithmData.minRAM);
+    if (algorithmData.ramMin) {
+      algorithmData.ramMin = Number(algorithmData.ramMin);
     }
-    if (algorithmData.minCores) {
-      algorithmData.minCores = Number(algorithmData.minCores);
+    if (algorithmData.coresMin) {
+      algorithmData.coresMin = Number(algorithmData.coresMin);
     }
 
     if (inputRows.length > 0) {
@@ -197,7 +197,7 @@ export const RegistrationForm = ({
         : 'algorithm_config.yml');
     yamlContent && (await createFile(yamlContent, filePath, jupyterApp));
 
-    //await registerAlgorithm(algorithmData);
+    await registerAlgorithm(algorithmData);
     setShowRegistrationModal(true);
   };
 
@@ -342,8 +342,8 @@ export const RegistrationForm = ({
           <h3>Resource Requirements</h3>
           <table className="st-table margin-bottom-3">
             <tbody>
-              <FormRow formInput={FORM_FIELDS.minRAM} />
-              <FormRow formInput={FORM_FIELDS.minCores} />
+              <FormRow formInput={FORM_FIELDS.ramMin} />
+              <FormRow formInput={FORM_FIELDS.coresMin} />
             </tbody>
           </table>
           <h3>Metadata</h3>
@@ -370,10 +370,18 @@ export const RegistrationForm = ({
                     <AddIcon style={{ fontSize: '16px' }} />
                   </IconButton>
                 </th>
-                <th>Name</th>
-                <th>Label</th>
-                <th>Description</th>
-                <th>Type</th>
+                <th>
+                  Name <span style={{ color: 'red' }}> *</span>
+                </th>
+                <th>
+                  Label <span style={{ color: 'red' }}> *</span>
+                </th>
+                <th>
+                  Description <span style={{ color: 'red' }}> *</span>
+                </th>
+                <th>
+                  Type <span style={{ color: 'red' }}> *</span>
+                </th>
                 <th>Default Value</th>
               </tr>
             </thead>
@@ -399,6 +407,7 @@ export const RegistrationForm = ({
                         name={`input_${row.id}_name`}
                         placeholder="Enter input name"
                         className="st-input compact"
+                        required={true}
                         value={row.name}
                         onChange={e =>
                           updateInputRow(row.id, 'name', e.target.value)
@@ -411,6 +420,7 @@ export const RegistrationForm = ({
                         name={`input_${row.id}_label`}
                         placeholder="Enter input label"
                         className="st-input compact"
+                        required={true}
                         value={row.label}
                         onChange={e =>
                           updateInputRow(row.id, 'label', e.target.value)
@@ -423,6 +433,7 @@ export const RegistrationForm = ({
                         name={`input_${row.id}_description`}
                         placeholder="Enter input description"
                         className="st-input compact"
+                        required={true}
                         value={row.description}
                         onChange={e =>
                           updateInputRow(row.id, 'description', e.target.value)
@@ -434,6 +445,7 @@ export const RegistrationForm = ({
                         type="text"
                         name={`input_${row.id}_type`}
                         placeholder="Enter input type"
+                        required={true}
                         className="st-input compact"
                         value={row.type}
                         onChange={e =>

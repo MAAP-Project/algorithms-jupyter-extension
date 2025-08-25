@@ -7,17 +7,17 @@ import { AlgorithmData } from '../../types/registration';
 import { getPythonFromJSName } from '../../utils/utils';
 import * as yaml from 'yaml';
 
-const _validateMinRAM = (minRAM: any) => {
+const _validateRAMMin = (ramMin: any) => {
   let msg = '';
-  if (!minRAM) {
-    msg = 'min_ram is required';
+  if (!ramMin) {
+    msg = 'Please specify the minimum amount of RAM required for the algorithm.';
     console.error(msg);
     alert(msg);
     return false;
   }
 
-  if (minRAM > 128 || minRAM < 1) {
-    msg = 'min_ram must be between 1 and 128';
+  if (ramMin > 128 || ramMin < 1) {
+    msg = 'Minimum RAM must be between 1 and 128';
     console.error(msg);
     alert(msg);
     return false;
@@ -25,17 +25,18 @@ const _validateMinRAM = (minRAM: any) => {
   return true;
 };
 
-const _validateMinCores = (minCores: any) => {
+const _validateCoresMin = (coresMin: any) => {
   let msg = '';
-  if (!minCores) {
-    msg = 'min_cores is required';
+  if (!coresMin) {
+    msg =
+      'Please specify the minimum number of cores required for the algorithm.';
     console.error(msg);
     alert(msg);
     return false;
   }
 
-  if (minCores > 32 || minCores < 1) {
-    msg = 'min_cores must be between 1 and 32';
+  if (coresMin > 32 || coresMin < 1) {
+    msg = 'Minimum number of cores must be between 1 and 32';
     console.error(msg);
     alert(msg);
     return false;
@@ -119,10 +120,10 @@ export const isValidAlgorithmConfig = (
     if (!_validateAlgorithmVersion(config.algorithm_version)) {
       return false;
     }
-    if (!_validateMinRAM(config.min_ram)) {
+    if (!_validateRAMMin(config.ram_min)) {
       return false;
     }
-    if (!_validateMinCores(config.min_cores)) {
+    if (!_validateCoresMin(config.cores_min)) {
       return false;
     }
   }
@@ -144,8 +145,8 @@ export const buildAlgorithmConfig = (data: AlgorithmData): string => {
     code_repository: '',
     run_command: '',
     build_command: '',
-    min_ram: 0,
-    min_cores: 0,
+    ram_min: 0,
+    cores_min: 0,
     algorithm_container_url: '',
     base_container_url: '',
     author: '',

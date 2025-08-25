@@ -24,13 +24,13 @@ const listAlgorithmsPlugin: JupyterFrontEndPlugin<void> = {
     let algorithmsWidget: MainAreaWidget<AlgorithmsWidget> | null = null;
 
     commands.addCommand(command, {
-      caption: 'List Algorithms',
-      label: 'List Algorithms',
+      caption: 'Algorithm Catalog',
+      label: 'Algorithm Catalog',
       icon: args => (args['isPalette'] ? undefined : reactIcon),
       execute: () => {
         const content = new AlgorithmsWidget(app);
         algorithmsWidget = new MainAreaWidget<AlgorithmsWidget>({ content });
-        algorithmsWidget.title.label = 'List Algorithms';
+        algorithmsWidget.title.label = 'Algorithm Catalog';
         app.shell.add(algorithmsWidget, 'main');
       }
     });
