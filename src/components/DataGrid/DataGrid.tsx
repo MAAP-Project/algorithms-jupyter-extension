@@ -11,6 +11,7 @@ import { getProcess, getProcesses } from '../../utils/api';
 import { Process, ProcessDetailed } from '../../types/process';
 import { ExpandedState } from '@tanstack/react-table';
 import ContentCopyIcon from '@mui/icons-material/ContentCopy';
+import RefreshIcon from '@mui/icons-material/Refresh';
 import IconButton from '@mui/material/IconButton';
 import Tooltip from '@mui/material/Tooltip';
 
@@ -20,6 +21,7 @@ export const DataGrid = ({ jupyterApp }) => {
   const [rowDetails, setRowDetails] = useState<
     Record<string, ProcessDetailed | null>
   >({});
+  const [isLoading, setIsLoading] = useState(false);
 
   const handleRowExpand = async (
     updater: ExpandedState | ((old: ExpandedState) => ExpandedState)
@@ -65,16 +67,19 @@ export const DataGrid = ({ jupyterApp }) => {
     setExpandedRowIds(updatedSet);
   };
 
-  useEffect(() => {
-    const fetchProcesses = async () => {
-      try {
-        const data = await getProcesses();
-        setProcesses(data);
-      } catch (err) {
-        console.error('Failed to load processes:', err);
-      }
-    };
+  const fetchProcesses = async () => {
+    setIsLoading(true);
+    try {
+      const data = await getProcesses();
+      setProcesses(data);
+    } catch (err) {
+      console.error('Failed to load processes:', err);
+    } finally {
+      setIsLoading(false);
+    }
+  };
 
+  useEffect(() => {
     fetchProcesses();
   }, []);
 
@@ -212,6 +217,19 @@ export const DataGrid = ({ jupyterApp }) => {
         <Typography variant="h6" sx={{ ml: 2, mr: 2 }}>
           Algorithm Search and Discovery
         </Typography>
+        <Tooltip title="Refresh algorithms" placement="top" arrow>
+          <IconButton
+            onClick={fetchProcesses}
+            disabled={isLoading}
+            sx={{
+              mr: 1,
+              transform: isLoading ? 'rotate(360deg)' : 'rotate(0deg)',
+              transition: 'transform 0.5s ease-in-out'
+            }}
+          >
+            <RefreshIcon />
+          </IconButton>
+        </Tooltip>
         <button
           className="st-button"
           onClick={() => openRegisterAlgorithm(jupyterApp, null)}
