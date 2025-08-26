@@ -87,6 +87,7 @@ export const RegistrationForm = ({
   };
 
   const populateFormWithConfig = (config: AlgorithmConfig) => {
+    clearForm(setInputRows, setUseAlgorithmContainer);
     if (!isValidAlgorithmConfig(config, false)) {
       return;
     }
