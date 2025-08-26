@@ -26,7 +26,8 @@ import { AlgorithmData, AlgorithmInputRow } from '../../types/registration';
 import {
   buildAlgorithmConfig,
   isValidAlgorithmConfig,
-  setInputValue
+  setInputValue,
+  clearForm
 } from './utils';
 import { createDirectory, createFile } from '../../utils/utils';
 import {
@@ -61,7 +62,7 @@ export const RegistrationForm = ({
       name: '',
       label: '',
       description: '',
-      defaultValue: '',
+      default: '',
       type: ''
     };
     setInputRows([...inputRows, newRow]);
@@ -109,7 +110,7 @@ export const RegistrationForm = ({
           name: input.name || '',
           label: input.label || '',
           description: input.doc || '',
-          defaultValue: input.default_value || '',
+          default: input.default || '',
           type: input.type || ''
         }))
       );
@@ -126,6 +127,11 @@ export const RegistrationForm = ({
   const handleTokenModalSubmit = async () => {
     localStorage.setItem('MAAP_PGT_TOKEN', token);
     handleCloseTokenModal();
+  };
+
+  const handleClearForm = (event: React.MouseEvent<HTMLButtonElement>) => {
+    event.preventDefault();
+    clearForm(setInputRows, setUseAlgorithmContainer);
   };
 
   const handleFormSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
@@ -177,7 +183,7 @@ export const RegistrationForm = ({
         label: row.label,
         doc: row.description,
         type: row.type,
-        default_value: row.defaultValue
+        default: row.default
       }));
     }
 
@@ -439,9 +445,9 @@ export const RegistrationForm = ({
                         name={`input_${row.id}_default`}
                         placeholder="Enter default value"
                         className="st-input compact"
-                        value={row.defaultValue}
+                        value={row.default}
                         onChange={e =>
-                          updateInputRow(row.id, 'defaultValue', e.target.value)
+                          updateInputRow(row.id, 'default', e.target.value)
                         }
                       />
                     </td>
@@ -459,9 +465,15 @@ export const RegistrationForm = ({
               )}
             </tbody>
           </table>
-          <Box mt={4}>
+          <Box mt={4} sx={{ display: 'flex', gap: 2 }}>
             <button type="submit" className="st-button" disabled={false}>
               Register Algorithm
+            </button>
+            <button
+              className="st-button secondary"
+              onClick={e => handleClearForm(e)}
+            >
+              Clear
             </button>
           </Box>
         </form>

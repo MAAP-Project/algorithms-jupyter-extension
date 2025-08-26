@@ -14,7 +14,7 @@ export type AlgorithmInput = {
   name: string;
   label: string;
   description: string;
-  defaultValue: string;
+  default: string;
   type: string;
 };
 

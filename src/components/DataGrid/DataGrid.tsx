@@ -309,7 +309,7 @@ export const DataGrid = ({ jupyterApp }) => {
                   {Object.entries(processDetails.inputs).map(([key, value]) => (
                     <tr key={key}>
                       <td>{value.title}</td>
-                      <td>{value.label ?? '-'}</td>
+                      <td>{value.placeholder ?? '-'}</td>
                       <td>{value.description}</td>
                       <td>{value.type}</td>
                       <td>{value.default ?? '-'}</td>

@@ -176,7 +176,7 @@ export const buildAlgorithmConfig = (data: AlgorithmData): string => {
         label: input.label || '',
         doc: input.doc || '',
         type: input.type || '',
-        default_value: input.default_value || ''
+        default: input.default || ''
       });
     });
   }
@@ -227,4 +227,26 @@ export const setInputValue = (name: string, value: any) => {
     }
   }
   return false;
+};
+
+export const clearForm = (
+  setInputRows?: (rows: Array<any>) => void,
+  setUseAlgorithmContainer?: (value: boolean) => void
+) => {
+  Object.values(FORM_FIELDS).forEach(field => {
+    const inputElement = document.querySelector(
+      `input[name="${field.name}"]`
+    ) as HTMLInputElement;
+    if (inputElement) {
+      inputElement.value = '';
+    }
+  });
+
+  if (setInputRows) {
+    setInputRows([]);
+  }
+
+  if (setUseAlgorithmContainer) {
+    setUseAlgorithmContainer(false);
+  }
 };
