@@ -222,8 +222,8 @@ export const RegistrationForm = ({
         </DialogTitle>
         <DialogContent sx={{ paddingBottom: 0 }}>
           <DialogContentText>
-            Enter your MAAP-PGT token to perform this action. You may retrieve
-            it from your{' '}
+            Enter your MAAP-PGT token then try registering again. You may
+            retrieve it from your{' '}
             <a
               href={MAAP_PROFILE_URL}
               target="_blank"
@@ -235,6 +235,7 @@ export const RegistrationForm = ({
             .
           </DialogContentText>
           <input
+            style={{ marginTop: '15px' }}
             autoFocus
             required
             id="token"

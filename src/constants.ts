@@ -12,6 +12,8 @@ export const HOST_URL = 'https://api.dit.maap-project.org';
 export const MAAP_PROFILE_URL = 'https://dit.maap-project.org/profile/';
 export const MAAP_DOCS_REGISTER_ALGORITHM_URL =
   'https://docs.maap-project.org/en/latest/getting_started/running_at_scale.html#Register-an-Algorithm';
+export const DEFAULT_MAAP_BASE_CONTAINER_URL =
+  'mas.dit.maap-project.org/root/maap-workspaces/custom_images/maap_base:develop';
 
 /**
  * Algorithm registration form fields
@@ -31,7 +33,8 @@ export const FORM_FIELDS = {
     name: 'algorithmVersion',
     pythonic_name: 'algorithm_version',
     label: 'Algorithm Version',
-    tooltip: 'The version of the algorithm (e.g., develop, 1.0.0)',
+    tooltip:
+      'The tag or branch of the source code repository to build the algorithm from (e.g., develop, 1.0.0)',
     placeholder: 'Enter algorithm version',
     required: true,
     type: 'text'
@@ -59,7 +62,7 @@ export const FORM_FIELDS = {
     pythonic_name: 'run_command',
     label: 'Run Command',
     tooltip:
-      'The main command to execute your algorithm (e.g., /app/sardem-sarsen/sardem-sarsem.sh)',
+      'The main command to execute your algorithm (e.g., sardem-sarsen/sardem-sarsem.sh)',
     placeholder: 'Enter run command',
     required: true,
     type: 'text'
@@ -88,9 +91,11 @@ export const FORM_FIELDS = {
     name: 'baseContainerURL',
     pythonic_name: 'base_container_url',
     label: 'Base Container URL',
-    tooltip: 'The URL to the base docker image',
+    tooltip:
+      'The URL to the base docker image which the algorithm will be built off of.',
     placeholder: 'Enter base container URL',
-    type: 'text'
+    type: 'text',
+    default: DEFAULT_MAAP_BASE_CONTAINER_URL
   } as RegistrationFormInput,
   author: {
     name: 'author',

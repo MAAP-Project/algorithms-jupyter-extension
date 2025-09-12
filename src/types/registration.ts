@@ -8,6 +8,7 @@ export type RegistrationFormInput = {
   placeholder: string;
   type: RegistrationFormInputType;
   required: boolean;
+  default?: string;
 };
 
 export type AlgorithmInput = {

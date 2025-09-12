@@ -281,7 +281,7 @@ export const DataGrid = ({ jupyterApp }) => {
                   {processDetails.gitCommitHash ? (
                     <span style={{ display: 'flex', alignItems: 'center' }}>
                       {processDetails.gitCommitHash}
-                      <CopyHashButton hash={processDetails.gitCommitHash} />
+                      <CopyButton hash={processDetails.gitCommitHash} />
                     </span>
                   ) : (
                     '-'
@@ -324,15 +324,35 @@ export const DataGrid = ({ jupyterApp }) => {
                   </tr>
                 </thead>
                 <tbody>
-                  {Object.entries(processDetails.inputs).map(([key, value]) => (
-                    <tr key={key}>
-                      <td>{value.title}</td>
-                      <td>{value.placeholder ?? '-'}</td>
-                      <td>{value.description}</td>
-                      <td>{value.type}</td>
-                      <td>{value.default ?? '-'}</td>
+                  {processDetails.inputs &&
+                  Object.keys(processDetails.inputs).length > 0 ? (
+                    Object.entries(processDetails.inputs).map(
+                      ([key, value]) => (
+                        console.log('value: ', value),
+                        (
+                          <tr key={key}>
+                            <td>{value.title ?? '-'}</td>
+                            <td>{value.placeholder ?? '-'}</td>
+                            <td>{value.description ?? '-'}</td>
+                            <td>{value.type ?? '-'}</td>
+                            <td>
+                              {value.default
+                                ? typeof value.default === 'object'
+                                  ? value.default['path']
+                                  : value.default
+                                : '-'}
+                            </td>
+                          </tr>
+                        )
+                      )
+                    )
+                  ) : (
+                    <tr>
+                      <td style={{ textAlign: 'center' }}>
+                        <i>No inputs defined.</i>
+                      </td>
                     </tr>
-                  ))}
+                  )}
                 </tbody>
               </table>
             </Box>
@@ -354,7 +374,7 @@ export const DataGrid = ({ jupyterApp }) => {
   );
 };
 
-const CopyHashButton = ({ hash }) => {
+const CopyButton = ({ hash }) => {
   const [copied, setCopied] = React.useState(false);
 
   const handleCopy = async () => {

@@ -29,6 +29,7 @@ export const FormRow = ({ formInput }: FormRowProps) => {
           placeholder={formInput.placeholder}
           className="st-input"
           required={formInput.required}
+          defaultValue={formInput?.default}
         />
       </td>
     </tr>
