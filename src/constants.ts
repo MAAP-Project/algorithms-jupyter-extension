@@ -8,8 +8,8 @@ export const JUPYTER_EXT = {
 };
 
 /** MAAP */
-export const HOST_URL = 'https://api.dit.maap-project.org';
-export const MAAP_PROFILE_URL = 'https://dit.maap-project.org/profile/';
+export const MAAP_API = 'https://api.uat.maap-project.org/api/';
+export const MAAP_PROFILE_URL = 'https://maap-project.org/profile/';
 export const MAAP_DOCS_REGISTER_ALGORITHM_URL =
   'https://docs.maap-project.org/en/latest/getting_started/running_at_scale.html#Register-an-Algorithm';
 export const DEFAULT_MAAP_BASE_CONTAINER_URL =

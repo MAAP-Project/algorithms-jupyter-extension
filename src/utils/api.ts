@@ -1,4 +1,4 @@
-import { HOST_URL, JUPYTER_EXT } from '../constants';
+import { MAAP_API } from '../constants';
 import { Notification } from '@jupyterlab/apputils';
 import { BuildsResponse, DeploymentsResponse } from '../types/build';
 import { getMaapToken } from './auth';
@@ -6,7 +6,7 @@ import { openBuildDeploymentDashboard } from './utils';
 
 // TODO: make promise type the type of the ogc request, of which processes is only a single key
 export const getProcesses = async (): Promise<any> => {
-  const url = `${HOST_URL}/api/ogc/processes`;
+  const url = `${MAAP_API}/ogc/processes`;
 
   const response = await fetch(url);
 
@@ -22,7 +22,7 @@ export const getProcesses = async (): Promise<any> => {
 };
 
 export const getProcess = async (processResource: string): Promise<any> => {
-  const url = `${HOST_URL}/api/${processResource}`;
+  const url = `${MAAP_API}/${processResource}`;
 
   const response = await fetch(url);
 
@@ -46,7 +46,7 @@ export const registerAlgorithm = async (
   data: any,
   jupyterApp?: any
 ): Promise<any> => {
-  const url = `${HOST_URL}/api/build`;
+  const url = `${MAAP_API}/build`;
   let message = '';
 
   const response = await fetchWithAuth(url, {
@@ -103,7 +103,7 @@ const fetchWithAuth = async (url: string, options: RequestInit = {}) => {
 };
 
 export const getBuilds = async (): Promise<BuildsResponse> => {
-  const url = `${HOST_URL}/api/build`;
+  const url = `${MAAP_API}/build`;
 
   const response = await fetchWithAuth(url);
 
@@ -124,7 +124,7 @@ export const getBuilds = async (): Promise<BuildsResponse> => {
 };
 
 export const getDeployments = async (): Promise<DeploymentsResponse> => {
-  const url = `${HOST_URL}/api/ogc/deploymentJobs`;
+  const url = `${MAAP_API}/ogc/deploymentJobs`;
 
   const response = await fetchWithAuth(url);
 
@@ -147,7 +147,7 @@ export const getDeployments = async (): Promise<DeploymentsResponse> => {
 };
 
 export const getBuildStatus = async (buildId: string): Promise<any> => {
-  const url = `${HOST_URL}/api/build/${buildId}`;
+  const url = `${MAAP_API}/build/${buildId}`;
 
   const response = await fetchWithAuth(url);
 
@@ -172,7 +172,7 @@ export const getBuildStatus = async (buildId: string): Promise<any> => {
 export const getDeploymentStatus = async (
   deploymentId: string
 ): Promise<any> => {
-  const url = `${HOST_URL}/api/ogc/deploymentJobs/${deploymentId}`;
+  const url = `${MAAP_API}/ogc/deploymentJobs/${deploymentId}`;
 
   const response = await fetchWithAuth(url);
 
