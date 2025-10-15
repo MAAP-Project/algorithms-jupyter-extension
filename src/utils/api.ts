@@ -6,7 +6,7 @@ import { openBuildDeploymentDashboard } from './utils';
 import { PageConfig } from '@jupyterlab/coreutils';
 
 export const BASE_URL = PageConfig.getBaseUrl();
-const MAAP_API_URL = 'https://uat.maap-project.org/api/'; //await getMaapApiUrl();
+const MAAP_API_URL = 'https://uat.maap-project.org/'; //await getMaapApiUrl();
 
 /**
  * Fetches the MAAP API URL from the MAAP Jupyter server extension endpoint.
