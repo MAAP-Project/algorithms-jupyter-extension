@@ -23,7 +23,7 @@ import {
   getBuildStatus,
   getDeploymentStatus as getDeploymentStatusFromAPI
 } from '../../utils/api';
-import { hasMaapToken, setMaapToken } from '../../utils/auth';
+import { hasMaapToken, setToken } from '../../utils/auth';
 import { MAAP_PROFILE_URL } from '../../constants';
 import { Build, BuildDeploymentItem } from '../../types/build';
 import { ExpandedState } from '@tanstack/react-table';
@@ -58,7 +58,7 @@ export const BuildsDeploymentsGrid = ({ jupyterApp }) => {
   };
 
   const handleTokenModalSubmit = async () => {
-    setMaapToken(token);
+    setToken(token);
     setShowTokenModal(false);
     // Retry fetching data after token is set
     fetchData();

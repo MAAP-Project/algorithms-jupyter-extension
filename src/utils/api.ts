@@ -1,41 +1,110 @@
-import { MAAP_API } from '../constants';
+import { MAAP_API_OGC_ENDPOINTS } from '../constants';
 import { Notification } from '@jupyterlab/apputils';
 import { BuildsResponse, DeploymentsResponse } from '../types/build';
-import { getMaapToken } from './auth';
+import { getToken } from './auth';
 import { openBuildDeploymentDashboard } from './utils';
+import { PageConfig } from '@jupyterlab/coreutils';
 
-// TODO: make promise type the type of the ogc request, of which processes is only a single key
-export const getProcesses = async (): Promise<any> => {
-  const url = `${MAAP_API}/ogc/processes`;
+export const BASE_URL = PageConfig.getBaseUrl();
+const MAAP_API_URL = await getMaapApiUrl();
 
-  const response = await fetch(url);
+/**
+ * Fetches the MAAP API URL from the MAAP Jupyter server extension endpoint.
+ *
+ * This function sends a GET request to the backend route
+ * `maap-jupyter-server-extension/get-api-url` and attempts to retrieve the
+ * `MAAP_API_URL` environment variable from the server. If the variable is not
+ * set or an error occurs during the fetch, the function raises an error and
+ * returns `null`.
+ *
+ * @returns {Promise<string | null>} A promise that resolves to the MAAP API URL
+ * if successfully retrieved, or `null` if the request fails or the variable is missing.
+ *
+ * @throws {Error} Throws an error if the HTTP request fails or the variable is missing.
+ */
+export async function getMaapApiUrl(): Promise<string | null> {
+  try {
+    const response = await fetch(
+      `${BASE_URL}maap-jupyter-server-extension/get-api-url`
+    );
+    const data = await response.json();
 
-  if (!response.ok) {
-    const errorText = await response.json();
-    const message = `HTTP ${response.status}: ${response.statusText}`;
-    console.error(`Request failed: ${message}\nDetails: ${errorText}`);
-    throw new Error(message);
+    if (response.status >= 400 || !data?.apiUrl) {
+      throw new Error(`Failed to retrieve MAAP_API_URL. ${data?.error ?? ''}`);
+    }
+
+    return data.apiUrl;
+  } catch (error) {
+    console.error(error);
+    return null;
   }
+}
 
-  const data = await response.json();
-  return data.processes;
-};
+/**
+ * Fetches the list of available processes.
+ *
+ * This function sends a GET request to the MAAP API and returns an array of
+ * processes. If the request fails, an error is thrown.
+ *
+ * @returns {Promise<any>} A promise that resolves to the list of processes
+ *                        returned by the MAAP API, or `null` if the request fails.
+ *
+ * @throws {Error} An error is thrown if the request fails or if data or data.processes is null.
+ */
+export async function getProcesses(): Promise<any> {
+  try {
+    const response = await fetch(
+      MAAP_API_URL + MAAP_API_OGC_ENDPOINTS.GET_PROCESSES
+    );
+    const data = await response.json();
 
-export const getProcess = async (processResource: string): Promise<any> => {
-  const url = `${MAAP_API}/${processResource}`;
+    if (response.status >= 400 || !data?.processes) {
+      throw Error('Failed to list processes.');
+    }
 
-  const response = await fetch(url);
-
-  if (!response.ok) {
-    const errorText = await response.json();
-    const message = `HTTP ${response.status}: ${response.statusText}`;
-    console.error(`Request failed: ${message}\nDetails: ${errorText}`);
-    throw new Error(message);
+    return data.processes;
+  } catch (error) {
+    console.error(error);
+    return null;
   }
+}
 
-  const data = await response.json();
-  return data;
-};
+/**
+ * Fetches the details of a specific process.
+ *
+ * This function sends a GET request to the MAAP API to retrieve the full
+ * description of a process, using the given `processId`. If a processId is not
+ * provided or the request fails, an error is thrown.
+ *
+ * @param {string} processId - The ID of the process to retrieve.
+ * @returns {Promise<any>} A promise that resolves to the process details object,
+ *                         or `null` if the request fails or the ID is missing.
+ * @throws {Error} An error is thrown if the processId is not provided or if the request fails.
+ *
+ */
+export async function getProcess(processId: string): Promise<any> {
+  try {
+    if (!processId) {
+      throw Error('Failed to retrieve process. Process ID must be provided.');
+    }
+
+    const url = new URL(
+      MAAP_API_URL +
+        MAAP_API_OGC_ENDPOINTS.GET_PROCESS.replace('{PROCESS_ID}', processId)
+    );
+    const response = await fetch(url.toString());
+    const data = await response.json();
+
+    if (response.status >= 400 || !data) {
+      throw Error(`Failed to retrieve process. ${data?.detail ?? ''}`);
+    }
+
+    return data;
+  } catch (error) {
+    console.error(error);
+    return null;
+  }
+}
 
 /**
  * Check to see whether or not registers as ogc process -- /mas/algorithm may not ultimately make the /processes post call.
@@ -46,7 +115,7 @@ export const registerAlgorithm = async (
   data: any,
   jupyterApp?: any
 ): Promise<any> => {
-  const url = `${MAAP_API}/build`;
+  const url = `${MAAP_API_URL}build`;
   let message = '';
 
   const response = await fetchWithAuth(url, {
@@ -87,7 +156,7 @@ export const registerAlgorithm = async (
 
 // Helper function for authenticated requests using cpticket header
 const fetchWithAuth = async (url: string, options: RequestInit = {}) => {
-  const token = getMaapToken();
+  const token = await getToken();
   if (!token) {
     throw new Error('No authentication token available');
   }
@@ -103,7 +172,7 @@ const fetchWithAuth = async (url: string, options: RequestInit = {}) => {
 };
 
 export const getBuilds = async (): Promise<BuildsResponse> => {
-  const url = `${MAAP_API}/build`;
+  const url = `${MAAP_API_URL}build`;
 
   const response = await fetchWithAuth(url);
 
@@ -124,7 +193,7 @@ export const getBuilds = async (): Promise<BuildsResponse> => {
 };
 
 export const getDeployments = async (): Promise<DeploymentsResponse> => {
-  const url = `${MAAP_API}/ogc/deploymentJobs`;
+  const url = `${MAAP_API_URL}ogc/deploymentJobs`;
 
   const response = await fetchWithAuth(url);
 
@@ -147,7 +216,7 @@ export const getDeployments = async (): Promise<DeploymentsResponse> => {
 };
 
 export const getBuildStatus = async (buildId: string): Promise<any> => {
-  const url = `${MAAP_API}/build/${buildId}`;
+  const url = `${MAAP_API_URL}build/${buildId}`;
 
   const response = await fetchWithAuth(url);
 
@@ -172,7 +241,7 @@ export const getBuildStatus = async (buildId: string): Promise<any> => {
 export const getDeploymentStatus = async (
   deploymentId: string
 ): Promise<any> => {
-  const url = `${MAAP_API}/ogc/deploymentJobs/${deploymentId}`;
+  const url = `${MAAP_API_URL}ogc/deploymentJobs/${deploymentId}`;
 
   const response = await fetchWithAuth(url);
 

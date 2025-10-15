@@ -47,7 +47,9 @@ export const DataGrid = ({ jupyterApp }) => {
 
       if (processResource) {
         try {
-          const detail = await getProcess(processResource);
+          const processId =
+            processResource.split('/').filter(Boolean).pop() || '';
+          const detail = await getProcess(processId);
           setRowDetails(prev => ({ ...prev, [added]: detail }));
         } catch (error) {
           console.error(`Failed to fetch details for ${added}:`, error);
