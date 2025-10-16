@@ -18,9 +18,13 @@ export const DEFAULT_MAAP_BASE_CONTAINER_URL =
 /*******************************
  * MAAP API OGC ENDPOINTS
  *******************************/
-export const MAAP_API_OGC_ENDPOINTS = {
+export const MAAP_API_ENDPOINTS = {
   GET_PROCESSES: 'api/ogc/processes',
-  GET_PROCESS: 'api/ogc/processes/{PROCESS_ID}'
+  GET_PROCESS: 'api/ogc/processes/{PROCESS_ID}',
+  GET_DEPLOYMENTS: 'api/ogc/deploymentJobs/{DEPLOYMENT_ID}',
+  POST_DEPLOYMENTS: 'api/ogc/deploymentJobs',
+  BUILD: 'api/build',
+  GET_BUILD: 'api/build/{BUILD_ID}'
 };
 
 /**

@@ -1,4 +1,4 @@
-import { MAAP_API_OGC_ENDPOINTS } from '../constants';
+import { MAAP_API_ENDPOINTS } from '../constants';
 import { Notification } from '@jupyterlab/apputils';
 import { BuildsResponse, DeploymentsResponse } from '../types/build';
 import { getToken } from './auth';
@@ -54,7 +54,7 @@ export async function getMaapApiUrl(): Promise<string | null> {
 export async function getProcesses(): Promise<any> {
   try {
     const response = await fetch(
-      MAAP_API_URL + MAAP_API_OGC_ENDPOINTS.GET_PROCESSES
+      MAAP_API_URL + MAAP_API_ENDPOINTS.GET_PROCESSES
     );
     const data = await response.json();
 
@@ -90,7 +90,7 @@ export async function getProcess(processId: string): Promise<any> {
 
     const url = new URL(
       MAAP_API_URL +
-        MAAP_API_OGC_ENDPOINTS.GET_PROCESS.replace('{PROCESS_ID}', processId)
+        MAAP_API_ENDPOINTS.GET_PROCESS.replace('{PROCESS_ID}', processId)
     );
     const response = await fetch(url.toString());
     const data = await response.json();
@@ -115,8 +115,8 @@ export const registerAlgorithm = async (
   data: any,
   jupyterApp?: any
 ): Promise<any> => {
-  const url = `${MAAP_API_URL}build`;
   let message = '';
+  const url = MAAP_API_URL + MAAP_API_ENDPOINTS.BUILD;
 
   const response = await fetchWithAuth(url, {
     method: 'POST',
@@ -172,9 +172,7 @@ const fetchWithAuth = async (url: string, options: RequestInit = {}) => {
 };
 
 export const getBuilds = async (): Promise<BuildsResponse> => {
-  const url = `${MAAP_API_URL}build`;
-
-  const response = await fetchWithAuth(url);
+  const response = await fetchWithAuth(MAAP_API_URL + MAAP_API_ENDPOINTS.BUILD);
 
   if (!response.ok) {
     let errorText: string;
@@ -193,9 +191,10 @@ export const getBuilds = async (): Promise<BuildsResponse> => {
 };
 
 export const getDeployments = async (): Promise<DeploymentsResponse> => {
-  const url = `${MAAP_API_URL}ogc/deploymentJobs`;
-
-  const response = await fetchWithAuth(url);
+  //TODO: mlucas compare with swagger -- only contains POST method
+  const response = await fetchWithAuth(
+    MAAP_API_URL + MAAP_API_ENDPOINTS.POST_DEPLOYMENTS
+  );
 
   if (!response.ok) {
     let errorText: string;
@@ -216,8 +215,8 @@ export const getDeployments = async (): Promise<DeploymentsResponse> => {
 };
 
 export const getBuildStatus = async (buildId: string): Promise<any> => {
-  const url = `${MAAP_API_URL}build/${buildId}`;
-
+  const url =
+    MAAP_API_URL + MAAP_API_ENDPOINTS.GET_BUILD.replace('{BUILD_ID}', buildId);
   const response = await fetchWithAuth(url);
 
   if (!response.ok) {
@@ -241,7 +240,9 @@ export const getBuildStatus = async (buildId: string): Promise<any> => {
 export const getDeploymentStatus = async (
   deploymentId: string
 ): Promise<any> => {
-  const url = `${MAAP_API_URL}ogc/deploymentJobs/${deploymentId}`;
+  const url =
+    MAAP_API_URL +
+    MAAP_API_ENDPOINTS.GET_DEPLOYMENTS.replace('{DEPLOYMENT_ID}', deploymentId);
 
   const response = await fetchWithAuth(url);
 
