@@ -202,4 +202,6 @@ svg:hover {
     margin-right: 1rem;
 }
 
-
+.registrationUrl {
+    text-decoration: auto;
+}
