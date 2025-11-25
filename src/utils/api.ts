@@ -271,7 +271,7 @@ export async function unregisterAlgorithm(algo_id: string) {
  */
 export async function getWorkspaceContainers() {
   var workspaceContainers: any[] = []
-  var requestUrl = new URL(PageConfig.getBaseUrl() + 'jupyter-server-extension/getWorkspaceConta');
+  var requestUrl = new URL(PageConfig.getBaseUrl() + 'jupyter-server-extension/getWorkspaceContainer');
   console.log(requestUrl.href)
 
   try {
