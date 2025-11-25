@@ -4,7 +4,7 @@ import { registeredAlgorithmsActions } from '../redux/slices/registeredAlgorithm
 import { store } from "../redux/store";
 import { parseAlgorithmData } from "./parsers";
 import { algorithmSlice } from "../redux/slices/algorithmSlice";
-import { YML_FOLDER } from '../constants';
+import { YML_FOLDER, DEFAULT_CONTAINER_IMAGE } from '../constants';
 
 
 // export const getAlgorithmMetadata = (body: any) => {
@@ -271,7 +271,7 @@ export async function unregisterAlgorithm(algo_id: string) {
  */
 export async function getWorkspaceContainers() {
   var workspaceContainers: any[] = []
-  var requestUrl = new URL(PageConfig.getBaseUrl() + 'jupyter-server-extension/getWorkspaceContainer');
+  var requestUrl = new URL(PageConfig.getBaseUrl() + 'jupyter-server-extension/getWorkspaceConta');
   console.log(requestUrl.href)
 
   try {
@@ -299,7 +299,13 @@ export async function getWorkspaceContainers() {
     store.dispatch(algorithmSlice.actions.setAlgoContainerURL({"value": defaultDockerImagePath, "label": defaultDockerImagePath}))
     return workspaceContainers
   } catch (error) {
-    console.log("error in new endpoint")
+    console.log("error in new endpoint so using default container")
     console.log(error)
+    let defaultDockerImagePath = DEFAULT_CONTAINER_IMAGE;
+    store.dispatch(algorithmSlice.actions.setAlgoContainerURL({"value": defaultDockerImagePath, "label": defaultDockerImagePath}))
+    let workspaceContainer: any = {}
+    workspaceContainer["value"] = defaultDockerImagePath
+    workspaceContainer["label"] = defaultDockerImagePath
+    return workspaceContainer;
   }
 }

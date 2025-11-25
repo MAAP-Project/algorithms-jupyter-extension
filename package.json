@@ -1,6 +1,6 @@
 {
     "name": "maap_algorithms_jupyter_extension",
-    "version": "0.5.0",
+    "version": "0.5.1",
     "description": "A JupyterLab extension for managing algorithms on the MAAP",
     "keywords": [
         "algorithm",

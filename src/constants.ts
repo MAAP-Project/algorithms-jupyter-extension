@@ -53,3 +53,5 @@ export const ALGO_INPUT_FIELDS = {
 export const COLUMN_SPAN = 6
 
 export const YML_FOLDER = "algorithm-configs";
+
+export const DEFAULT_CONTAINER_IMAGE = "mas.maap-project.org/root/maap-workspaces/custom_images/maap_base:v4.3.0";
