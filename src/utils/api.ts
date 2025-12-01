@@ -295,8 +295,8 @@ export async function getWorkspaceContainers() {
       workspaceContainers.push(workspaceContainer)
     })
     // set the algorithm container url to the default
-    let defaultDockerImagePath = r_data["DOCKERIMAGE_PATH_DEFAULT"];
-    store.dispatch(algorithmSlice.actions.setAlgoContainerURL({"value": defaultDockerImagePath, "label": defaultDockerImagePath}))
+    //let defaultDockerImagePath = r_data["DOCKERIMAGE_PATH_DEFAULT"];
+    store.dispatch(algorithmSlice.actions.setAlgoContainerURL({"value": "mas.dit.maap-project.org/root/maap-workspaces/2i2c/pangeo:v5.0.0", "label": "mas.dit.maap-project.org/root/maap-workspaces/2i2c/pangeo:v5.0.0"}))
     return workspaceContainers
   } catch (error) {
     console.log("error in new endpoint so using default container")
