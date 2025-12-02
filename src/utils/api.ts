@@ -295,7 +295,7 @@ export async function getWorkspaceContainers() {
       workspaceContainers.push(workspaceContainer)
     })
     // set the algorithm container url to the default
-    let defaultDockerImagePath = "mas.dit.maap-project.org/root/maap-workspaces/custom_images/maap_base";
+    let defaultDockerImagePath = "mas.dit.maap-project.org/root/maap-workspaces/custom_images/maap_base:v5.0.0";
     store.dispatch(algorithmSlice.actions.setAlgoContainerURL({"value": defaultDockerImagePath, "label": defaultDockerImagePath}))
     return workspaceContainers
   } catch (error) {
