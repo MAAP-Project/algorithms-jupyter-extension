@@ -7,7 +7,6 @@ import {
 } from 'material-react-table';
 import { Box, Typography, Chip } from '@mui/material';
 import { openRegisterAlgorithm } from '../../utils/utils';
-import { useMaapContext } from '../../MaapContext';
 import { Build, BuildDeploymentItem } from '../../types/build';
 import { ExpandedState } from '@tanstack/react-table';
 import IconButton from '@mui/material/IconButton';

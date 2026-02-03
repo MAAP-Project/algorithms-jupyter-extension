@@ -16,6 +16,7 @@ import { useMaapContext } from '../../MaapContext';
 import { IDefaultFileBrowser } from '@jupyterlab/filebrowser';
 import { JupyterFrontEnd } from '@jupyterlab/application';
 import { IDocumentManager } from '@jupyterlab/docmanager';
+import { Notification } from '@jupyterlab/apputils';
 import {
   FORM_FIELDS,
   MAAP_PROFILE_URL,
@@ -50,7 +51,7 @@ export const RegistrationForm = ({
   docManager: IDocumentManager;
   api: MaapApi;
 }) => {
-  const { maapToken, setMaapToken } = useMaapContext();
+  const { setMaapToken } = useMaapContext();
   const [showTokenModal, setShowTokenModal] = useState(false);
   const [showFileDialog, setShowFileDialog] = useState(false);
   const [inputRows, setInputRows] = useState<Array<AlgorithmInputRow>>([]);
@@ -141,13 +142,6 @@ export const RegistrationForm = ({
   const handleFormSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
 
-    // eslint-disable-next-line no-prototype-builtins
-    if (!maapToken) {
-      console.warn('No MAAP PGT token detected.');
-      setShowTokenModal(true);
-      return;
-    }
-
     const formData = new FormData(event.currentTarget);
     const algorithmData: AlgorithmData = {
       algorithmName: '',
@@ -205,7 +199,18 @@ export const RegistrationForm = ({
     const yamlObject = yaml.parse(yamlContent);
     const jsonContent = JSON.stringify(yamlObject, null, 2);
 
-    await api.registerAlgorithm(jsonContent, jupyterApp);
+    try {
+      await api.registerAlgorithm(jsonContent, jupyterApp);
+    } catch (err) {
+      const message = err instanceof Error ? err.message : String(err);
+      const is401 = message.includes('HTTP 401');
+
+      if (is401) {
+        setShowTokenModal(true);
+        return;
+      }
+      Notification.error(`Failed to register algorithms: ${err}`, { autoClose: false });
+    }
   };
 
   return (

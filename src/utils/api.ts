@@ -65,9 +65,6 @@ export function createMaapApi(getLatestSettings: GetLatestSettings) {
     }
 
     if (opts.auth) {
-      if (!maapToken) {
-        throw new Error('No authentication token available');
-      }
       headers['cpticket'] = maapToken;
     }
 

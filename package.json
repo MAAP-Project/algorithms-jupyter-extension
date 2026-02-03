@@ -1,6 +1,6 @@
 {
     "name": "maap_algorithms_jupyter_extension",
-    "version": "0.1.0",
+    "version": "1.0.0",
     "description": "A JupyterLab extension.",
     "keywords": [
         "jupyter",
@@ -11,7 +11,7 @@
     "bugs": {
         "url": "/issues"
     },
-    "license": "BSD-3-Clause",
+    "license": "Apache-2.0",
     "author": {
         "name": "maap_algorithms_jupyter_extension",
         "email": "marjorie.j.lucas@jpl.nasa.gov"
