@@ -5,69 +5,41 @@ import {
   useMaterialReactTable,
   type MRT_ColumnDef
 } from 'material-react-table';
-import {
-  Box,
-  Typography,
-  Chip,
-  Dialog,
-  DialogTitle,
-  DialogContent,
-  DialogContentText,
-  DialogActions,
-  Button,
-  TextField
-} from '@mui/material';
+import { Box, Typography, Chip } from '@mui/material';
 import { openRegisterAlgorithm } from '../../utils/utils';
-import {
-  getBuilds,
-  getBuildStatus,
-  getDeploymentStatus as getDeploymentStatusFromAPI
-} from '../../utils/api';
-import { hasMaapToken, setToken } from '../../utils/auth';
-import { MAAP_PROFILE_URL } from '../../constants';
+import { useMaapContext } from '../../MaapContext';
 import { Build, BuildDeploymentItem } from '../../types/build';
 import { ExpandedState } from '@tanstack/react-table';
 import IconButton from '@mui/material/IconButton';
 import Tooltip from '@mui/material/Tooltip';
 import LaunchIcon from '@mui/icons-material/Launch';
 import RefreshIcon from '@mui/icons-material/Refresh';
+import { JupyterFrontEnd } from '@jupyterlab/application';
+import { MaapApi } from '../../utils/api';
+import { TokenModal } from '../TokenModal/TokenModal';
+import { Notification } from '@jupyterlab/apputils';
 
-/**
- * BuildsDeploymentsGrid Component
- *
- * Displays algorithm builds and their deployment statuses in a data grid.
- * Supports refreshing, expanding rows for details, and managing authentication tokens.
- */
-export const BuildsDeploymentsGrid = ({ jupyterApp }) => {
-  // Main data state - holds all build/deployment items displayed in the grid
+type BuildsDeploymentsGridProps = {
+  jupyterApp: JupyterFrontEnd;
+  api: MaapApi;
+};
+
+export const BuildsDeploymentsGrid = ({
+  jupyterApp,
+  api
+}: BuildsDeploymentsGridProps) => {
   const [items, setItems] = useState<BuildDeploymentItem[]>([]);
-  // Track which table rows are expanded to show details
   const [expandedRowIds, setExpandedRowIds] = useState<Set<string>>(new Set());
-  // Cache expanded row details for performance
   const [rowDetails, setRowDetails] = useState<
     Record<string, BuildDeploymentItem | null>
   >({});
-  // Controls token authentication modal visibility
-  const [showTokenModal, setShowTokenModal] = useState(false);
-  const [token, setToken] = useState('');
-  // Prevents multiple simultaneous refresh operations
   const [isRefreshing, setIsRefreshing] = useState(false);
+  const [showTokenModal, setShowTokenModal] = useState(false);
 
-  const handleCloseTokenModal = () => {
-    setShowTokenModal(false);
-  };
-
-  const handleTokenModalSubmit = async () => {
-    setToken(token);
-    setShowTokenModal(false);
-    // Retry fetching data after token is set
+  useEffect(() => {
     fetchData();
-  };
+  }, [api]);
 
-  /**
-   * Handles row expansion/collapse in the data grid
-   * Manages which rows show detailed information
-   */
   const handleRowExpand = async (
     updater: ExpandedState | ((old: ExpandedState) => ExpandedState)
   ) => {
@@ -79,11 +51,9 @@ export const BuildsDeploymentsGrid = ({ jupyterApp }) => {
 
     const newExpandedIds = new Set(Object.keys(newExpanded));
 
-    // Find the row that was just expanded
     const added = [...newExpandedIds].find(id => !expandedRowIds.has(id));
     const removed = [...expandedRowIds].find(id => !newExpandedIds.has(id));
 
-    // For builds/deployments, we already have the details in the item
     if (added) {
       const data = table.getRowModel().rowsById[added];
       if (data?.original) {
@@ -156,35 +126,51 @@ export const BuildsDeploymentsGrid = ({ jupyterApp }) => {
   ): Promise<BuildDeploymentItem[]> => {
     const updatedItems = await Promise.all(
       items.map(async item => {
-        if (item.deploymentLink?.href) {
-          const deploymentId = extractDeploymentId(item.deploymentLink.href);
-          if (deploymentId) {
-            try {
-              const deploymentData =
-                await getDeploymentStatusFromAPI(deploymentId);
-              return {
-                ...item,
-                deploymentStatus: deploymentData.status,
-                deploymentPipelineLink:
-                  deploymentData.pipeline?.processPipelineLink || undefined,
-                deploymentError: deploymentData.error || null
-              };
-            } catch (error) {
-              console.warn(
-                `Failed to fetch deployment status for deployment ${deploymentId}:`,
-                error
-              );
-              return {
-                ...item,
-                deploymentStatus: 'Error',
-                deploymentError: 'Failed to fetch deployment status'
-              };
-            }
-          }
+        if (!item.deploymentLink?.href) {
+          return item;
         }
-        return item;
+
+        const deploymentId = extractDeploymentId(item.deploymentLink.href);
+        if (!deploymentId) {
+          return item;
+        }
+
+        try {
+          const deploymentData = await api.getDeploymentStatus(deploymentId);
+
+          return {
+            ...item,
+            deploymentStatus: deploymentData.status,
+            deploymentPipelineLink:
+              deploymentData.pipeline?.processPipelineLink || undefined,
+            deploymentError: deploymentData.error || null
+          };
+        } catch (err: any) {
+          const message = err instanceof Error ? err.message : String(err);
+          const is401 = message.includes('HTTP 401');
+          if (is401) {
+            setShowTokenModal(true);
+            return item;
+          }
+
+          console.warn(
+            `Failed to fetch deployment status for deployment ${deploymentId}:`,
+            err
+          );
+          Notification.error(
+            `Failed to fetch deployment status for deployment ${deploymentId}: ${err}`,
+            { autoClose: false }
+          );
+
+          return {
+            ...item,
+            deploymentStatus: 'Error',
+            deploymentError: 'Failed to fetch deployment status'
+          };
+        }
       })
     );
+
     return updatedItems;
   };
 
@@ -275,16 +261,14 @@ export const BuildsDeploymentsGrid = ({ jupyterApp }) => {
    * Preserves final deployment statuses to prevent UI flickering
    */
   const refreshNonFinalStates = async () => {
-    if (!hasMaapToken() || isRefreshing) {
+    if (isRefreshing) {
       return;
     }
 
     setIsRefreshing(true);
     try {
-      console.log('Refreshing builds...');
-
       // First, fetch fresh data to get any new builds
-      const buildsResponse = await getBuilds();
+      const buildsResponse = await api.getBuilds();
       const builds = buildsResponse.builds;
 
       // Transform builds while preserving existing deployment statuses
@@ -308,22 +292,11 @@ export const BuildsDeploymentsGrid = ({ jupyterApp }) => {
               !isDeploymentInFinalState(item.deploymentStatus)))
       );
 
-      console.log(
-        `Found ${newItems.length} new items and ${itemsToRefresh.length} items to refresh`
-      );
-
-      if (newItems.length > 0) {
-        console.log(
-          'New items found:',
-          newItems.map(item => `${item.type} ${item.id}`)
-        );
-      }
-
       // For items that need status refresh, fetch updated build and deployment data
       const refreshPromises = itemsToRefresh.map(async item => {
         try {
           // Always get build status first (since we only have builds now)
-          const buildData = await getBuildStatus(item.id);
+          const buildData = await api.getBuildStatus(item.id);
 
           let deploymentData: any = null;
           // If build has deployment link, fetch deployment status to get pipeline info
@@ -333,7 +306,7 @@ export const BuildsDeploymentsGrid = ({ jupyterApp }) => {
             );
             if (deploymentId) {
               try {
-                deploymentData = await getDeploymentStatusFromAPI(deploymentId);
+                deploymentData = await api.getDeploymentStatus(deploymentId);
               } catch (deploymentError) {
                 console.warn(
                   `Failed to fetch deployment status for deployment ${deploymentId}:`,
@@ -357,16 +330,27 @@ export const BuildsDeploymentsGrid = ({ jupyterApp }) => {
               deploymentData?.status || getDefaultDeploymentStatus(buildData)
           };
         } catch (error) {
+          const message =
+            error instanceof Error ? error.message : String(error);
+          const is401 = message.includes('HTTP 401');
+
+          if (is401) {
+            setShowTokenModal(true);
+            return;
+          }
           console.error(
             `Failed to refresh status for build ${item.id}:`,
             error
           );
+          Notification.error(`Failed to refresh status for build ${item.id}`, {
+            autoClose: false
+          });
           return { id: item.id, status: item.status }; // Keep current status on error
         }
       });
 
       const refreshedData = await Promise.all(refreshPromises);
-      const refreshMap = new Map(refreshedData.map(item => [item.id, item]));
+      const refreshMap = new Map(refreshedData.map(item => [item?.id, item]));
 
       // Combine fresh data with updated statuses
       // Only update items that actually have status changes
@@ -377,9 +361,6 @@ export const BuildsDeploymentsGrid = ({ jupyterApp }) => {
           (refreshedItem.status !== item.status ||
             refreshedItem.deploymentStatus !== item.deploymentStatus)
         ) {
-          console.log(
-            `Updated ${item.type} ${item.id} status: ${item.status} -> ${refreshedItem.status}, deployment: ${item.deploymentStatus} -> ${refreshedItem.deploymentStatus}`
-          );
           return {
             ...item,
             status: refreshedItem.status,
@@ -410,7 +391,7 @@ export const BuildsDeploymentsGrid = ({ jupyterApp }) => {
       if (
         newItems.length > 0 ||
         refreshedData.some(
-          item => item.status !== items.find(i => i.id === item.id)?.status
+          item => item?.status !== items.find(i => i.id === item?.id)?.status
         )
       ) {
         console.log('Refresh completed with updates');
@@ -418,7 +399,17 @@ export const BuildsDeploymentsGrid = ({ jupyterApp }) => {
         console.log('Refresh completed - no changes detected');
       }
     } catch (error) {
+      const message = error instanceof Error ? error.message : String(error);
+      const is401 = message.includes('HTTP 401');
+
+      if (is401) {
+        setShowTokenModal(true);
+        return;
+      }
       console.error('Error during refresh:', error);
+      Notification.error(`Error during refresh: ${error}`, {
+        autoClose: false
+      });
     } finally {
       setIsRefreshing(false);
     }
@@ -429,21 +420,11 @@ export const BuildsDeploymentsGrid = ({ jupyterApp }) => {
    * Fetches builds and then asynchronously loads deployment data
    */
   const fetchData = async () => {
-    if (!hasMaapToken()) {
-      console.warn('No MAAP PGT token detected.');
-      setShowTokenModal(true);
-      return;
-    }
-
     try {
-      console.log('Fetching builds...');
-
-      const buildsResponse = await getBuilds();
-      console.log('Builds response:', buildsResponse);
+      const buildsResponse = await api.getBuilds();
 
       // Transform builds, preserving any existing deployment data
       const buildItems = transformBuildsToItems(buildsResponse.builds, items);
-      console.log('Transformed build items:', buildItems);
 
       // Sort by created date (most recent first)
       const sortedItems = buildItems.sort((a, b) => {
@@ -452,23 +433,28 @@ export const BuildsDeploymentsGrid = ({ jupyterApp }) => {
         return dateB - dateA;
       });
 
-      console.log('Initial items to display:', sortedItems);
       setItems(sortedItems);
 
       // Fetch deployment data asynchronously for builds with deployment links
       // This updates deployment statuses from "Loading..." to actual values
       const itemsWithDeploymentData =
         await fetchDeploymentDataForBuilds(sortedItems);
-      console.log('Items with deployment data:', itemsWithDeploymentData);
       setItems(itemsWithDeploymentData);
     } catch (err) {
-      console.error('Failed to load builds:', err);
+      const message = err instanceof Error ? err.message : String(err);
+      const is401 = message.includes('HTTP 401');
+
+      if (is401) {
+        setShowTokenModal(true);
+        return;
+      }
+      Notification.error(`Failed to load builds: ${err}`, { autoClose: false });
     }
   };
 
-  useEffect(() => {
-    fetchData();
-  }, []);
+  // useEffect(() => {
+  //   fetchData();
+  // }, [maapApiUrl, maapToken]);
 
   /**
    * Returns Material-UI color theme for build status chips
@@ -627,8 +613,6 @@ export const BuildsDeploymentsGrid = ({ jupyterApp }) => {
     ],
     []
   );
-
-  console.log('Rendering table with items:', items);
 
   // Material React Table configuration with custom styling and behavior
   const table = useMaterialReactTable({
@@ -845,41 +829,11 @@ export const BuildsDeploymentsGrid = ({ jupyterApp }) => {
 
   return (
     <>
-      <Dialog open={showTokenModal} onClose={handleCloseTokenModal}>
-        <DialogTitle sx={{ backgroundColor: 'orange', color: 'white' }}>
-          MAAP PGT Token Required
-        </DialogTitle>
-        <DialogContent sx={{ paddingBottom: 0 }}>
-          <DialogContentText>
-            To access your builds and deployments, you need to provide your MAAP
-            PGT Token. You can get this token by visiting{' '}
-            <a
-              href={MAAP_PROFILE_URL}
-              target="_blank"
-              rel="noopener noreferrer"
-              style={{ color: '#1976d2' }}
-            >
-              your MAAP profile
-            </a>
-            .
-          </DialogContentText>
-          <TextField
-            autoFocus
-            margin="dense"
-            label="MAAP PGT Token"
-            type="password"
-            fullWidth
-            variant="outlined"
-            value={token}
-            onChange={e => setToken(e.target.value)}
-            sx={{ mt: 2 }}
-          />
-          <DialogActions>
-            <Button onClick={handleCloseTokenModal}>Cancel</Button>
-            <Button onClick={handleTokenModalSubmit}>Set Token</Button>
-          </DialogActions>
-        </DialogContent>
-      </Dialog>
+      <TokenModal
+        open={showTokenModal}
+        onClose={() => setShowTokenModal(false)}
+        onSubmit={() => fetchData()}
+      />
       <div
         className="ag-theme-stellar algorithms-table"
         style={{ height: '100%', width: '100%' }}

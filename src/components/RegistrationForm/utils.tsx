@@ -204,8 +204,6 @@ export const buildAlgorithmConfig = (data: AlgorithmData): string => {
     type: 'Directory'
   });
 
-  // TODO: order yml keys
-
   if (!isValidAlgorithmConfig(configData, true)) {
     console.error('Invalid algorithm config');
     return '';

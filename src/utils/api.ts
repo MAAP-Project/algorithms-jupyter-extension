@@ -1,265 +1,230 @@
 import { MAAP_API_ENDPOINTS } from '../constants';
 import { Notification } from '@jupyterlab/apputils';
 import { BuildsResponse, DeploymentsResponse } from '../types/build';
-import { getToken } from './auth';
 import { openBuildDeploymentDashboard } from './utils';
 import { PageConfig } from '@jupyterlab/coreutils';
 
 export const BASE_URL = PageConfig.getBaseUrl();
-const MAAP_API_URL = 'https://api.uat.maap-project.org/'; //await getMaapApiUrl();
 
-/**
- * Fetches the MAAP API URL from the MAAP Jupyter server extension endpoint.
- *
- * This function sends a GET request to the backend route
- * `maap-jupyter-server-extension/get-api-url` and attempts to retrieve the
- * `MAAP_API_URL` environment variable from the server. If the variable is not
- * set or an error occurs during the fetch, the function raises an error and
- * returns `null`.
- *
- * @returns {Promise<string | null>} A promise that resolves to the MAAP API URL
- * if successfully retrieved, or `null` if the request fails or the variable is missing.
- *
- * @throws {Error} Throws an error if the HTTP request fails or the variable is missing.
- */
-export async function getMaapApiUrl(): Promise<string | null> {
+type MaapSettings = {
+  maapApiUrl: string;
+  maapToken: string;
+};
+
+export type GetLatestSettings = () => Promise<MaapSettings>;
+
+type RequestOptions = Omit<RequestInit, 'headers'> & {
+  endpoint?: string;
+  url?: string;
+  auth?: boolean;
+  headers?: Record<string, string>;
+  rawBody?: boolean;
+};
+
+function joinUrl(base: string, path: string): string {
+  const b = base.endsWith('/') ? base.slice(0, -1) : base;
+  const p = path.startsWith('/') ? path : `/${path}`;
+  return `${b}${p}`;
+}
+
+async function readErrorPayload(response: Response): Promise<string> {
   try {
-    const response = await fetch(
-      `${BASE_URL}maap-jupyter-server-extension/get-api-url`
-    );
-    const data = await response.json();
-
-    if (response.status >= 400 || !data?.apiUrl) {
-      throw new Error(`Failed to retrieve MAAP_API_URL. ${data?.error ?? ''}`);
+    const contentType = response.headers.get('content-type') || '';
+    if (contentType.includes('application/json')) {
+      const j = await response.json();
+      return typeof j === 'string' ? j : JSON.stringify(j);
     }
-
-    return data.apiUrl;
-  } catch (error) {
-    console.error(error);
-    return null;
+    return await response.text();
+  } catch {
+    return '';
   }
 }
 
-/**
- * Fetches the list of available processes.
- *
- * This function sends a GET request to the MAAP API and returns an array of
- * processes. If the request fails, an error is thrown.
- *
- * @returns {Promise<any>} A promise that resolves to the list of processes
- *                        returned by the MAAP API, or `null` if the request fails.
- *
- * @throws {Error} An error is thrown if the request fails or if data or data.processes is null.
- */
-export async function getProcesses(): Promise<any> {
-  try {
-    const response = await fetch(
-      MAAP_API_URL + MAAP_API_ENDPOINTS.GET_PROCESSES
-    );
-    const data = await response.json();
+export function createMaapApi(getLatestSettings: GetLatestSettings) {
+  /**
+   * Single request helper: always reads latest settings right before calling fetch.
+   */
+  async function request<T = any>(opts: RequestOptions): Promise<T> {
+    const { maapApiUrl, maapToken } = await getLatestSettings();
 
-    if (response.status >= 400 || !data?.processes) {
-      throw Error('Failed to list processes.');
+    const finalUrl =
+      opts.url ??
+      (opts.endpoint ? joinUrl(maapApiUrl, opts.endpoint) : undefined);
+
+    if (!finalUrl) {
+      throw new Error('request() requires either url or endpoint');
     }
 
-    return data.processes;
-  } catch (error) {
-    console.error(error);
-    return null;
-  }
-}
+    const headers: Record<string, string> = {
+      ...(opts.headers ?? {})
+    };
 
-/**
- * Fetches the details of a specific process.
- *
- * This function sends a GET request to the MAAP API to retrieve the full
- * description of a process, using the given `processId`. If a processId is not
- * provided or the request fails, an error is thrown.
- *
- * @param {string} processId - The ID of the process to retrieve.
- * @returns {Promise<any>} A promise that resolves to the process details object,
- *                         or `null` if the request fails or the ID is missing.
- * @throws {Error} An error is thrown if the processId is not provided or if the request fails.
- *
- */
-export async function getProcess(processId: string): Promise<any> {
-  try {
-    if (!processId) {
-      throw Error('Failed to retrieve process. Process ID must be provided.');
+    // Only set JSON content-type by default when caller is NOT sending raw body
+    if (!opts.rawBody && !headers['Content-Type']) {
+      headers['Content-Type'] = 'application/json';
     }
 
-    const url = new URL(
-      MAAP_API_URL +
-        MAAP_API_ENDPOINTS.GET_PROCESS.replace('{PROCESS_ID}', processId)
-    );
-    const response = await fetch(url.toString());
-    const data = await response.json();
-
-    if (response.status >= 400 || !data) {
-      throw Error(`Failed to retrieve process. ${data?.detail ?? ''}`);
+    if (opts.auth) {
+      if (!maapToken) {
+        throw new Error('No authentication token available');
+      }
+      headers['cpticket'] = maapToken;
     }
 
-    return data;
-  } catch (error) {
-    console.error(error);
-    return null;
-  }
-}
+    const response = await fetch(finalUrl, {
+      ...opts,
+      headers
+    });
 
-/**
- * Check to see whether or not registers as ogc process -- /mas/algorithm may not ultimately make the /processes post call.
- * @param processResource
- * @returns
- */
-export const registerAlgorithm = async (
-  data: any,
-  jupyterApp?: any
-): Promise<any> => {
-  let message = '';
-  const url = MAAP_API_URL + MAAP_API_ENDPOINTS.BUILD;
+    if (!response.ok) {
+      const details = await readErrorPayload(response);
+      const message = `HTTP ${response.status} ${response.statusText}${
+        details ? `\nDetails: ${details}` : ''
+      }`;
+      throw new Error(message);
+    }
 
-  const response = await fetchWithAuth(url, {
-    method: 'POST',
-    body: data
-  });
+    // Try JSON first; fall back to text if no JSON
+    const ct = response.headers.get('content-type') || '';
+    if (ct.includes('application/json')) {
+      return (await response.json()) as T;
+    }
 
-  if (!response.ok) {
-    message = `Failed to submit algorithm for registration: \nHTTP ${response.status}: ${response.statusText}`;
-    Notification.error(message, { autoClose: false });
-    console.error(`Request failed: ${message}`);
-    throw new Error(message);
+    // If it isn't JSON, return text (as any)
+    return (await response.text()) as any as T;
   }
 
-  const rsp = await response.json();
-  console.log('Response from algorithm registration submission:: ', rsp);
-  if (rsp.status === 'accepted') {
-    message = `Algorithm successfully submitted for registration. Build ID: ${rsp.build_id}. `;
+  // -------------------------
+  // API methods
+  // -------------------------
 
-    if (jupyterApp) {
-      Notification.success(message, {
-        autoClose: false,
-        actions: [
-          {
-            label: 'View build & deployment status',
-            callback: () => {
-              openBuildDeploymentDashboard(jupyterApp, null);
-            }
-          }
-        ]
+  async function getProcesses(): Promise<any> {
+    try {
+      const data = await request<{ processes: any[] }>({
+        endpoint: MAAP_API_ENDPOINTS.GET_PROCESSES,
+        method: 'GET'
       });
-    } else {
-      // Fallback to plain text if no jupyterApp provided
-      Notification.success(message, { autoClose: false });
+
+      if (!data?.processes) {
+        throw new Error('Failed to list processes.');
+      }
+      return data.processes;
+    } catch (err) {
+      console.error(err);
+      return null;
     }
   }
-};
 
-// Helper function for authenticated requests using cpticket header
-const fetchWithAuth = async (url: string, options: RequestInit = {}) => {
-  const token = await getToken();
-  if (!token) {
-    throw new Error('No authentication token available');
-  }
-
-  return fetch(url, {
-    ...options,
-    headers: {
-      ...options.headers,
-      cpticket: token,
-      'Content-Type': 'application/json'
-    }
-  });
-};
-
-export const getBuilds = async (): Promise<BuildsResponse> => {
-  const response = await fetchWithAuth(MAAP_API_URL + MAAP_API_ENDPOINTS.BUILD);
-
-  if (!response.ok) {
-    let errorText: string;
+  async function getProcess(processId: string): Promise<any> {
     try {
-      errorText = await response.json();
-    } catch (e) {
-      errorText = await response.text();
+      if (!processId) {
+        throw new Error(
+          'Failed to retrieve process. Process ID must be provided.'
+        );
+      }
+
+      const endpoint = MAAP_API_ENDPOINTS.GET_PROCESS.replace(
+        '{PROCESS_ID}',
+        processId
+      );
+
+      return await request<any>({
+        endpoint,
+        method: 'GET'
+      });
+    } catch (err) {
+      console.error(err);
+      return null;
     }
-    const message = `HTTP ${response.status}: ${response.statusText}`;
-    console.error(`Builds request failed: ${message}\nDetails: ${errorText}`);
-    throw new Error(message);
   }
 
-  const data = await response.json();
-  return data;
-};
+  const registerAlgorithm = async (
+    data: any,
+    jupyterApp?: any
+  ): Promise<any> => {
+    const endpoint = MAAP_API_ENDPOINTS.BUILD;
 
-export const getDeployments = async (): Promise<DeploymentsResponse> => {
-  //TODO: mlucas compare with swagger -- only contains POST method
-  const response = await fetchWithAuth(
-    MAAP_API_URL + MAAP_API_ENDPOINTS.POST_DEPLOYMENTS
-  );
+    const response = await request<any>({
+      endpoint,
+      method: 'POST',
+      auth: true,
+      body: data,
+      // If `data` is FormData, set rawBody=true and DON'T force JSON content-type.
+      rawBody: data instanceof FormData,
+      headers: data instanceof FormData ? {} : undefined
+    });
 
-  if (!response.ok) {
-    let errorText: string;
-    try {
-      errorText = await response.json();
-    } catch (e) {
-      errorText = await response.text();
+    if (response?.status === 'accepted') {
+      const message = `Algorithm successfully submitted for registration. Build ID: ${response.build_id}. `;
+
+      if (jupyterApp) {
+        Notification.success(message, {
+          autoClose: false,
+          actions: [
+            {
+              label: 'View build & deployment status',
+              callback: () => openBuildDeploymentDashboard(jupyterApp, null)
+            }
+          ]
+        });
+      } else {
+        Notification.success(message, { autoClose: false });
+      }
     }
-    const message = `HTTP ${response.status}: ${response.statusText}`;
-    console.error(
-      `Deployments request failed: ${message}\nDetails: ${errorText}`
+
+    return response;
+  };
+
+  const getBuilds = async (): Promise<BuildsResponse> => {
+    return await request<BuildsResponse>({
+      endpoint: MAAP_API_ENDPOINTS.BUILD,
+      method: 'GET',
+      auth: true
+    });
+  };
+
+  const getDeployments = async (): Promise<DeploymentsResponse> => {
+    return await request<DeploymentsResponse>({
+      endpoint: MAAP_API_ENDPOINTS.POST_DEPLOYMENTS,
+      method: 'GET',
+      auth: true
+    });
+  };
+
+  const getBuildStatus = async (buildId: string): Promise<any> => {
+    const endpoint = MAAP_API_ENDPOINTS.GET_BUILD.replace(
+      '{BUILD_ID}',
+      buildId
     );
-    throw new Error(message);
-  }
+    return await request<any>({
+      endpoint,
+      method: 'GET',
+      auth: true
+    });
+  };
 
-  const data = await response.json();
-  return data;
-};
-
-export const getBuildStatus = async (buildId: string): Promise<any> => {
-  const url =
-    MAAP_API_URL + MAAP_API_ENDPOINTS.GET_BUILD.replace('{BUILD_ID}', buildId);
-  const response = await fetchWithAuth(url);
-
-  if (!response.ok) {
-    let errorText: string;
-    try {
-      errorText = await response.json();
-    } catch (e) {
-      errorText = await response.text();
-    }
-    const message = `HTTP ${response.status}: ${response.statusText}`;
-    console.error(
-      `Build status request failed: ${message}\nDetails: ${errorText}`
+  const getDeploymentStatus = async (deploymentId: string): Promise<any> => {
+    const endpoint = MAAP_API_ENDPOINTS.GET_DEPLOYMENTS.replace(
+      '{DEPLOYMENT_ID}',
+      deploymentId
     );
-    throw new Error(message);
-  }
+    return await request<any>({
+      endpoint,
+      method: 'GET',
+      auth: true
+    });
+  };
 
-  const data = await response.json();
-  return data;
-};
+  return {
+    request,
+    getProcesses,
+    getProcess,
+    registerAlgorithm,
+    getBuilds,
+    getDeployments,
+    getBuildStatus,
+    getDeploymentStatus
+  };
+}
 
-export const getDeploymentStatus = async (
-  deploymentId: string
-): Promise<any> => {
-  const url =
-    MAAP_API_URL +
-    MAAP_API_ENDPOINTS.GET_DEPLOYMENTS.replace('{DEPLOYMENT_ID}', deploymentId);
-
-  const response = await fetchWithAuth(url);
-
-  if (!response.ok) {
-    let errorText: string;
-    try {
-      errorText = await response.json();
-    } catch (e) {
-      errorText = await response.text();
-    }
-    const message = `HTTP ${response.status}: ${response.statusText}`;
-    console.error(
-      `Deployment status request failed: ${message}\nDetails: ${errorText}`
-    );
-    throw new Error(message);
-  }
-
-  const data = await response.json();
-  return data;
-};
+export type MaapApi = ReturnType<typeof createMaapApi>;

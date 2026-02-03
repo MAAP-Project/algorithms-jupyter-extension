@@ -112,7 +112,8 @@
     },
     "jupyterlab": {
         "extension": true,
-        "outputDir": "maap_algorithms_jupyter_extension/labextension"
+        "outputDir": "maap_algorithms_jupyter_extension/labextension",
+        "schemaDir": "schema"
     },
     "eslintIgnore": [
         "node_modules",

@@ -16,13 +16,74 @@ import {
   IFileBrowserFactory
 } from '@jupyterlab/filebrowser';
 import { IDocumentManager } from '@jupyterlab/docmanager';
+import { ISettingRegistry } from '@jupyterlab/settingregistry';
+import { Token } from '@lumino/coreutils';
+
+const sharedSettingsPluginId = 'maap-jupyter-server-extension:plugin';
+const algorithmsSettingsPluginId = 'maap_algorithms_jupyter_extension:plugin';
+
+export interface ISettingsResolver {
+  pluginId: string;
+  settings: ISettingRegistry.ISettings;
+  get<T = unknown>(key: string, fallback?: T): T;
+}
+
+export const ISettingsResolver = new Token<ISettingsResolver>(
+  'jupyterlab:ISettingsResolver'
+);
+
+/**
+ * The MAAP Jupyter shared settings will attempt to be loaded first. If these
+ * settings do not exist, the shared settings for this collection of algorithm
+ * plugins will be loaded instead.
+ */
+const settingsResolverPlugin: JupyterFrontEndPlugin<ISettingsResolver> = {
+  id: 'jupyterlab:settings-resolver',
+  autoStart: true,
+  requires: [ISettingRegistry],
+  provides: ISettingsResolver,
+  activate: async (app: JupyterFrontEnd, registry: ISettingRegistry) => {
+    let loadedId = sharedSettingsPluginId;
+    let settings: ISettingRegistry.ISettings;
+
+    try {
+      settings = await registry.load(loadedId);
+    } catch (err) {
+      console.warn(`Did not load settings for "${loadedId}: ", ${err}`);
+
+      loadedId = algorithmsSettingsPluginId;
+
+      try {
+        settings = await registry.load(loadedId);
+      } catch (err2) {
+        console.error(`Failed to load fallback settings "${loadedId}"`, err2);
+        throw err2;
+      }
+    }
+
+    console.log(`Settings loaded from: ${loadedId}`);
+
+    return {
+      pluginId: loadedId,
+      settings,
+      get: <T = unknown>(key: string, fallback?: T) => {
+        const v = settings.get(key).composite as T;
+        return (v ?? fallback) as T;
+      }
+    };
+  }
+};
 
 const listAlgorithmsPlugin: JupyterFrontEndPlugin<void> = {
   id: JUPYTER_EXT.LIST_ALGORITHMS_OPEN_COMMAND,
   description: 'A MAAP JupyterLab plugin for viewing OGC-compliant algorithms.',
   autoStart: true,
-  requires: [ILauncher, IFileBrowserFactory],
-  activate: (app: JupyterFrontEnd, launcher: ILauncher) => {
+  requires: [ILauncher, ISettingsResolver],
+  activate: async (
+    app: JupyterFrontEnd,
+    launcher: ILauncher,
+    settingRegistry: ISettingsResolver
+  ) => {
     const { commands } = app;
     const command = JUPYTER_EXT.LIST_ALGORITHMS_OPEN_COMMAND;
     let algorithmsWidget: MainAreaWidget<AlgorithmsWidget> | null = null;
@@ -32,7 +93,7 @@ const listAlgorithmsPlugin: JupyterFrontEndPlugin<void> = {
       label: 'Algorithm Catalog',
       icon: args => (args['isPalette'] ? undefined : reactIcon),
       execute: () => {
-        const content = new AlgorithmsWidget(app);
+        const content = new AlgorithmsWidget(app, settingRegistry.settings);
         algorithmsWidget = new MainAreaWidget<AlgorithmsWidget>({ content });
         algorithmsWidget.title.label = 'Algorithm Catalog';
         app.shell.add(algorithmsWidget, 'main');
@@ -56,11 +117,12 @@ const registerAlgorithmsPlugin: JupyterFrontEndPlugin<void> = {
     'A MAAP JupyterLab plugin for registering OGC-compliant algorithms.',
   autoStart: true,
   optional: [ILauncher],
-  requires: [IFileBrowserFactory, IDocumentManager, IDefaultFileBrowser],
-  activate: (
+  requires: [IFileBrowserFactory, IDocumentManager, ISettingsResolver],
+  activate: async (
     app: JupyterFrontEnd,
     fileBrowser: IDefaultFileBrowser,
-    docManager: IDocumentManager
+    docManager: IDocumentManager,
+    settingRegistry: ISettingsResolver
   ) => {
     const { commands } = app;
 
@@ -77,7 +139,8 @@ const registerAlgorithmsPlugin: JupyterFrontEndPlugin<void> = {
         const content = new RegisterAlgorithmsWidget(
           app,
           fileBrowser,
-          docManager
+          docManager,
+          settingRegistry.settings
         );
         registerAlgorithmsWidget = new MainAreaWidget<RegisterAlgorithmsWidget>(
           { content }
@@ -96,9 +159,14 @@ const buildsDeploymentsPlugin: JupyterFrontEndPlugin<void> = {
   description:
     'A MAAP JupyterLab plugin for viewing user builds and deployments.',
   autoStart: true,
-  requires: [ILauncher, IFileBrowserFactory],
-  activate: (app: JupyterFrontEnd, launcher: ILauncher) => {
+  requires: [ILauncher, ISettingsResolver],
+  activate: async (
+    app: JupyterFrontEnd,
+    launcher: ILauncher,
+    settingRegistry: ISettingsResolver
+  ) => {
     const { commands } = app;
+
     const command = JUPYTER_EXT.BUILDS_DEPLOYMENTS_OPEN_COMMAND;
     let buildsDeploymentsWidget: MainAreaWidget<BuildsDeploymentsWidget> | null =
       null;
@@ -108,7 +176,10 @@ const buildsDeploymentsPlugin: JupyterFrontEndPlugin<void> = {
       label: 'My Builds & Deployments',
       icon: args => (args['isPalette'] ? undefined : reactIcon),
       execute: () => {
-        const content = new BuildsDeploymentsWidget(app);
+        const content = new BuildsDeploymentsWidget(
+          app,
+          settingRegistry.settings
+        );
         buildsDeploymentsWidget = new MainAreaWidget<BuildsDeploymentsWidget>({
           content
         });
@@ -129,6 +200,7 @@ const buildsDeploymentsPlugin: JupyterFrontEndPlugin<void> = {
 };
 
 export default [
+  settingsResolverPlugin,
   listAlgorithmsPlugin,
   registerAlgorithmsPlugin,
   buildsDeploymentsPlugin

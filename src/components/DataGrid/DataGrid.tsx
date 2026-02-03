@@ -7,21 +7,31 @@ import {
 } from 'material-react-table';
 import { Box, Typography } from '@mui/material';
 import { openRegisterAlgorithm } from '../../utils/utils';
-import { getProcess, getProcesses } from '../../utils/api';
 import { Process, ProcessDetailed } from '../../types/process';
 import { ExpandedState } from '@tanstack/react-table';
 import ContentCopyIcon from '@mui/icons-material/ContentCopy';
 import RefreshIcon from '@mui/icons-material/Refresh';
 import IconButton from '@mui/material/IconButton';
 import Tooltip from '@mui/material/Tooltip';
+import { JupyterFrontEnd } from '@jupyterlab/application';
+import { MaapApi } from '../../utils/api';
 
-export const DataGrid = ({ jupyterApp }) => {
+type DataGridProps = {
+  jupyterApp: JupyterFrontEnd;
+  api: MaapApi;
+};
+
+export const DataGrid = ({ jupyterApp, api }: DataGridProps) => {
   const [processes, setProcesses] = useState<Process[]>([]);
   const [expandedRowIds, setExpandedRowIds] = useState<Set<string>>(new Set());
   const [rowDetails, setRowDetails] = useState<
     Record<string, ProcessDetailed | null>
   >({});
   const [isLoading, setIsLoading] = useState(false);
+
+  useEffect(() => {
+    fetchProcesses();
+  }, [api]);
 
   const handleRowExpand = async (
     updater: ExpandedState | ((old: ExpandedState) => ExpandedState)
@@ -49,7 +59,7 @@ export const DataGrid = ({ jupyterApp }) => {
         try {
           const processId =
             processResource.split('/').filter(Boolean).pop() || '';
-          const detail = await getProcess(processId);
+          const detail = await api.getProcess(processId);
           setRowDetails(prev => ({ ...prev, [added]: detail }));
         } catch (error) {
           console.error(`Failed to fetch details for ${added}:`, error);
@@ -72,7 +82,7 @@ export const DataGrid = ({ jupyterApp }) => {
   const fetchProcesses = async () => {
     setIsLoading(true);
     try {
-      const data = await getProcesses();
+      const data = await api.getProcesses();
       setProcesses(data);
     } catch (err) {
       console.error('Failed to load processes:', err);
@@ -80,10 +90,6 @@ export const DataGrid = ({ jupyterApp }) => {
       setIsLoading(false);
     }
   };
-
-  useEffect(() => {
-    fetchProcesses();
-  }, []);
 
   const columns = useMemo<MRT_ColumnDef<Process>[]>(
     () => [
@@ -330,28 +336,28 @@ export const DataGrid = ({ jupyterApp }) => {
                   Object.keys(processDetails.inputs).length > 0 ? (
                     Object.entries(processDetails.inputs).map(
                       ([key, value]) => (
-                        console.log('value: ', value),
-                        (
-                          <tr key={key}>
-                            <td>{value.title ?? '-'}</td>
-                            <td>{value.placeholder ?? '-'}</td>
-                            <td>{value.description ?? '-'}</td>
-                            <td>{value.type ?? '-'}</td>
-                            <td>
-                              {value.default
-                                ? typeof value.default === 'object'
-                                  ? value.default['path']
-                                  : value.default
-                                : '-'}
-                            </td>
-                          </tr>
-                        )
+                        <tr key={key}>
+                          <td>{value.title ?? '-'}</td>
+                          <td>{value.placeholder ?? '-'}</td>
+                          <td>{value.description ?? '-'}</td>
+                          <td>{value.type ?? '-'}</td>
+                          <td>
+                            {value.default
+                              ? typeof value.default === 'object'
+                                ? value.default['path']
+                                : value.default
+                              : '-'}
+                          </td>
+                        </tr>
                       )
                     )
                   ) : (
                     <tr>
-                      <td style={{ textAlign: 'center' }}>
-                        <i>No inputs defined.</i>
+                      <td
+                        colSpan={5}
+                        style={{ textAlign: 'center', fontStyle: 'italic' }}
+                      >
+                        No inputs defined.
                       </td>
                     </tr>
                   )}

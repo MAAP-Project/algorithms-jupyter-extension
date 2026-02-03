@@ -12,7 +12,7 @@ import {
 } from '@mui/material';
 import AddIcon from '@mui/icons-material/Add';
 import DeleteIcon from '@mui/icons-material/Delete';
-import { registerAlgorithm } from '../../utils/api';
+import { useMaapContext } from '../../MaapContext';
 import { IDefaultFileBrowser } from '@jupyterlab/filebrowser';
 import { JupyterFrontEnd } from '@jupyterlab/application';
 import { IDocumentManager } from '@jupyterlab/docmanager';
@@ -36,19 +36,23 @@ import {
 } from '../../types/algorithmConfig';
 import { CustomFileDialog } from '../CustomFileDialog/CustomFileDialog';
 import * as yaml from 'yaml';
+import { MaapApi } from '../../utils/api';
+import { TokenModal } from '../TokenModal/TokenModal';
 
 export const RegistrationForm = ({
   jupyterApp,
   fileBrowser,
-  docManager
+  docManager,
+  api
 }: {
   jupyterApp: JupyterFrontEnd;
   fileBrowser: IDefaultFileBrowser;
   docManager: IDocumentManager;
+  api: MaapApi;
 }) => {
+  const { maapToken, setMaapToken } = useMaapContext();
   const [showTokenModal, setShowTokenModal] = useState(false);
   const [showFileDialog, setShowFileDialog] = useState(false);
-  const [token, setToken] = useState('');
   const [inputRows, setInputRows] = useState<Array<AlgorithmInputRow>>([]);
   const [useAlgorithmContainer, setUseAlgorithmContainer] = useState(false);
 
@@ -126,7 +130,6 @@ export const RegistrationForm = ({
   };
 
   const handleTokenModalSubmit = async () => {
-    localStorage.setItem('MAAP_PGT_TOKEN', token);
     handleCloseTokenModal();
   };
 
@@ -138,9 +141,8 @@ export const RegistrationForm = ({
   const handleFormSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
 
-    // TODO: local storage/session storage?
     // eslint-disable-next-line no-prototype-builtins
-    if (!localStorage.hasOwnProperty('MAAP_PGT_TOKEN')) {
+    if (!maapToken) {
       console.warn('No MAAP PGT token detected.');
       setShowTokenModal(true);
       return;
@@ -203,283 +205,294 @@ export const RegistrationForm = ({
     const yamlObject = yaml.parse(yamlContent);
     const jsonContent = JSON.stringify(yamlObject, null, 2);
 
-    await registerAlgorithm(jsonContent, jupyterApp);
+    await api.registerAlgorithm(jsonContent, jupyterApp);
   };
 
   return (
-    <div style={{ overflow: 'scroll' }}>
-      <CustomFileDialog
-        open={showFileDialog}
-        onClose={() => setShowFileDialog(false)}
-        onFileSelect={handleFileSelect}
-        jupyterApp={jupyterApp}
-        fileBrowser={fileBrowser}
-        docManager={docManager}
+    <>
+      <TokenModal
+        open={showTokenModal}
+        onClose={() => setShowTokenModal(false)}
+        onSubmit={() => setShowTokenModal(false)}
       />
-      <Dialog open={showTokenModal} onClose={handleCloseTokenModal}>
-        <DialogTitle sx={{ backgroundColor: 'orange', color: 'white' }}>
-          MAAP PGT Token Required
-        </DialogTitle>
-        <DialogContent sx={{ paddingBottom: 0 }}>
-          <DialogContentText>
-            Enter your MAAP-PGT token then try registering again. You may
-            retrieve it from your{' '}
+      <div style={{ overflow: 'scroll' }}>
+        <CustomFileDialog
+          open={showFileDialog}
+          onClose={() => setShowFileDialog(false)}
+          onFileSelect={handleFileSelect}
+          jupyterApp={jupyterApp}
+          fileBrowser={fileBrowser}
+          docManager={docManager}
+        />
+        <Dialog open={showTokenModal} onClose={handleCloseTokenModal}>
+          <DialogTitle sx={{ backgroundColor: 'orange', color: 'white' }}>
+            MAAP PGT Token Required
+          </DialogTitle>
+          <DialogContent sx={{ paddingBottom: 0 }}>
+            <DialogContentText>
+              Enter your MAAP-PGT token then try registering again. You may
+              retrieve it from your{' '}
+              <a
+                href={MAAP_PROFILE_URL}
+                target="_blank"
+                rel="noopener noreferrer"
+                style={{ color: '#1976d2', textDecoration: 'underline' }}
+              >
+                MAAP profile page
+              </a>{' '}
+              .
+            </DialogContentText>
+            <input
+              style={{ marginTop: '15px' }}
+              autoFocus
+              required
+              id="token"
+              className="st-input"
+              name="token"
+              placeholder="PGT-XXXXXXXX"
+              type="text"
+              onChange={val => setMaapToken(val.target.value)}
+            />
+            <DialogActions>
+              <Button onClick={handleCloseTokenModal}>Cancel</Button>
+              <Button onClick={handleTokenModalSubmit}>Set Token</Button>
+            </DialogActions>
+          </DialogContent>
+        </Dialog>
+        <Box sx={{ maxWidth: 800, p: 3 }}>
+          <Typography variant="h5" gutterBottom>
+            Algorithm Registration Form
+          </Typography>
+          <button className="st-button" onClick={openFileDialog}>
+            Load Algorithm Configuration
+          </button>
+          <p className="st-typography-body-small">
+            Register your algorithm to the MAAP to run algorithm jobs. See the{' '}
             <a
-              href={MAAP_PROFILE_URL}
+              href={MAAP_DOCS_REGISTER_ALGORITHM_URL}
               target="_blank"
-              rel="noopener noreferrer"
               style={{ color: '#1976d2', textDecoration: 'underline' }}
             >
-              MAAP profile page
+              MAAP documentation
             </a>{' '}
-            .
-          </DialogContentText>
-          <input
-            style={{ marginTop: '15px' }}
-            autoFocus
-            required
-            id="token"
-            className="st-input"
-            name="token"
-            placeholder="PGT-XXXXXXXX"
-            type="text"
-            onChange={val => setToken(val.target.value)}
-          />
-          <DialogActions>
-            <Button onClick={handleCloseTokenModal}>Cancel</Button>
-            <Button onClick={handleTokenModalSubmit}>Set Token</Button>
-          </DialogActions>
-        </DialogContent>
-      </Dialog>
-      <Box sx={{ maxWidth: 800, p: 3 }}>
-        <Typography variant="h5" gutterBottom>
-          Algorithm Registration Form
-        </Typography>
-        <button className="st-button" onClick={openFileDialog}>
-          Load Algorithm Configuration
-        </button>
-        <p className="st-typography-body-small">
-          Register your algorithm to the MAAP to run algorithm jobs. See the{' '}
-          <a
-            href={MAAP_DOCS_REGISTER_ALGORITHM_URL}
-            target="_blank"
-            style={{ color: '#1976d2', textDecoration: 'underline' }}
-          >
-            MAAP documentation
-          </a>{' '}
-          for more information.
-        </p>
-        <form onSubmit={handleFormSubmit}>
-          <h3>General Information</h3>
-          <table className="st-table margin-bottom-3">
-            <tbody>
-              <FormRow
-                key={FORM_FIELDS.algorithmName.name}
-                formInput={FORM_FIELDS.algorithmName}
-              />
-              <FormRow
-                key={FORM_FIELDS.algorithmVersion.name}
-                formInput={FORM_FIELDS.algorithmVersion}
-              />
-              <FormRow
-                key={FORM_FIELDS.algorithmDescription.name}
-                formInput={FORM_FIELDS.algorithmDescription}
-              />
-              <FormRow formInput={FORM_FIELDS.codeRepository} />
-              <FormRow
-                key={FORM_FIELDS.runCommand.name}
-                formInput={FORM_FIELDS.runCommand}
-              />
-            </tbody>
-          </table>
-          <h3>Build Information</h3>
-          <div style={{ marginBottom: '16px' }}>
-            <input
-              type="checkbox"
-              checked={useAlgorithmContainer}
-              onChange={() =>
-                handleSetUseAlgorithmContainer(!useAlgorithmContainer)
-              }
-            />
-            <label>Use pre-built algorithm container</label>
-          </div>
-          <table className="st-table margin-bottom-3">
-            <tbody>
-              <div
-                style={{ display: useAlgorithmContainer ? 'block' : 'none' }}
-              >
+            for more information.
+          </p>
+          <form onSubmit={handleFormSubmit}>
+            <h3>General Information</h3>
+            <table className="st-table margin-bottom-3">
+              <tbody>
                 <FormRow
-                  key={FORM_FIELDS.algorithmContainerURL.name}
-                  formInput={FORM_FIELDS.algorithmContainerURL}
-                />
-              </div>
-              <div
-                style={{ display: useAlgorithmContainer ? 'none' : 'block' }}
-              >
-                <FormRow
-                  key={FORM_FIELDS.baseContainerURL.name}
-                  formInput={FORM_FIELDS.baseContainerURL}
+                  key={FORM_FIELDS.algorithmName.name}
+                  formInput={FORM_FIELDS.algorithmName}
                 />
                 <FormRow
-                  key={FORM_FIELDS.buildCommand.name}
-                  formInput={FORM_FIELDS.buildCommand}
+                  key={FORM_FIELDS.algorithmVersion.name}
+                  formInput={FORM_FIELDS.algorithmVersion}
                 />
-              </div>
-            </tbody>
-          </table>
-          <h3>Resource Requirements</h3>
-          <table className="st-table margin-bottom-3">
-            <tbody>
-              <FormRow formInput={FORM_FIELDS.ramMin} />
-              <FormRow formInput={FORM_FIELDS.coresMin} />
-            </tbody>
-          </table>
-          <h3>Metadata</h3>
-          <table className="st-table margin-bottom-3">
-            <tbody>
-              <FormRow formInput={FORM_FIELDS.author} />
-              <FormRow formInput={FORM_FIELDS.contributor} />
-              <FormRow formInput={FORM_FIELDS.license} />
-              <FormRow formInput={FORM_FIELDS.releaseNotes} />
-              <FormRow formInput={FORM_FIELDS.citation} />
-              <FormRow formInput={FORM_FIELDS.keywords} />
-            </tbody>
-          </table>
-          <h3>Inputs</h3>
-          <table className="st-table inputs-table">
-            <thead>
-              <tr>
-                <th className="icon-cell">
-                  <IconButton
-                    color="primary"
-                    onClick={addInputRow}
-                    size="small"
-                  >
-                    <AddIcon style={{ fontSize: '16px' }} />
-                  </IconButton>
-                </th>
-                <th>
-                  Name <span style={{ color: 'red' }}> *</span>
-                </th>
-                <th>
-                  Label <span style={{ color: 'red' }}> *</span>
-                </th>
-                <th>
-                  Description <span style={{ color: 'red' }}> *</span>
-                </th>
-                <th>
-                  Type <span style={{ color: 'red' }}> *</span>
-                </th>
-                <th>Default Value</th>
-              </tr>
-            </thead>
-            <tbody>
-              {inputRows.length === 0 ? (
+                <FormRow
+                  key={FORM_FIELDS.algorithmDescription.name}
+                  formInput={FORM_FIELDS.algorithmDescription}
+                />
+                <FormRow formInput={FORM_FIELDS.codeRepository} />
+                <FormRow
+                  key={FORM_FIELDS.runCommand.name}
+                  formInput={FORM_FIELDS.runCommand}
+                />
+              </tbody>
+            </table>
+            <h3>Build Information</h3>
+            <div style={{ marginBottom: '16px' }}>
+              <input
+                type="checkbox"
+                checked={useAlgorithmContainer}
+                onChange={() =>
+                  handleSetUseAlgorithmContainer(!useAlgorithmContainer)
+                }
+              />
+              <label>Use pre-built algorithm container</label>
+            </div>
+            <table className="st-table margin-bottom-3">
+              <tbody>
+                <div
+                  style={{ display: useAlgorithmContainer ? 'block' : 'none' }}
+                >
+                  <FormRow
+                    key={FORM_FIELDS.algorithmContainerURL.name}
+                    formInput={FORM_FIELDS.algorithmContainerURL}
+                  />
+                </div>
+                <div
+                  style={{ display: useAlgorithmContainer ? 'none' : 'block' }}
+                >
+                  <FormRow
+                    key={FORM_FIELDS.baseContainerURL.name}
+                    formInput={FORM_FIELDS.baseContainerURL}
+                  />
+                  <FormRow
+                    key={FORM_FIELDS.buildCommand.name}
+                    formInput={FORM_FIELDS.buildCommand}
+                  />
+                </div>
+              </tbody>
+            </table>
+            <h3>Resource Requirements</h3>
+            <table className="st-table margin-bottom-3">
+              <tbody>
+                <FormRow formInput={FORM_FIELDS.ramMin} />
+                <FormRow formInput={FORM_FIELDS.coresMin} />
+              </tbody>
+            </table>
+            <h3>Metadata</h3>
+            <table className="st-table margin-bottom-3">
+              <tbody>
+                <FormRow formInput={FORM_FIELDS.author} />
+                <FormRow formInput={FORM_FIELDS.contributor} />
+                <FormRow formInput={FORM_FIELDS.license} />
+                <FormRow formInput={FORM_FIELDS.releaseNotes} />
+                <FormRow formInput={FORM_FIELDS.citation} />
+                <FormRow formInput={FORM_FIELDS.keywords} />
+              </tbody>
+            </table>
+            <h3>Inputs</h3>
+            <table className="st-table inputs-table">
+              <thead>
                 <tr>
-                  <td
-                    style={{
-                      textAlign: 'center',
-                      padding: '20px'
-                    }}
-                  >
-                    <i>No inputs specified</i>
-                  </td>
+                  <th className="icon-cell">
+                    <IconButton
+                      color="primary"
+                      onClick={addInputRow}
+                      size="small"
+                    >
+                      <AddIcon style={{ fontSize: '16px' }} />
+                    </IconButton>
+                  </th>
+                  <th>
+                    Name <span style={{ color: 'red' }}> *</span>
+                  </th>
+                  <th>
+                    Label <span style={{ color: 'red' }}> *</span>
+                  </th>
+                  <th>
+                    Description <span style={{ color: 'red' }}> *</span>
+                  </th>
+                  <th>
+                    Type <span style={{ color: 'red' }}> *</span>
+                  </th>
+                  <th>Default Value</th>
                 </tr>
-              ) : (
-                inputRows.map(row => (
-                  <tr key={row.id}>
-                    <td style={{ minWidth: '50px' }}></td>
-                    <td>
-                      <input
-                        type="text"
-                        name={`input_${row.id}_name`}
-                        placeholder="Enter input name"
-                        className="st-input compact"
-                        required={true}
-                        value={row.name}
-                        onChange={e =>
-                          updateInputRow(row.id, 'name', e.target.value)
-                        }
-                      />
-                    </td>
-                    <td>
-                      <input
-                        type="text"
-                        name={`input_${row.id}_label`}
-                        placeholder="Enter input label"
-                        className="st-input compact"
-                        required={true}
-                        value={row.label}
-                        onChange={e =>
-                          updateInputRow(row.id, 'label', e.target.value)
-                        }
-                      />
-                    </td>
-                    <td>
-                      <input
-                        type="text"
-                        name={`input_${row.id}_description`}
-                        placeholder="Enter input description"
-                        className="st-input compact"
-                        required={true}
-                        value={row.description}
-                        onChange={e =>
-                          updateInputRow(row.id, 'description', e.target.value)
-                        }
-                      />
-                    </td>
-                    <td>
-                      <input
-                        type="text"
-                        name={`input_${row.id}_type`}
-                        placeholder="Enter input type"
-                        required={true}
-                        className="st-input compact"
-                        value={row.type}
-                        onChange={e =>
-                          updateInputRow(row.id, 'type', e.target.value)
-                        }
-                      />
-                    </td>
-                    <td>
-                      <input
-                        type="text"
-                        name={`input_${row.id}_default`}
-                        placeholder="Enter default value"
-                        className="st-input compact"
-                        value={row.default}
-                        onChange={e =>
-                          updateInputRow(row.id, 'default', e.target.value)
-                        }
-                      />
-                    </td>
-                    <td>
-                      <IconButton
-                        color="error"
-                        size="small"
-                        onClick={() => removeInputRow(row.id)}
-                      >
-                        <DeleteIcon style={{ fontSize: '16px' }} />
-                      </IconButton>
+              </thead>
+              <tbody>
+                {inputRows.length === 0 ? (
+                  <tr>
+                    <td
+                      style={{
+                        textAlign: 'center',
+                        padding: '20px'
+                      }}
+                    >
+                      <i>No inputs specified</i>
                     </td>
                   </tr>
-                ))
-              )}
-            </tbody>
-          </table>
-          <Box mt={4} sx={{ display: 'flex', gap: 2 }}>
-            <button type="submit" className="st-button" disabled={false}>
-              Register Algorithm
-            </button>
-            <button
-              className="st-button secondary"
-              onClick={e => handleClearForm(e)}
-            >
-              Clear
-            </button>
-          </Box>
-        </form>
-      </Box>
-    </div>
+                ) : (
+                  inputRows.map(row => (
+                    <tr key={row.id}>
+                      <td style={{ minWidth: '50px' }}></td>
+                      <td>
+                        <input
+                          type="text"
+                          name={`input_${row.id}_name`}
+                          placeholder="Enter input name"
+                          className="st-input compact"
+                          required={true}
+                          value={row.name}
+                          onChange={e =>
+                            updateInputRow(row.id, 'name', e.target.value)
+                          }
+                        />
+                      </td>
+                      <td>
+                        <input
+                          type="text"
+                          name={`input_${row.id}_label`}
+                          placeholder="Enter input label"
+                          className="st-input compact"
+                          required={true}
+                          value={row.label}
+                          onChange={e =>
+                            updateInputRow(row.id, 'label', e.target.value)
+                          }
+                        />
+                      </td>
+                      <td>
+                        <input
+                          type="text"
+                          name={`input_${row.id}_description`}
+                          placeholder="Enter input description"
+                          className="st-input compact"
+                          required={true}
+                          value={row.description}
+                          onChange={e =>
+                            updateInputRow(
+                              row.id,
+                              'description',
+                              e.target.value
+                            )
+                          }
+                        />
+                      </td>
+                      <td>
+                        <input
+                          type="text"
+                          name={`input_${row.id}_type`}
+                          placeholder="Enter input type"
+                          required={true}
+                          className="st-input compact"
+                          value={row.type}
+                          onChange={e =>
+                            updateInputRow(row.id, 'type', e.target.value)
+                          }
+                        />
+                      </td>
+                      <td>
+                        <input
+                          type="text"
+                          name={`input_${row.id}_default`}
+                          placeholder="Enter default value"
+                          className="st-input compact"
+                          value={row.default}
+                          onChange={e =>
+                            updateInputRow(row.id, 'default', e.target.value)
+                          }
+                        />
+                      </td>
+                      <td>
+                        <IconButton
+                          color="error"
+                          size="small"
+                          onClick={() => removeInputRow(row.id)}
+                        >
+                          <DeleteIcon style={{ fontSize: '16px' }} />
+                        </IconButton>
+                      </td>
+                    </tr>
+                  ))
+                )}
+              </tbody>
+            </table>
+            <Box mt={4} sx={{ display: 'flex', gap: 2 }}>
+              <button type="submit" className="st-button" disabled={false}>
+                Register Algorithm
+              </button>
+              <button
+                className="st-button secondary"
+                onClick={e => handleClearForm(e)}
+              >
+                Clear
+              </button>
+            </Box>
+          </form>
+        </Box>
+      </div>
+    </>
   );
 };
