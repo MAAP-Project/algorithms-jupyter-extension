@@ -1,15 +1,5 @@
 import React, { useState } from 'react';
-import {
-  Button,
-  Box,
-  Typography,
-  Dialog,
-  DialogTitle,
-  DialogContent,
-  DialogContentText,
-  DialogActions,
-  IconButton
-} from '@mui/material';
+import { Box, Typography, IconButton } from '@mui/material';
 import AddIcon from '@mui/icons-material/Add';
 import DeleteIcon from '@mui/icons-material/Delete';
 import { useMaapContext } from '../../MaapContext';
@@ -17,11 +7,7 @@ import { IDefaultFileBrowser } from '@jupyterlab/filebrowser';
 import { JupyterFrontEnd } from '@jupyterlab/application';
 import { IDocumentManager } from '@jupyterlab/docmanager';
 import { Notification } from '@jupyterlab/apputils';
-import {
-  FORM_FIELDS,
-  MAAP_PROFILE_URL,
-  MAAP_DOCS_REGISTER_ALGORITHM_URL
-} from '../../constants';
+import { FORM_FIELDS, MAAP_DOCS_REGISTER_ALGORITHM_URL } from '../../constants';
 import { FormRow } from './FormRow';
 import { AlgorithmData, AlgorithmInputRow } from '../../types/registration';
 import {
@@ -209,7 +195,9 @@ export const RegistrationForm = ({
         setShowTokenModal(true);
         return;
       }
-      Notification.error(`Failed to register algorithms: ${err}`, { autoClose: false });
+      Notification.error(`Failed to register algorithms: ${err}`, {
+        autoClose: false
+      });
     }
   };
 
@@ -229,41 +217,6 @@ export const RegistrationForm = ({
           fileBrowser={fileBrowser}
           docManager={docManager}
         />
-        <Dialog open={showTokenModal} onClose={handleCloseTokenModal}>
-          <DialogTitle sx={{ backgroundColor: 'orange', color: 'white' }}>
-            MAAP PGT Token Required
-          </DialogTitle>
-          <DialogContent sx={{ paddingBottom: 0 }}>
-            <DialogContentText>
-              Enter your MAAP-PGT token then try registering again. You may
-              retrieve it from your{' '}
-              <a
-                href={MAAP_PROFILE_URL}
-                target="_blank"
-                rel="noopener noreferrer"
-                style={{ color: '#1976d2', textDecoration: 'underline' }}
-              >
-                MAAP profile page
-              </a>{' '}
-              .
-            </DialogContentText>
-            <input
-              style={{ marginTop: '15px' }}
-              autoFocus
-              required
-              id="token"
-              className="st-input"
-              name="token"
-              placeholder="PGT-XXXXXXXX"
-              type="text"
-              onChange={val => setMaapToken(val.target.value)}
-            />
-            <DialogActions>
-              <Button onClick={handleCloseTokenModal}>Cancel</Button>
-              <Button onClick={handleTokenModalSubmit}>Set Token</Button>
-            </DialogActions>
-          </DialogContent>
-        </Dialog>
         <Box sx={{ maxWidth: 800, p: 3 }}>
           <Typography variant="h5" gutterBottom>
             Algorithm Registration Form
