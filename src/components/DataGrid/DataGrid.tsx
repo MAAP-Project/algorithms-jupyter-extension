@@ -6,7 +6,7 @@ import {
   type MRT_ColumnDef
 } from 'material-react-table';
 import { Box, Typography } from '@mui/material';
-import { openRegisterAlgorithm } from '../../utils/utils';
+import { openRegisterAlgorithm, openJobsSubmit } from '../../utils/utils';
 import { Process, ProcessDetailed } from '../../types/process';
 import { ExpandedState } from '@tanstack/react-table';
 import ContentCopyIcon from '@mui/icons-material/ContentCopy';
@@ -145,21 +145,29 @@ export const DataGrid = ({ jupyterApp, api }: DataGridProps) => {
             : '-';
           return formatted;
         }
-      },
-      {
-        accessorKey: 'actions',
-        header: 'Actions',
-        muiTableHeadCellProps: {
-          align: 'center'
-        },
-        enableSorting: false,
-        muiTableBodyCellProps: { align: 'center' },
-        Cell: ({ row }) => (
-          <button className="st-button" disabled={true}>
-            Configure Job
-          </button>
-        )
       }
+      // {
+      //   accessorKey: 'actions',
+      //   header: 'Actions',
+      //   muiTableHeadCellProps: {
+      //     align: 'center'
+      //   },
+      //   enableSorting: false,
+      //   muiTableBodyCellProps: { align: 'center' },
+      //   Cell: ({ row }) => (
+      //     <button
+      //       className="st-button"
+      //       onClick={() =>
+      //         openJobsSubmit(jupyterApp, {
+      //           processId: row.original.id,
+      //           version: row.original.version
+      //         })
+      //       }
+      //     >
+      //       Configure Job
+      //     </button>
+      //   )
+      // }
     ],
     []
   );
@@ -269,7 +277,7 @@ export const DataGrid = ({ jupyterApp, api }: DataGridProps) => {
             <h4>General Information</h4>
             <tbody>
               <tr>
-                <td className="st-label-cell">Algorithm ID</td>
+                <td className="st-label-cell">Process ID</td>
                 <td>{processDetails.processID ?? '-'}</td>
               </tr>
               <tr>
@@ -337,7 +345,7 @@ export const DataGrid = ({ jupyterApp, api }: DataGridProps) => {
                     Object.entries(processDetails.inputs).map(
                       ([key, value]) => (
                         <tr key={key}>
-                          <td>{value.title ?? '-'}</td>
+                          <td>{value.name ?? '-'}</td>
                           <td>{value.placeholder ?? '-'}</td>
                           <td>{value.description ?? '-'}</td>
                           <td>{value.type ?? '-'}</td>

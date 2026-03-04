@@ -4,7 +4,8 @@ import { RegistrationFormInput } from './types/registration';
 export const JUPYTER_EXT = {
   LIST_ALGORITHMS_OPEN_COMMAND: 'list-algorithms-open-command',
   REGISTER_ALGORITHMS_OPEN_COMMAND: 'register-algorithms-open-command',
-  BUILDS_DEPLOYMENTS_OPEN_COMMAND: 'builds-deployments-open-command'
+  BUILDS_DEPLOYMENTS_OPEN_COMMAND: 'builds-deployments-open-command',
+  JOBS_SUBMIT_OPEN_COMMAND: 'jobs_submit:open'
 };
 
 /** MAAP */

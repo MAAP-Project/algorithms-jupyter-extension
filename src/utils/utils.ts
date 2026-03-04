@@ -37,6 +37,16 @@ export const openBuildDeploymentDashboard = (jupyterApp, data) => {
   }
 };
 
+export const openJobsSubmit = (jupyterApp, data) => {
+  if (jupyterApp.commands.hasCommand(JUPYTER_EXT.JOBS_SUBMIT_OPEN_COMMAND)) {
+    if (data === null) {
+      jupyterApp.commands.execute(JUPYTER_EXT.JOBS_SUBMIT_OPEN_COMMAND, null);
+    } else {
+      jupyterApp.commands.execute(JUPYTER_EXT.JOBS_SUBMIT_OPEN_COMMAND, data);
+    }
+  }
+};
+
 export const createFile = async (
   fileContent: string,
   filePath: string,

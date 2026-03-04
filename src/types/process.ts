@@ -7,7 +7,7 @@ export type Link = {
 };
 
 export type ProcessInput = {
-  title: string;
+  name: string;
   label: string;
   description: string;
   type: string;

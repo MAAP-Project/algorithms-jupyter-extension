@@ -43,10 +43,6 @@ export const RegistrationForm = ({
   const [inputRows, setInputRows] = useState<Array<AlgorithmInputRow>>([]);
   const [useAlgorithmContainer, setUseAlgorithmContainer] = useState(false);
 
-  const handleCloseTokenModal = () => {
-    setShowTokenModal(false);
-  };
-
   const addInputRow = () => {
     const newRow: AlgorithmInputRow = {
       id: crypto.randomUUID(),
@@ -114,10 +110,6 @@ export const RegistrationForm = ({
     setInputValue(FORM_FIELDS.algorithmContainerURL.pythonic_name, '');
     setInputValue(FORM_FIELDS.buildCommand.pythonic_name, '');
     setInputValue(FORM_FIELDS.baseContainerURL.pythonic_name, '');
-  };
-
-  const handleTokenModalSubmit = async () => {
-    handleCloseTokenModal();
   };
 
   const handleClearForm = (event: React.MouseEvent<HTMLButtonElement>) => {
@@ -224,7 +216,7 @@ export const RegistrationForm = ({
           <button className="st-button" onClick={openFileDialog}>
             Load Algorithm Configuration
           </button>
-          <p className="st-typography-body-small">
+          {/* <p className="st-typography-body-small">
             Register your algorithm to the MAAP to run algorithm jobs. See the{' '}
             <a
               href={MAAP_DOCS_REGISTER_ALGORITHM_URL}
@@ -234,7 +226,7 @@ export const RegistrationForm = ({
               MAAP documentation
             </a>{' '}
             for more information.
-          </p>
+          </p> */}
           <form onSubmit={handleFormSubmit}>
             <h3>General Information</h3>
             <table className="st-table margin-bottom-3">
