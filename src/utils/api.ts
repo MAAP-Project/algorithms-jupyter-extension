@@ -9,6 +9,7 @@ export const BASE_URL = PageConfig.getBaseUrl();
 type MaapSettings = {
   maapApiUrl: string;
   maapToken: string;
+  defaultAppImage: string;
 };
 
 export type GetLatestSettings = () => Promise<MaapSettings>;
@@ -45,7 +46,8 @@ export function createMaapApi(getLatestSettings: GetLatestSettings) {
    * Single request helper: always reads latest settings right before calling fetch.
    */
   async function request<T = any>(opts: RequestOptions): Promise<T> {
-    const { maapApiUrl, maapToken } = await getLatestSettings();
+    const { maapApiUrl, maapToken, defaultAppImage } =
+      await getLatestSettings();
 
     const finalUrl =
       opts.url ??

@@ -1,13 +1,13 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { Box, Typography, IconButton } from '@mui/material';
 import AddIcon from '@mui/icons-material/Add';
 import DeleteIcon from '@mui/icons-material/Delete';
-import { useMaapContext } from '../../MaapContext';
+import { MaapSettings, useMaapContext } from '../../MaapContext';
 import { IDefaultFileBrowser } from '@jupyterlab/filebrowser';
 import { JupyterFrontEnd } from '@jupyterlab/application';
 import { IDocumentManager } from '@jupyterlab/docmanager';
 import { Notification } from '@jupyterlab/apputils';
-import { FORM_FIELDS, MAAP_DOCS_REGISTER_ALGORITHM_URL } from '../../constants';
+import { FORM_FIELDS } from '../../constants';
 import { FormRow } from './FormRow';
 import { AlgorithmData, AlgorithmInputRow } from '../../types/registration';
 import {
@@ -37,11 +37,16 @@ export const RegistrationForm = ({
   docManager: IDocumentManager;
   api: MaapApi;
 }) => {
-  const { setMaapToken } = useMaapContext();
+  const { getLatestSettings } = useMaapContext();
+  const [settings, setSettings] = useState<MaapSettings | null>(null);
   const [showTokenModal, setShowTokenModal] = useState(false);
   const [showFileDialog, setShowFileDialog] = useState(false);
   const [inputRows, setInputRows] = useState<Array<AlgorithmInputRow>>([]);
   const [useAlgorithmContainer, setUseAlgorithmContainer] = useState(false);
+
+  useEffect(() => {
+    getLatestSettings().then(setSettings);
+  }, []);
 
   const addInputRow = () => {
     const newRow: AlgorithmInputRow = {
@@ -276,7 +281,10 @@ export const RegistrationForm = ({
                 >
                   <FormRow
                     key={FORM_FIELDS.baseContainerURL.name}
-                    formInput={FORM_FIELDS.baseContainerURL}
+                    formInput={{
+                      ...FORM_FIELDS.baseContainerURL,
+                      default: settings?.defaultAppImage
+                    }}
                   />
                   <FormRow
                     key={FORM_FIELDS.buildCommand.name}

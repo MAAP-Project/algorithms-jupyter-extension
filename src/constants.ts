@@ -12,8 +12,6 @@ export const JUPYTER_EXT = {
 export const MAAP_PROFILE_URL = 'https://{MAAP_ENV}.maap-project.org/profile/';
 export const MAAP_DOCS_REGISTER_ALGORITHM_URL =
   'https://docs.maap-project.org/en/latest/getting_started/running_at_scale.html#Register-an-Algorithm';
-export const DEFAULT_MAAP_BASE_CONTAINER_URL =
-  'mas.dit.maap-project.org/root/maap-workspaces/custom_images/maap_base:develop';
 
 /*******************************
  * MAAP API OGC ENDPOINTS
@@ -106,8 +104,7 @@ export const FORM_FIELDS = {
     tooltip:
       'The URL to the base docker image which the algorithm will be built off of.',
     placeholder: 'Enter base container URL',
-    type: 'text',
-    default: DEFAULT_MAAP_BASE_CONTAINER_URL
+    type: 'text'
   } as RegistrationFormInput,
   author: {
     name: 'author',
