@@ -34,7 +34,7 @@ jobs:
         run: jlpm run lint:check
 
       - name: Run Prettier
-        run: jlpm run format:check
+        run: jlpm run prettier:check
 
   build:
     runs-on: ubuntu-24.04

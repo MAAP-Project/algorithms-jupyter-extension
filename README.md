@@ -1,6 +1,8 @@
-# maap_algorithms_jupyter_extension
+OGC Build Status:
 
-[![Github Actions Status](/workflows/Build/badge.svg)](/actions/workflows/build.yml)
+[![Build](https://github.com/MAAP-Project/algorithms-jupyter-extension/actions/workflows/build.yml/badge.svg?branch=feature%2Fmajor-refactor)](https://github.com/MAAP-Project/algorithms-jupyter-extension/actions/workflows/build.yml)
+
+# MAAP Algorithms Jupyter Extension
 
 A JupyterLab extension.
 
