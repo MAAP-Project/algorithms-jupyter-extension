@@ -1,7 +1,11 @@
+import { JupyterFrontEnd } from '@jupyterlab/application';
 import { FORM_FIELDS, JUPYTER_EXT } from '../constants';
 import { Notification } from '@jupyterlab/apputils';
 
-export const openRegisterAlgorithm = (jupyterApp, data) => {
+export const openRegisterAlgorithm = (
+  jupyterApp: JupyterFrontEnd,
+  data: any
+) => {
   if (
     jupyterApp.commands.hasCommand(JUPYTER_EXT.REGISTER_ALGORITHMS_OPEN_COMMAND)
   ) {
@@ -19,7 +23,10 @@ export const openRegisterAlgorithm = (jupyterApp, data) => {
   }
 };
 
-export const openBuildDeploymentDashboard = (jupyterApp, data) => {
+export const openBuildDeploymentDashboard = (
+  jupyterApp: JupyterFrontEnd,
+  data: any
+) => {
   if (
     jupyterApp.commands.hasCommand(JUPYTER_EXT.BUILDS_DEPLOYMENTS_OPEN_COMMAND)
   ) {
@@ -37,7 +44,7 @@ export const openBuildDeploymentDashboard = (jupyterApp, data) => {
   }
 };
 
-export const openJobsSubmit = (jupyterApp, data) => {
+export const openJobsSubmit = (jupyterApp: JupyterFrontEnd, data: any) => {
   if (jupyterApp.commands.hasCommand(JUPYTER_EXT.JOBS_SUBMIT_OPEN_COMMAND)) {
     if (data === null) {
       jupyterApp.commands.execute(JUPYTER_EXT.JOBS_SUBMIT_OPEN_COMMAND, null);
@@ -50,7 +57,7 @@ export const openJobsSubmit = (jupyterApp, data) => {
 export const createFile = async (
   fileContent: string,
   filePath: string,
-  jupyterApp
+  jupyterApp: JupyterFrontEnd
 ) => {
   try {
     const contents = jupyterApp.serviceManager.contents;
@@ -68,7 +75,10 @@ export const createFile = async (
   }
 };
 
-export const createDirectory = async (path: string, jupyterApp) => {
+export const createDirectory = async (
+  path: string,
+  jupyterApp: JupyterFrontEnd
+) => {
   try {
     const contents = jupyterApp.serviceManager.contents;
     await contents.save(path, {
@@ -93,7 +103,8 @@ export const getJSFromPythonName = (pythonName: string) => {
 };
 
 export const getPythonFromJSName = (jsName: string) => {
-  const pythonName = FORM_FIELDS[jsName]?.pythonic_name;
+  const pythonName =
+    FORM_FIELDS[jsName as keyof typeof FORM_FIELDS]?.pythonic_name;
   if (!pythonName) {
     console.warn(`Form field not found for ${jsName}`);
     return '';

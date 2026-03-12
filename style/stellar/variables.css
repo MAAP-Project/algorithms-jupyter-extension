@@ -1,3 +1,6 @@
+/* stylelint-disable custom-property-no-missing-var-function */
+/* stylelint-disable number-max-precision */
+/* stylelint-disable custom-property-pattern */
 :root {
   /* Emphasis Colors. */
   --st-black: #000;

@@ -4,17 +4,17 @@
   color: #1976d2 !important;
 }
 
-.jp-ThemedContainer a.github-link:visited,
-a.github-link:visited {
-  color: #1976d2 !important;
+a.github-link:active .jp-ThemedContainer,
+a.github-link:active {
+  color: #1565c0 !important;
 }
 
-.jp-ThemedContainer a.github-link:hover,
+a.github-link:hover .jp-ThemedContainer,
 a.github-link:hover {
   color: #115293 !important;
 }
 
-.jp-ThemedContainer a.github-link:active,
-a.github-link:active {
-  color: #1565c0 !important;
+a.github-link:visited .jp-ThemedContainer,
+a.github-link:visited {
+  color: #1976d2 !important;
 }

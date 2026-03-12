@@ -46,8 +46,7 @@ export function createMaapApi(getLatestSettings: GetLatestSettings) {
    * Single request helper: always reads latest settings right before calling fetch.
    */
   async function request<T = any>(opts: RequestOptions): Promise<T> {
-    const { maapApiUrl, maapToken, defaultAppImage } =
-      await getLatestSettings();
+    const { maapApiUrl, maapToken } = await getLatestSettings();
 
     const finalUrl =
       opts.url ??

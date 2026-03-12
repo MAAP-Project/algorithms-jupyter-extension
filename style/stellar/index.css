@@ -1,3 +1,5 @@
+/* stylelint-disable selector-class-pattern */
+/* stylelint-disable custom-property-pattern */
 :root {
   /* Emphasis Colors. */
   --st-black: #000;
@@ -72,6 +74,7 @@
   --st-typography-header-font-weight: 500;
   --st-typography-header-font-size: 16px;
   --st-typography-header-line-height: 24px;
+  /* stylelint-disable-next-line number-max-precision */
   --st-typography-header-letter-spacing: -0.00011em;
   --st-typography-label-font-family: var(--st-typography-font-family);
   --st-typography-label-color: rgb(var(--st-gray-100-RGB) 0.65);

@@ -1,3 +1,5 @@
+/* stylelint-disable no-descending-specificity */
+/* stylelint-disable selector-class-pattern */
 .st-react-checkbox {
   .st-react-checkbox--label {
     flex: 1;

@@ -6,7 +6,7 @@ import {
   type MRT_ColumnDef
 } from 'material-react-table';
 import { Box, Typography } from '@mui/material';
-import { openRegisterAlgorithm, openJobsSubmit } from '../../utils/utils';
+import { openRegisterAlgorithm } from '../../utils/utils';
 import { Process, ProcessDetailed } from '../../types/process';
 import { ExpandedState } from '@tanstack/react-table';
 import ContentCopyIcon from '@mui/icons-material/ContentCopy';
@@ -351,9 +351,7 @@ export const DataGrid = ({ jupyterApp, api }: DataGridProps) => {
                           <td>{value.type ?? '-'}</td>
                           <td>
                             {value.default
-                              ? typeof value.default === 'object'
-                                ? value.default['path']
-                                : value.default
+                              ? (value.default['path'] ?? value.default)
                               : '-'}
                           </td>
                         </tr>
@@ -390,7 +388,7 @@ export const DataGrid = ({ jupyterApp, api }: DataGridProps) => {
   );
 };
 
-const CopyButton = ({ hash }) => {
+const CopyButton = ({ hash }: any) => {
   const [copied, setCopied] = React.useState(false);
 
   const handleCopy = async () => {
