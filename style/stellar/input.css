@@ -13,6 +13,7 @@
 
 .st-input::placeholder {
   color: var(--st-input-placeholder-color);
+  font-style: italic;
 }
 
 .st-input:disabled {

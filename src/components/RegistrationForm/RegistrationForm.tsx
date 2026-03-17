@@ -7,7 +7,7 @@ import { IDefaultFileBrowser } from '@jupyterlab/filebrowser';
 import { JupyterFrontEnd } from '@jupyterlab/application';
 import { IDocumentManager } from '@jupyterlab/docmanager';
 import { Notification } from '@jupyterlab/apputils';
-import { FORM_FIELDS } from '../../constants';
+import { FORM_FIELDS, ALGORITHM_INPUT_TYPES } from '../../constants';
 import { FormRow } from './FormRow';
 import { AlgorithmData, AlgorithmInputRow } from '../../types/registration';
 import {
@@ -182,6 +182,7 @@ export const RegistrationForm = ({
     const yamlObject = yaml.parse(yamlContent);
     const jsonContent = JSON.stringify(yamlObject, null, 2);
 
+    console.log('Registering: ', jsonContent);
     try {
       await api.registerAlgorithm(jsonContent, jupyterApp);
     } catch (err) {
@@ -399,17 +400,22 @@ export const RegistrationForm = ({
                         />
                       </td>
                       <td>
-                        <input
-                          type="text"
+                        <select
                           name={`input_${row.id}_type`}
-                          placeholder="Enter input type"
                           required={true}
                           className="st-input compact"
                           value={row.type}
                           onChange={e =>
                             updateInputRow(row.id, 'type', e.target.value)
                           }
-                        />
+                        >
+                          <option value="">Select input type</option>
+                          {ALGORITHM_INPUT_TYPES.map(type => (
+                            <option key={type} value={type}>
+                              {type}
+                            </option>
+                          ))}
+                        </select>
                       </td>
                       <td>
                         <input

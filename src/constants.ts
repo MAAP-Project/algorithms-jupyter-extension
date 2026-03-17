@@ -173,3 +173,14 @@ export const FORM_FIELDS = {
     type: 'text'
   } as RegistrationFormInput
 };
+
+export const ALGORITHM_INPUT_TYPES = [
+  'string',
+  'int',
+  'File',
+  'Directory',
+  'long',
+  'float',
+  'boolean',
+  'double'
+];

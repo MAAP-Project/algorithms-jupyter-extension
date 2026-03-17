@@ -1,6 +1,7 @@
 import { JupyterFrontEnd } from '@jupyterlab/application';
 import { FORM_FIELDS, JUPYTER_EXT } from '../constants';
 import { Notification } from '@jupyterlab/apputils';
+import { InitialJobData } from '../types/process';
 
 export const openRegisterAlgorithm = (
   jupyterApp: JupyterFrontEnd,
@@ -44,7 +45,10 @@ export const openBuildDeploymentDashboard = (
   }
 };
 
-export const openJobsSubmit = (jupyterApp: JupyterFrontEnd, data: any) => {
+export const openJobsSubmit = (
+  jupyterApp: JupyterFrontEnd,
+  data: InitialJobData
+) => {
   if (jupyterApp.commands.hasCommand(JUPYTER_EXT.JOBS_SUBMIT_OPEN_COMMAND)) {
     if (data === null) {
       jupyterApp.commands.execute(JUPYTER_EXT.JOBS_SUBMIT_OPEN_COMMAND, null);

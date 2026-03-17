@@ -3,7 +3,6 @@ import {
   JupyterFrontEndPlugin
 } from '@jupyterlab/application';
 import { ILauncher } from '@jupyterlab/launcher';
-import { reactIcon } from '@jupyterlab/ui-components';
 import { MainAreaWidget } from '@jupyterlab/apputils';
 import {
   AlgorithmsWidget,
@@ -18,6 +17,7 @@ import {
 import { IDocumentManager } from '@jupyterlab/docmanager';
 import { ISettingRegistry } from '@jupyterlab/settingregistry';
 import { Token } from '@lumino/coreutils';
+import { maapIcon } from './icons/icons';
 
 const sharedSettingsPluginId = 'maap-jupyter-server-extension:plugin';
 const algorithmsSettingsPluginId = 'maap_algorithms_jupyter_extension:plugin';
@@ -91,11 +91,12 @@ const listAlgorithmsPlugin: JupyterFrontEndPlugin<void> = {
     commands.addCommand(command, {
       caption: 'Algorithm Catalog',
       label: 'Algorithm Catalog',
-      icon: args => (args['isPalette'] ? undefined : reactIcon),
+      icon: args => (args['isPalette'] ? undefined : maapIcon),
       execute: () => {
         const content = new AlgorithmsWidget(app, settingRegistry.settings);
         algorithmsWidget = new MainAreaWidget<AlgorithmsWidget>({ content });
         algorithmsWidget.title.label = 'Algorithm Catalog';
+        algorithmsWidget.title.icon = maapIcon;
         app.shell.add(algorithmsWidget, 'main');
       }
     });
@@ -134,7 +135,7 @@ const registerAlgorithmsPlugin: JupyterFrontEndPlugin<void> = {
     commands.addCommand(command, {
       caption: 'Register Algorithms',
       label: 'Register Algorithms',
-      icon: args => (args['isPalette'] ? undefined : reactIcon),
+      icon: args => (args['isPalette'] ? undefined : maapIcon),
       execute: () => {
         const content = new RegisterAlgorithmsWidget(
           app,
@@ -146,6 +147,7 @@ const registerAlgorithmsPlugin: JupyterFrontEndPlugin<void> = {
           { content }
         );
         registerAlgorithmsWidget.title.label = 'Register Algorithms';
+        registerAlgorithmsWidget.title.icon = maapIcon;
         app.shell.add(registerAlgorithmsWidget, 'main');
       }
     });
@@ -174,7 +176,7 @@ const buildsDeploymentsPlugin: JupyterFrontEndPlugin<void> = {
     commands.addCommand(command, {
       caption: 'My Builds & Deployments',
       label: 'My Builds & Deployments',
-      icon: args => (args['isPalette'] ? undefined : reactIcon),
+      icon: args => (args['isPalette'] ? undefined : maapIcon),
       execute: () => {
         const content = new BuildsDeploymentsWidget(
           app,
@@ -184,6 +186,7 @@ const buildsDeploymentsPlugin: JupyterFrontEndPlugin<void> = {
           content
         });
         buildsDeploymentsWidget.title.label = 'My Builds & Deployments';
+        buildsDeploymentsWidget.title.icon = maapIcon;
         app.shell.add(buildsDeploymentsWidget, 'main');
       }
     });

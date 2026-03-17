@@ -6,7 +6,7 @@ import {
   type MRT_ColumnDef
 } from 'material-react-table';
 import { Box, Typography } from '@mui/material';
-import { openRegisterAlgorithm } from '../../utils/utils';
+import { openJobsSubmit, openRegisterAlgorithm } from '../../utils/utils';
 import { Process, ProcessDetailed } from '../../types/process';
 import { ExpandedState } from '@tanstack/react-table';
 import ContentCopyIcon from '@mui/icons-material/ContentCopy';
@@ -146,28 +146,6 @@ export const DataGrid = ({ jupyterApp, api }: DataGridProps) => {
           return formatted;
         }
       }
-      // {
-      //   accessorKey: 'actions',
-      //   header: 'Actions',
-      //   muiTableHeadCellProps: {
-      //     align: 'center'
-      //   },
-      //   enableSorting: false,
-      //   muiTableBodyCellProps: { align: 'center' },
-      //   Cell: ({ row }) => (
-      //     <button
-      //       className="st-button"
-      //       onClick={() =>
-      //         openJobsSubmit(jupyterApp, {
-      //           processId: row.original.id,
-      //           version: row.original.version
-      //         })
-      //       }
-      //     >
-      //       Configure Job
-      //     </button>
-      //   )
-      // }
     ],
     []
   );
@@ -273,6 +251,17 @@ export const DataGrid = ({ jupyterApp, api }: DataGridProps) => {
             boxShadow: '0px 5px 10px lightgrey inset'
           }}
         >
+          <h4>Actions</h4>
+          <button
+            className="st-button"
+            onClick={() =>
+              openJobsSubmit(jupyterApp, {
+                processID: Number(processDetails.processID)
+              })
+            }
+          >
+            Configure Job
+          </button>
           <table className="st-table">
             <h4>General Information</h4>
             <tbody>

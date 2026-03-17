@@ -43,3 +43,10 @@ export type ProcessDetailed = Process & {
   baseCommand?: string; // runCommand and baseCommand refer to the same thing
   inputs?: InputObj;
 };
+
+export type InitialJobData = {
+  processID?: number;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  initialInputs?: Record<string, any>;
+  queue?: string;
+};
