@@ -3,7 +3,7 @@ export type AlgorithmConfigInput = {
   label: string;
   doc: string;
   type: string;
-  default: string;
+  default: string | number;
 };
 
 export type AlgorithmConfigOutput = {

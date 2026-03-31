@@ -103,7 +103,7 @@ export const RegistrationForm = ({
           name: input.name || '',
           label: input.label || '',
           description: input.doc || '',
-          default: input.default || '',
+          default: input.default ?? '',
           type: input.type || ''
         }))
       );
