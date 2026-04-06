@@ -14,7 +14,8 @@ import {
   buildAlgorithmConfig,
   isValidAlgorithmConfig,
   setInputValue,
-  clearForm
+  clearForm,
+  isOlderConfigVersion
 } from './utils';
 import { createDirectory, createFile } from '../../utils/utils';
 import {
@@ -82,6 +83,15 @@ export const RegistrationForm = ({
     clearForm(setInputRows, setUseAlgorithmContainer);
     if (!isValidAlgorithmConfig(config, false)) {
       return;
+    }
+
+    if (isOlderConfigVersion(config)) {
+      Notification.warning(
+        'Algorithm configuration that was selected uses an older schema that is no longer supported. Attempted to load anyway.',
+        {
+          autoClose: false
+        }
+      );
     }
 
     config.algorithm_container_url

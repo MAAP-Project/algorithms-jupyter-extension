@@ -138,6 +138,12 @@ export const isValidAlgorithmConfig = (
   return true;
 };
 
+export const isOlderConfigVersion = (config: AlgorithmConfig): boolean => {
+  return ['file', 'config', 'positional'].some(key =>
+    Object.prototype.hasOwnProperty.call(config.inputs ?? {}, key)
+  );
+};
+
 export const buildAlgorithmConfig = (data: AlgorithmData): string => {
   const configData: AlgorithmConfig = {
     algorithm_name: '',
