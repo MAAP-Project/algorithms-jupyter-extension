@@ -296,6 +296,16 @@ export const RegistrationForm = ({
                       ...FORM_FIELDS.baseContainerURL,
                       default: settings?.defaultAppImage
                     }}
+                    options={[
+                      {
+                        label: `Default: ${settings?.defaultAppImage || ''}`,
+                        value: settings?.defaultAppImage || ''
+                      },
+                      {
+                        label: `Current: ${settings?.currentAppImage || ''}`,
+                        value: settings?.currentAppImage || ''
+                      }
+                    ]}
                   />
                   <FormRow
                     key={FORM_FIELDS.buildCommand.name}
