@@ -298,11 +298,11 @@ export const RegistrationForm = ({
                     }}
                     options={[
                       {
-                        label: `Default: ${settings?.defaultAppImage || ''}`,
+                        label: `${settings?.defaultAppImage || ''}`,
                         value: settings?.defaultAppImage || ''
                       },
                       {
-                        label: `Current: ${settings?.currentAppImage || ''}`,
+                        label: `${settings?.currentAppImage || ''}`,
                         value: settings?.currentAppImage || ''
                       }
                     ]}
