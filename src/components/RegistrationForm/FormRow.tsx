@@ -29,7 +29,7 @@ export const FormRow = ({ formInput, options }: FormRowProps) => {
             name={formInput.name}
             className="st-input"
             required={formInput.required}
-            defaultValue={formInput?.default}
+            defaultValue={formInput?.default || options[0]?.value}
           >
             {options.map(option => (
               <option key={option.value} value={option.value}>
