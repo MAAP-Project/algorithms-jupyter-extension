@@ -10,6 +10,7 @@ type MaapSettings = {
   maapApiUrl: string;
   maapToken: string;
   defaultAppImage: string;
+  currentAppImage: string;
 };
 
 export type GetLatestSettings = () => Promise<MaapSettings>;
