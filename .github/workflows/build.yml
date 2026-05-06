@@ -3,9 +3,10 @@ name: CI
 on:
   push:
     branches: [ develop, release/**, main, master, feature/**, issue/**, issues/**, dependabot/** ]
+  workflow_call:
 
 concurrency:
-  group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
+  group: ${{ github.repository }}-${{ github.event.pull_request.number || github.ref }}
   cancel-in-progress: true
 
 env:
@@ -20,7 +21,8 @@ jobs:
     defaults:
       run:
         shell: bash -el {0}
-
+    outputs:
+      package_name: ${{ steps.package-name.outputs.name }}
     steps:
       - uses: getsentry/action-github-app-token@v3
         name: cicd token
@@ -52,6 +54,9 @@ jobs:
           key: ${{ runner.os }}-pip-${{ hashFiles('yarn.lock') }}
           restore-keys: |
             ${{ runner.os }}-pip-
+      - name: Get package name
+        id: package-name
+        run: echo "name=$(node -p "require('./package.json').name")" >> $GITHUB_OUTPUT
       - name: Base Setup
         uses: jupyterlab/maintainer-tools/.github/actions/base-setup@v1
 
@@ -68,7 +73,7 @@ jobs:
       - name: Check extension installation
         run: |
           jupyter labextension list 2>&1 | tee labextension.list
-          cat labextension.list | grep -ie "maap_algorithms_jupyter_extension.*OK"
+          cat labextension.list | grep -ie "${{ steps.package-name.outputs.name }}.*OK"
       - name: Browser check
         run: |
           python -m jupyterlab.browser_check
@@ -79,13 +84,13 @@ jobs:
           
           pip install build
           python -m build
-          pip uninstall -y "maap_algorithms_jupyter_extension" jupyterlab
+          pip uninstall -y "${{ steps.package-name.outputs.name }}" jupyterlab
 
       - name: Upload extension packages
         uses: actions/upload-artifact@v4
         with:
           name: extension-artifacts
-          path: dist/maap_algorithms_jupyter_extension*
+          path: dist/${{ steps.package-name.outputs.name }}*
           if-no-files-found: error
 
   test_isolated:
@@ -108,11 +113,11 @@ jobs:
         sudo rm -rf $(which node)
         sudo rm -rf $(which node)
 
-        pip install "jupyterlab>=4.0.0,<5" maap_algorithms_jupyter_extension*.whl
+        pip install "jupyterlab>=4.0.0,<5" ${{ needs.build_extension.outputs.package_name }}*.whl
 
 
         jupyter labextension list
-        jupyter labextension list 2>&1 | grep -ie "maap_algorithms_jupyter_extension.*OK"
+        jupyter labextension list 2>&1 | grep -ie "${{ needs.build_extension.outputs.package_name }}.*OK"
         python -m jupyterlab.browser_check --no-browser-test
 
   integration-tests:
@@ -138,7 +143,7 @@ jobs:
     - name: Install the extension
       run: |
         set -eux
-        python -m pip install "jupyterlab>=4.0.0,<5" maap_algorithms_jupyter_extension*.whl
+        python -m pip install "jupyterlab>=4.0.0,<5" ${{ needs.build_extension.outputs.package_name }}*.whl
 
     - name: Install dependencies
       working-directory: ui-tests
@@ -167,7 +172,7 @@ jobs:
       if: always()
       uses: actions/upload-artifact@v4
       with:
-        name: maap_algorithms_jupyter_extension-playwright-tests
+        name: ${{ needs.build_extension.outputs.package_name }}-playwright-tests
         path: |
           ui-tests/test-results
           ui-tests/playwright-report

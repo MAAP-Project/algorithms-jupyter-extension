@@ -5,12 +5,30 @@ on:
       branch:
         description: "The target branch"
         required: false
+        type: string
       release_url:
         description: "The URL of the draft GitHub release"
         required: false
+        type: string
       steps_to_skip:
         description: "Comma separated list of steps to skip"
         required: false
+        type: string
+# Using this workflow as a reusable workflow will not work until https://github.com/pypi/warehouse/issues/11096 is resolved
+#  workflow_call:
+#    inputs:
+#      branch:
+#        description: "The target branch"
+#        required: false
+#        type: string
+#      release_url:
+#        description: "The URL of the draft GitHub release"
+#        required: false
+#        type: string
+#      steps_to_skip:
+#        description: "Comma separated list of steps to skip"
+#        required: false
+#        type: string
 
 jobs:
   publish_release:
