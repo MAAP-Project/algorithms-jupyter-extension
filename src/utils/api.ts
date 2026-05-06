@@ -1,311 +1,228 @@
+import { MAAP_API_ENDPOINTS } from '../constants';
+import { Notification } from '@jupyterlab/apputils';
+import { BuildsResponse, DeploymentsResponse } from '../types/build';
+import { openBuildDeploymentDashboard } from './utils';
 import { PageConfig } from '@jupyterlab/coreutils';
-import { IAlgorithmData } from '../types/slices';
-import { registeredAlgorithmsActions } from '../redux/slices/registeredAlgorithms';
-import { store } from "../redux/store";
-import { parseAlgorithmData } from "./parsers";
-import { algorithmSlice } from "../redux/slices/algorithmSlice";
-import { YML_FOLDER, DEFAULT_CONTAINER_IMAGE } from '../constants';
 
+export const BASE_URL = PageConfig.getBaseUrl();
 
-// export const getAlgorithmMetadata = (body: any) => {
-//   let algorithmMetadata = {
-//     description: '',
-//     inputs: {}
-//   }
-
-//   //algorithmMetadata.description = _parseAlgoDesc(body)
-//   algorithmMetadata.inputs = _parseAlgoInputs(body)
-
-//   return algorithmMetadata
-// }
-
-export async function registerUsingFile(fileName: string, algo_data: any) {
-
-  const response_file = await createFile(fileName, algo_data, YML_FOLDER);
-  console.log(response_file)
-
-  store.dispatch(algorithmSlice.actions.setAlgorithmYmlFilePath(response_file.file));
-
-  if (response_file) {
-    console.log("submitting register")
-    const response_register = await register(response_file.file, null)
-    if (!response_register) return false;
-    const d = JSON.parse(response_register.response)
-    console.log(d)
-    console.log(d.message.job_web_url)
-    return d.message.job_web_url
-  }
-
-  // // Create algorithm config file first
-  // createFile(fileName, algo_data).then((data) => {
-  //   register(data.file, null).then((res) => {
-  //     console.log("in register res")
-  //     let res_obj = JSON.parse(res.response)
-  //     console.log(res_obj)
-  //     console.log(res_obj.message.job_web_url)
-  //     return res_obj.message.job_web_url
-  //   })
-  // }).finally((res) => {
-  //   console.log(res)
-  // })
-}
-
-export async function createFile(fileName: string, data: any, pathName: string) {
-  var requestUrl = new URL(PageConfig.getBaseUrl() + 'jupyter-server-extension/createFile');
-  console.log(requestUrl.href)
-
-  requestUrl.searchParams.append("fileName", fileName);
-  requestUrl.searchParams.append("pathName", pathName);
-  requestUrl.searchParams.append("data", data);
-
-  try {
-    const response: any = await fetch(requestUrl.href, {
-      headers: {
-        'Content-Type': 'application/json'
-      }
-    })
-
-    if (!response.ok) {
-      throw new Error('Request failed');
-    }
-
-
-    console.log("resolved")
-    const r_data = await response.json();
-    return r_data
-  } catch (error) {
-    console.log("error in new endpoint")
-    console.log(error)
-  }
-}
-
-
-export async function register(file: string, data: any) {
-  console.log("registering....")
-
-  if (data == null) {
-    console.log("register using file")
-    var requestUrl = new URL(PageConfig.getBaseUrl() + 'jupyter-server-extension/registerUsingFile');
-    console.log(requestUrl.href)
-
-    requestUrl.searchParams.append("file", file);
-
-    try {
-      const response: any = await fetch(requestUrl.href, {
-        headers: {
-          'Content-Type': 'application/json'
-        }
-      })
-
-      if (!response.ok) {
-        throw new Error('Request failed');
-      }
-
-
-      console.log("resolved register request")
-      const r_data = await response.json();
-      return r_data
-    } catch (error) {
-      console.log("error in new register endpoint")
-      console.log(error)
-      store.dispatch(algorithmSlice.actions.setAlgorithmRegistrationError(error.toString()))
-      return false;
-    }
-
-  } else {
-    console.log("register with data")
-  }
-
-  // if (response.status >= 200 && response.status < 400) {
-  //     console.log("request went well")
-  //     return true
-  //   }else{
-  //     //let res = response.json()
-  //     console.log("something went wrong with request!!!")
-  //     return false
-  //     //console.log(response.json())
-  //   }
-}
-
-
-const filterOptions = (options, inputValue) => {
-  const candidate = inputValue.toLowerCase();
-  return options.filter(({ label }) => label.toLowerCase().includes(candidate));
+type MaapSettings = {
+  maapApiUrl: string;
+  maapToken: string;
+  defaultAppImage: string;
 };
 
-export async function getResources(inputValue, callback) {
-  var resources: any[] = []
-  var requestUrl = new URL(PageConfig.getBaseUrl() + 'jupyter-server-extension/getQueues');
-  await fetch(requestUrl.href, {
-    headers: {
-      'Content-Type': 'application/json'
-    }
-  }).then((response) => response.json())
-    .then((data) => {
+export type GetLatestSettings = () => Promise<MaapSettings>;
 
-      data["response"].forEach((item: any) => {
-        let resource: any = {}
-        resource["value"] = item
-        resource["label"] = item
-        resources.push(resource)
-      })
-      const filtered = filterOptions(resources, inputValue);
-      callback(filtered);
-      return resources
-    });
-  return resources
+type RequestOptions = Omit<RequestInit, 'headers'> & {
+  endpoint?: string;
+  url?: string;
+  auth?: boolean;
+  headers?: Record<string, string>;
+  rawBody?: boolean;
+};
+
+function joinUrl(base: string, path: string): string {
+  const b = base.endsWith('/') ? base.slice(0, -1) : base;
+  const p = path.startsWith('/') ? path : `/${path}`;
+  return `${b}${p}`;
 }
 
-
-export async function describeAlgorithms(algo_id: string) {
-  var requestUrl = new URL(PageConfig.getBaseUrl() + 'jupyter-server-extension/describeAlgorithms');
-  var body: any = {}
-
-  requestUrl.searchParams.append("algo_id", algo_id);
-
-  await fetch(requestUrl.href, {
-    headers: { 'Content-Type': 'application/json' }
-  }).then((response) => response.json())
-    .then((data) => {
-      console.log("Data before parsing: ")
-      console.log(data)
-      body = parseAlgorithmData(data["response"])
-      console.log(data)
-      return body
-    })
-  return body
-}
-
-
-
-export async function getAlgorithms() {
-  let algorithms_tmp: any[] = []
-  let algorithms_list_tmp: any[] = []
-  var requestUrl = new URL(PageConfig.getBaseUrl() + 'jupyter-server-extension/listAlgorithms');
-
-  requestUrl.searchParams.append("visibility", "all");
-
-  await fetch(requestUrl.href, {
-    headers: {
-      'Content-Type': 'application/json'
-    }
-  }).then((response) => response.json())
-    .then((data) => {
-
-      data["response"]["algorithms"].forEach((item: any) => {
-        // TODO: add async dropdown formatted options to store
-        let algorithm: any = {}
-
-        // algorithm["value"] = item["type"] + ':' + item["version"]
-        // algorithm["label"] = item["type"] + ':' + item["version"]
-        algorithms_list_tmp.push(item["type"] + ':' + item["version"])
-        // algorithms_tmp.push(algorithm)
-      })
-      console.log("list from api: ", algorithms_list_tmp)
-      store.dispatch(registeredAlgorithmsActions.setAlgorithmsList(algorithms_list_tmp))
-      return algorithms_tmp
-    });
-  return algorithms_tmp
-}
-
-
-async function _describeAllAlgorithms() {
-  const fmtAlgorithmsData: IAlgorithmData[] = [];
-  var requestUrl = new URL(PageConfig.getBaseUrl() + 'jupyter-server-extension/describeAlgorithms');
-
-  // Get list of all registered algorithms
-  const algorithms = store.getState().RegisteredAlgorithms.algorithmsList;
-
-  // Get algorithm data for each of the registered algorithms
-  for (const algorithm of algorithms) {
-    let algorithmData: IAlgorithmData = {id: "", description: "", inputs: []}
-
-    try {
-      requestUrl.searchParams.append("algo_id", algorithm);
-      const response = await fetch(requestUrl.href, {headers: { 'Content-Type': 'application/json' }})
-      const data = await response.json();
-      console.log("Data from api return")
-      console.log(data)
-
-      algorithmData = parseAlgorithmData(data["response"])
-      
-      console.log(algorithmData)
-      fmtAlgorithmsData.push(algorithmData)
-
-    } catch (error) {
-      console.error(`Error fetching data: ${error}`);
-    }
-  }
-
-  return fmtAlgorithmsData;
-}
-
-export async function describeAllAlgorithms() {
+async function readErrorPayload(response: Response): Promise<string> {
   try {
-    const allData = await _describeAllAlgorithms();
-    console.log('All responses:', allData);
-    store.dispatch(registeredAlgorithmsActions.setAlgorithmsData(allData))
-  } catch (error) {
-    console.error('Error fetching data:', error);
+    const contentType = response.headers.get('content-type') || '';
+    if (contentType.includes('application/json')) {
+      const j = await response.json();
+      return typeof j === 'string' ? j : JSON.stringify(j);
+    }
+    return await response.text();
+  } catch {
+    return '';
   }
 }
 
+export function createMaapApi(getLatestSettings: GetLatestSettings) {
+  /**
+   * Single request helper: always reads latest settings right before calling fetch.
+   */
+  async function request<T = any>(opts: RequestOptions): Promise<T> {
+    const { maapApiUrl, maapToken } = await getLatestSettings();
 
-export async function unregisterAlgorithm(algo_id: string) {
-  var requestUrl = new URL(PageConfig.getBaseUrl() + 'jupyter-server-extension/unregisterAlgorithm');
+    const finalUrl =
+      opts.url ??
+      (opts.endpoint ? joinUrl(maapApiUrl, opts.endpoint) : undefined);
 
-  requestUrl.searchParams.append("algo_id", algo_id);
-  console.log("unregister algorithm")
-  // const response = await fetch(requestUrl.href, {
-  //   headers: { 'Content-Type': 'application/json' }
-  // })
-  // const data = await response.json();
-  // return data
-  return ""
-}
+    if (!finalUrl) {
+      throw new Error('request() requires either url or endpoint');
+    }
 
-/**
- * 
- * @returns Returns a list of the workspace containers with the first item 
- * in the list being the default
- */
-export async function getWorkspaceContainers() {
-  var workspaceContainers: any[] = []
-  var requestUrl = new URL(PageConfig.getBaseUrl() + 'jupyter-server-extension/getWorkspaceContainer');
-  console.log(requestUrl.href)
+    const headers: Record<string, string> = {
+      ...(opts.headers ?? {})
+    };
 
-  try {
-    const response: any = await fetch(requestUrl.href, {
-      headers: {
-        'Content-Type': 'application/json'
-      }
-    })
+    // Only set JSON content-type by default when caller is NOT sending raw body
+    if (!opts.rawBody && !headers['Content-Type']) {
+      headers['Content-Type'] = 'application/json';
+    }
+
+    if (opts.auth) {
+      headers['cpticket'] = maapToken;
+    }
+
+    const response = await fetch(finalUrl, {
+      ...opts,
+      headers
+    });
 
     if (!response.ok) {
-      throw new Error('Request failed');
+      const details = await readErrorPayload(response);
+      const message = `HTTP ${response.status} ${response.statusText}${
+        details ? `\nDetails: ${details}` : ''
+      }`;
+      throw new Error(message);
     }
 
-    console.log("resolved")
-    const r_data = await response.json();
-    console.log(r_data)
-    Object.entries(r_data).forEach(([key, value]) => {
-      let workspaceContainer: any = {}
-      workspaceContainer["value"] = value
-      workspaceContainer["label"] = value
-      workspaceContainers.push(workspaceContainer)
-    })
-    // set the algorithm container url to the default
-    let defaultDockerImagePath = r_data["DOCKERIMAGE_PATH_DEFAULT"];
-    store.dispatch(algorithmSlice.actions.setAlgoContainerURL({"value": defaultDockerImagePath, "label": defaultDockerImagePath}))
-    return workspaceContainers
-  } catch (error) {
-    console.log("error in new endpoint so using default container")
-    console.log(error)
-    let defaultDockerImagePath = DEFAULT_CONTAINER_IMAGE;
-    store.dispatch(algorithmSlice.actions.setAlgoContainerURL({"value": defaultDockerImagePath, "label": defaultDockerImagePath}))
-    let workspaceContainer: any = {}
-    workspaceContainer["value"] = defaultDockerImagePath
-    workspaceContainer["label"] = defaultDockerImagePath
-    return workspaceContainer;
+    // Try JSON first; fall back to text if no JSON
+    const ct = response.headers.get('content-type') || '';
+    if (ct.includes('application/json')) {
+      return (await response.json()) as T;
+    }
+
+    // If it isn't JSON, return text (as any)
+    return (await response.text()) as any as T;
   }
+
+  // -------------------------
+  // API methods
+  // -------------------------
+
+  async function getProcesses(): Promise<any> {
+    try {
+      const data = await request<{ processes: any[] }>({
+        endpoint: MAAP_API_ENDPOINTS.GET_PROCESSES,
+        method: 'GET'
+      });
+
+      if (!data?.processes) {
+        throw new Error('Failed to list processes.');
+      }
+      return data.processes;
+    } catch (err) {
+      console.error(err);
+      return null;
+    }
+  }
+
+  async function getProcess(processId: string): Promise<any> {
+    try {
+      if (!processId) {
+        throw new Error(
+          'Failed to retrieve process. Process ID must be provided.'
+        );
+      }
+
+      const endpoint = MAAP_API_ENDPOINTS.GET_PROCESS.replace(
+        '{PROCESS_ID}',
+        processId
+      );
+
+      return await request<any>({
+        endpoint,
+        method: 'GET'
+      });
+    } catch (err) {
+      console.error(err);
+      return null;
+    }
+  }
+
+  const registerAlgorithm = async (
+    data: any,
+    jupyterApp?: any
+  ): Promise<any> => {
+    const endpoint = MAAP_API_ENDPOINTS.BUILD;
+
+    const response = await request<any>({
+      endpoint,
+      method: 'POST',
+      auth: true,
+      body: data,
+      // If `data` is FormData, set rawBody=true and DON'T force JSON content-type.
+      rawBody: data instanceof FormData,
+      headers: data instanceof FormData ? {} : undefined
+    });
+
+    if (response?.status === 'accepted') {
+      const message = `Algorithm successfully submitted for registration. Build ID: ${response.build_id}. `;
+
+      if (jupyterApp) {
+        Notification.success(message, {
+          autoClose: false,
+          actions: [
+            {
+              label: 'View build & deployment status',
+              callback: () => openBuildDeploymentDashboard(jupyterApp, null)
+            }
+          ]
+        });
+      } else {
+        Notification.success(message, { autoClose: false });
+      }
+    }
+
+    return response;
+  };
+
+  const getBuilds = async (): Promise<BuildsResponse> => {
+    return await request<BuildsResponse>({
+      endpoint: MAAP_API_ENDPOINTS.BUILD,
+      method: 'GET',
+      auth: true
+    });
+  };
+
+  const getDeployments = async (): Promise<DeploymentsResponse> => {
+    return await request<DeploymentsResponse>({
+      endpoint: MAAP_API_ENDPOINTS.POST_DEPLOYMENTS,
+      method: 'GET',
+      auth: true
+    });
+  };
+
+  const getBuildStatus = async (buildId: string): Promise<any> => {
+    const endpoint = MAAP_API_ENDPOINTS.GET_BUILD.replace(
+      '{BUILD_ID}',
+      buildId
+    );
+    return await request<any>({
+      endpoint,
+      method: 'GET',
+      auth: true
+    });
+  };
+
+  const getDeploymentStatus = async (deploymentId: string): Promise<any> => {
+    const endpoint = MAAP_API_ENDPOINTS.GET_DEPLOYMENTS.replace(
+      '{DEPLOYMENT_ID}',
+      deploymentId
+    );
+    return await request<any>({
+      endpoint,
+      method: 'GET',
+      auth: true
+    });
+  };
+
+  return {
+    request,
+    getProcesses,
+    getProcess,
+    registerAlgorithm,
+    getBuilds,
+    getDeployments,
+    getBuildStatus,
+    getDeploymentStatus
+  };
 }
+
+export type MaapApi = ReturnType<typeof createMaapApi>;

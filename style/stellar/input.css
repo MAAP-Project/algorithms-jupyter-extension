@@ -1,0 +1,73 @@
+.st-input {
+  background-color: var(--st-input-background-color);
+  border: var(--st-input-border);
+  border-radius: 4px;
+  color: var(--st-input-color);
+  font-family: var(--st-input-font-family);
+  font-size: var(--st-input-font-size);
+  font-weight: var(--st-input-font-weight);
+  letter-spacing: var(--st-input-letter-spacing);
+  line-height: var(--st-input-line-height);
+  padding: var(--st-input-padding);
+}
+
+.st-input::placeholder {
+  color: var(--st-input-placeholder-color);
+  font-style: italic;
+}
+
+.st-input:disabled {
+  cursor: not-allowed;
+  opacity: 0.5;
+}
+
+.st-input.error {
+  background-color: var(--st-input-error-background-color);
+  border: 1px solid var(--st-red);
+  color: var(--st-red);
+}
+
+.st-input.error::placeholder {
+  color: var(--st-red);
+}
+
+.st-input.error:disabled {
+  background-color: var(--st-input-disabled-background-color);
+  border: 1px solid var(--st-red);
+  color: var(--st-input-disabled-color);
+  cursor: not-allowed;
+}
+
+.st-input.error:disabled::placeholder {
+  color: var(--st-input-disabled-color);
+}
+
+.st-input.warning {
+  background-color: var(--st-input-warning-background-color);
+  border: 1px solid var(--st-orange);
+  color: var(--st-orange);
+}
+
+.st-input.warning::placeholder {
+  color: var(--st-orange);
+}
+
+.st-input.warning:disabled {
+  background-color: var(--st-input-disabled-background-color);
+  border: 1px solid var(--st-orange);
+  color: var(--st-input-disabled-color);
+  cursor: not-allowed;
+}
+
+.st-input.warning:disabled::placeholder {
+  color: var(--st-input-disabled-color);
+}
+
+textarea.st-input {
+  min-height: var(--st-input-textarea-min-height);
+  min-width: var(--st-input-textarea-min-width);
+}
+
+textarea.st-input.no-resize {
+  resize: none;
+}
