@@ -216,7 +216,7 @@ export const RegistrationForm = ({
         onClose={() => setShowTokenModal(false)}
         onSubmit={() => setShowTokenModal(false)}
       />
-      <div style={{ overflow: 'scroll' }}>
+      <div style={{ overflow: 'visible' }}>
         <CustomFileDialog
           open={showFileDialog}
           onClose={() => setShowFileDialog(false)}
@@ -225,7 +225,7 @@ export const RegistrationForm = ({
           fileBrowser={fileBrowser}
           docManager={docManager}
         />
-        <Box sx={{ maxWidth: 800, p: 3 }}>
+        <Box sx={{ maxWidth: 1200, p: 3, overflow: 'visible' }}>
           <Typography variant="h5" gutterBottom>
             Algorithm Registration Form
           </Typography>
