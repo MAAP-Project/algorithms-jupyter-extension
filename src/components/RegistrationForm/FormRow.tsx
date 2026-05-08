@@ -33,6 +33,7 @@ export const FormRow = ({ formInput, options }: FormRowProps) => {
               formInput?.default ||
               options.filter(opt => opt.value !== '')[0]?.value
             }
+            style={{ width: '600px' }}
           >
             {options
               .filter(opt => opt.value !== '')
@@ -50,6 +51,7 @@ export const FormRow = ({ formInput, options }: FormRowProps) => {
             className="st-input"
             required={formInput.required}
             defaultValue={formInput?.default}
+            style={{ width: '600px' }}
           />
         )}
       </td>
