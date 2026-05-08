@@ -13,7 +13,7 @@ export type MaapSettings = {
   maapApiUrl: string;
   maapToken: string;
   defaultAppImage: string;
-  currentAppImage: string,
+  currentAppImage: string;
 };
 
 interface IMaapContextType extends MaapSettings {
@@ -141,7 +141,7 @@ export const MaapProvider: React.FC<IMaapProviderProps> = ({
     const defaultAppImage =
       (defaultAppImageRes.composite as string) ?? DEFAULTS.defaultAppImage;
     const currentAppImage =
-          (currentAppImageRes.composite as string) ?? DEFAULTS.currentAppImage;
+      (currentAppImageRes.composite as string) ?? DEFAULTS.currentAppImage;
 
     // Optional: update local state so UI reflects latest values
     setState({ maapApiUrl, maapToken, defaultAppImage, currentAppImage });
