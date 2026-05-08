@@ -73,3 +73,5 @@ pip uninstall maap_algorithms_jupyter_extension
 In development mode, you will also need to remove the symlink created by `jupyter labextension develop`
 command. To find its location, you can run `jupyter labextension list` to figure out where the `labextensions`
 folder is located. Then you can remove the symlink named `maap_algorithms_jupyter_extension` within that folder.
+
+For PRs, if it fails the lint check, run `jlpm format`

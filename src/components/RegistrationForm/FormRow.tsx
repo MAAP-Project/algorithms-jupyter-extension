@@ -5,9 +5,10 @@ import InfoIcon from '@mui/icons-material/Info';
 
 export declare type FormRowProps = {
   formInput: RegistrationFormInput;
+  options?: Array<{ label: string; value: string }>;
 };
 
-export const FormRow = ({ formInput }: FormRowProps) => {
+export const FormRow = ({ formInput, options }: FormRowProps) => {
   return (
     <tr>
       <td>
@@ -23,14 +24,34 @@ export const FormRow = ({ formInput }: FormRowProps) => {
         </Tooltip>
       </td>
       <td>
-        <input
-          type={formInput.type}
-          name={formInput.name}
-          placeholder={formInput.placeholder}
-          className="st-input"
-          required={formInput.required}
-          defaultValue={formInput?.default}
-        />
+        {options ? (
+          <select
+            name={formInput.name}
+            className="st-input"
+            required={formInput.required}
+            defaultValue={
+              formInput?.default ||
+              options.filter(opt => opt.value !== '')[0]?.value
+            }
+          >
+            {options
+              .filter(opt => opt.value !== '')
+              .map(option => (
+                <option key={option.value} value={option.value}>
+                  {option.label}
+                </option>
+              ))}
+          </select>
+        ) : (
+          <input
+            type={formInput.type}
+            name={formInput.name}
+            placeholder={formInput.placeholder}
+            className="st-input"
+            required={formInput.required}
+            defaultValue={formInput?.default}
+          />
+        )}
       </td>
     </tr>
   );
