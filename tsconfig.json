@@ -11,21 +11,17 @@
     "moduleResolution": "node",
     "noEmitOnError": true,
     "noImplicitAny": false,
-    "noUnusedLocals": false,
+    "noUnusedLocals": true,
     "preserveWatchOutput": true,
     "resolveJsonModule": true,
     "outDir": "lib",
-    "paths": {
-      "react-table": ["types/react-table/index.d.ts"],
-      "react": [ "./node_modules/@types/react" ]
-    },
     "rootDir": "src",
     "skipLibCheck": true,
     "strict": true,
     "strictNullChecks": false,
     "target": "ES2022",
     "types": [],
-    "typeRoots" : ["./node_modules/@types", "./src/types"]
+    "typeRoots": ["./node_modules/@types", "./src/types"]
   },
   "include": ["src/*", "src/**/*"]
 }

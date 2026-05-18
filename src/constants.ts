@@ -1,57 +1,186 @@
-/*******************************
- * Jupyter Extension
- *******************************/
+import { RegistrationFormInput } from './types/registration';
+
+/**  JUPYTER  */
 export const JUPYTER_EXT = {
-    EXTENSION_CSS_CLASSNAME : 'jl-ReactAppWidget',
+  LIST_ALGORITHMS_OPEN_COMMAND: 'list-algorithms-open-command',
+  REGISTER_ALGORITHMS_OPEN_COMMAND: 'register-algorithms-open-command',
+  BUILDS_DEPLOYMENTS_OPEN_COMMAND: 'builds-deployments-open-command',
+  JOBS_SUBMIT_OPEN_COMMAND: 'jobs_submit:open'
+};
 
-    VIEW_ALGORITHMS_PLUGIN_ID : 'view_algorithms:plugin',
-    VIEW_ALGORITHMS_NAME : 'View Algorithms',
-    VIEW_ALGORITHMS_OPEN_COMMAND : 'view_algorithms:open',
-
-    REGISTER_ALGORITHM_PLUGIN_ID : 'register_algorithm:plugin',
-    REGISTER_ALGORITHM_NAME : 'Register Algorithm',
-    REGISTER_ALGORITHM_OPEN_COMMAND : 'register_algorithm:open',
-
-    SUBMIT_JOBS_OPEN_COMMAND : 'jobs_submit:open',
-}
-
+/** MAAP */
+export const MAAP_PROFILE_URL = 'https://{MAAP_ENV}.maap-project.org/profile/';
+export const MAAP_DOCS_REGISTER_ALGORITHM_URL =
+  'https://docs.maap-project.org/en/latest/getting_started/running_at_scale.html#Register-an-Algorithm';
 
 /*******************************
- * Algorithms
+ * MAAP API OGC ENDPOINTS
  *******************************/
-export const ALGO_INPUTS = {
-    CONFIGURATION_INPUTS : 'configuration_inputs',
-    FILE_INPUTS : 'file_inputs',
-    POSITIONAL_INPUTS : 'positional_inputs'
-}
+export const MAAP_API_ENDPOINTS = {
+  GET_PROCESSES: 'api/ogc/processes',
+  GET_PROCESS: 'api/ogc/processes/{PROCESS_ID}',
+  GET_DEPLOYMENTS: 'api/ogc/deploymentJobs/{DEPLOYMENT_ID}',
+  POST_DEPLOYMENTS: 'api/ogc/deploymentJobs',
+  BUILD: 'api/build',
+  GET_BUILD: 'api/build/{BUILD_ID}'
+};
 
-export const ALGO_INPUTS_DESC = {
-    CONFIGURATION_INPUTS : "Inputs defined here will be written to a json file named 'inputs.json' in \
-                            the working directory. It is recommended that config inputs be used to \
-                            change the behavior of the algorithm the user runs.",
+/**
+ * Algorithm registration form fields
+ * See AlgorithmData type in src/types/registration.ts
+ */
+export const FORM_FIELDS = {
+  algorithmName: {
+    name: 'algorithmName',
+    pythonic_name: 'algorithm_name',
+    label: 'Algorithm Name',
+    tooltip: 'The name of the algorithm.',
+    placeholder: 'Enter algorithm name',
+    required: true,
+    type: 'text'
+  } as RegistrationFormInput,
+  algorithmVersion: {
+    name: 'algorithmVersion',
+    pythonic_name: 'algorithm_version',
+    label: 'Algorithm Version',
+    tooltip:
+      'The tag or branch of the source code repository to build the algorithm from (e.g., develop, 1.0.0)',
+    placeholder: 'Enter algorithm version',
+    required: true,
+    type: 'text'
+  } as RegistrationFormInput,
+  algorithmDescription: {
+    name: 'algorithmDescription',
+    pythonic_name: 'algorithm_description',
+    label: 'Algorithm Description',
+    tooltip: 'Description of the algorithm.',
+    placeholder: 'Enter algorithm description',
+    required: true,
+    type: 'text'
+  } as RegistrationFormInput,
+  codeRepository: {
+    name: 'codeRepository',
+    pythonic_name: 'code_repository',
+    label: 'Repository URL',
+    tooltip: 'The public URL to the algorithm source code repository',
+    placeholder: 'Enter code repository URL',
+    required: true,
+    type: 'text'
+  } as RegistrationFormInput,
+  runCommand: {
+    name: 'runCommand',
+    pythonic_name: 'run_command',
+    label: 'Run Command',
+    tooltip:
+      'The main command to execute your algorithm (e.g., sardem-sarsen/sardem-sarsem.sh)',
+    placeholder: 'Enter run command',
+    required: true,
+    type: 'text'
+  } as RegistrationFormInput,
+  ramMin: {
+    name: 'ramMin',
+    pythonic_name: 'ram_min',
+    label: 'Minimum RAM (GB)',
+    tooltip:
+      'The minimum amount of RAM (in GB) required to run your algorithm. Max is 128. (e.g., 16)',
+    placeholder: 'Enter minimum RAM',
+    required: true,
+    type: 'number'
+  } as RegistrationFormInput,
+  coresMin: {
+    name: 'coresMin',
+    pythonic_name: 'cores_min',
+    label: 'Minimum Number of Cores',
+    tooltip:
+      'The minimum number of CPU cores required to run your algorithm. Max 32 cores. (e.g., 1)',
+    placeholder: 'Enter minimum number of cores',
+    required: true,
+    type: 'number'
+  } as RegistrationFormInput,
+  baseContainerURL: {
+    name: 'baseContainerURL',
+    pythonic_name: 'base_container_url',
+    label: 'Base Container URL',
+    tooltip:
+      'The URL to the base docker image which the algorithm will be built off of.',
+    placeholder: 'Enter base container URL',
+    type: 'text'
+  } as RegistrationFormInput,
+  author: {
+    name: 'author',
+    pythonic_name: 'author',
+    label: 'Author',
+    tooltip: 'The primary author of the algorithm',
+    placeholder: 'Enter author name',
+    type: 'text'
+  } as RegistrationFormInput,
+  contributor: {
+    name: 'contributor',
+    pythonic_name: 'contributor',
+    label: 'Contributor',
+    tooltip: 'Additional contributors to the algorithm development',
+    placeholder: 'Enter contributor name',
+    type: 'text'
+  } as RegistrationFormInput,
+  license: {
+    name: 'license',
+    pythonic_name: 'license',
+    label: 'License',
+    tooltip: 'The license under which your algorithm is distributed',
+    placeholder: 'Enter license information',
+    type: 'text'
+  } as RegistrationFormInput,
+  releaseNotes: {
+    name: 'releaseNotes',
+    pythonic_name: 'release_notes',
+    label: 'Release Notes',
+    tooltip: 'The URL to the release notes of the algorithm',
+    placeholder: 'Enter release notes',
+    type: 'text'
+  } as RegistrationFormInput,
+  citation: {
+    name: 'citation',
+    pythonic_name: 'citation',
+    label: 'Citation',
+    tooltip: 'How to cite this algorithm in publications',
+    placeholder: 'Enter citation information',
+    type: 'text'
+  } as RegistrationFormInput,
+  keywords: {
+    name: 'keywords',
+    pythonic_name: 'keywords',
+    label: 'Keywords',
+    tooltip:
+      'Comma-separated keywords to associate with this algorithm. (e.g. sar, ogc)',
+    placeholder: 'Enter keywords',
+    type: 'text'
+  } as RegistrationFormInput,
+  algorithmContainerURL: {
+    name: 'algorithmContainerURL',
+    pythonic_name: 'algorithm_container_url',
+    label: 'Algorithm Container URL',
+    tooltip: 'The public URL to the pre-built algorithm container image',
+    placeholder: 'Enter algorithm container URL',
+    type: 'text'
+  } as RegistrationFormInput,
+  buildCommand: {
+    name: 'buildCommand',
+    pythonic_name: 'build_command',
+    label: 'Build Command',
+    tooltip:
+      'The command to build the algorithm environment in the base container',
+    placeholder: 'Enter build command',
+    type: 'text'
+  } as RegistrationFormInput
+};
 
-    FILE_INPUTS          : "Inputs defined here will be downloaded and placed in a directory named 'inputs'.",
-
-    POSITIONAL_INPUTS    : "Inputs defined here will be used as inputs to the run command defined as \
-                           run_command. The order in which the inputs are defined will be preserved \
-                           when building the run_command. It is recommended that positional inputs  \
-                           be used when users wish to change the behavior of the run command \
-                           and not the behavior of the algorithm e.g. adding a verbose flag."
-}
-
-export const ALGO_INPUT_FIELDS = {
-    INPUT_NAME: "inputName",
-    INPUT_DEFAULT : "inputDefault",
-    INPUT_DESC : "inputDesc",
-    IS_REQUIRED : "isRequired",
-    INPUT_ID : "inputId"
-} as const;
-
-
-/* The colSpan attribute for td elements in React accepts a
-   number -- unlike raw td elements where you could specify colspan=100%  */
-export const COLUMN_SPAN = 6
-
-export const YML_FOLDER = "algorithm-configs";
-
-export const DEFAULT_CONTAINER_IMAGE = "mas.maap-project.org/root/maap-workspaces/custom_images/maap_base:v4.3.0";
+export const ALGORITHM_INPUT_TYPES = [
+  'string',
+  'int',
+  'File',
+  'Directory',
+  'long',
+  'float',
+  'boolean',
+  'double'
+];

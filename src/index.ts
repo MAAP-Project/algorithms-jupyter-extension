@@ -1,154 +1,221 @@
-import { ILauncher } from '@jupyterlab/launcher';
-import { treeViewIcon } from '@jupyterlab/ui-components';
-import { JUPYTER_EXT } from './constants';
-import { IMainMenu } from '@jupyterlab/mainmenu';
-import { Menu } from '@lumino/widgets';
-import { 
-  AlgorithmCatalogWidget, 
-  RegisterAlgorithmsWidget } from './classes/App';
-import { 
-  ICommandPalette, 
-  MainAreaWidget,
-  WidgetTracker } from '@jupyterlab/apputils';
 import {
-  ILayoutRestorer,
   JupyterFrontEnd,
-  JupyterFrontEndPlugin } from '@jupyterlab/application';
+  JupyterFrontEndPlugin
+} from '@jupyterlab/application';
+import { ILauncher } from '@jupyterlab/launcher';
+import { MainAreaWidget } from '@jupyterlab/apputils';
+import {
+  AlgorithmsWidget,
+  RegisterAlgorithmsWidget,
+  BuildsDeploymentsWidget
+} from './widgets';
+import { JUPYTER_EXT } from './constants';
+import {
+  IDefaultFileBrowser,
+  IFileBrowserFactory
+} from '@jupyterlab/filebrowser';
+import { IDocumentManager } from '@jupyterlab/docmanager';
+import { ISettingRegistry } from '@jupyterlab/settingregistry';
+import { Token } from '@lumino/coreutils';
+import { maapIcon } from './icons/icons';
 
+const sharedSettingsPluginId = 'maap-jupyter-server-extension:plugin';
+const algorithmsSettingsPluginId = 'maap_algorithms_jupyter_extension:plugin';
 
-  // Add 'View Algorithms' and 'Register Algorithms' plugins to the jupyter lab 'Algorithms' menu
-const algorithms_menu_plugin: JupyterFrontEndPlugin<void> = {
-  id: 'algorithms-menu',
+export interface ISettingsResolver {
+  pluginId: string;
+  settings: ISettingRegistry.ISettings;
+  get<T = unknown>(key: string, fallback?: T): T;
+}
+
+export const ISettingsResolver = new Token<ISettingsResolver>(
+  'jupyterlab:ISettingsResolver'
+);
+
+/**
+ * The MAAP Jupyter shared settings will attempt to be loaded first. If these
+ * settings do not exist, the shared settings for this collection of algorithm
+ * plugins will be loaded instead.
+ */
+const settingsResolverPlugin: JupyterFrontEndPlugin<ISettingsResolver> = {
+  id: 'jupyterlab:settings-resolver',
   autoStart: true,
-  requires: [IMainMenu],
-  activate: (app: JupyterFrontEnd, mainMenu: IMainMenu) => {
-    const { commands } = app;
-    let algorithmsMenu = new Menu({ commands });
-    algorithmsMenu.id = 'algorithms-menu';
-    algorithmsMenu.title.label = 'Algorithms';
-    [
-      // JUPYTER_EXT.VIEW_ALGORITHMS_OPEN_COMMAND,
-      JUPYTER_EXT.REGISTER_ALGORITHM_OPEN_COMMAND
-    ].forEach(command => {
-      algorithmsMenu.addItem({ command });
-    });
-    mainMenu.addMenu(algorithmsMenu)
+  requires: [ISettingRegistry],
+  provides: ISettingsResolver,
+  activate: async (app: JupyterFrontEnd, registry: ISettingRegistry) => {
+    let loadedId = sharedSettingsPluginId;
+    let settings: ISettingRegistry.ISettings;
+
+    try {
+      settings = await registry.load(loadedId);
+    } catch (err) {
+      console.warn(`Did not load settings for "${loadedId}: ", ${err}`);
+
+      loadedId = algorithmsSettingsPluginId;
+
+      try {
+        settings = await registry.load(loadedId);
+      } catch (err2) {
+        console.error(`Failed to load fallback settings "${loadedId}"`, err2);
+        throw err2;
+      }
+    }
+
+    console.log(`Settings loaded from: ${loadedId}`);
+
+    return {
+      pluginId: loadedId,
+      settings,
+      get: <T = unknown>(key: string, fallback?: T) => {
+        const v = settings.get(key).composite as T;
+        return (v ?? fallback) as T;
+      }
+    };
   }
 };
 
-const algorithm_catalog_plugin: JupyterFrontEndPlugin<void> = {
-  id: JUPYTER_EXT.VIEW_ALGORITHMS_PLUGIN_ID,
+const listAlgorithmsPlugin: JupyterFrontEndPlugin<void> = {
+  id: JUPYTER_EXT.LIST_ALGORITHMS_OPEN_COMMAND,
+  description: 'A MAAP JupyterLab plugin for viewing OGC-compliant algorithms.',
   autoStart: true,
-  optional: [ILauncher, ICommandPalette, ILayoutRestorer],
-  activate: (app: JupyterFrontEnd, 
-             launcher: ILauncher, 
-             palette: ICommandPalette,
-             restorer: ILayoutRestorer) => {
-
+  requires: [ILauncher, ISettingsResolver],
+  activate: async (
+    app: JupyterFrontEnd,
+    launcher: ILauncher,
+    settingRegistry: ISettingsResolver
+  ) => {
     const { commands } = app;
-    const command = JUPYTER_EXT.VIEW_ALGORITHMS_OPEN_COMMAND;
-
-    let algorithmCatalogWidget: MainAreaWidget<AlgorithmCatalogWidget> | null = null;
-
-    const algorithmCatalogTracker = new WidgetTracker<MainAreaWidget<AlgorithmCatalogWidget>>({
-      namespace: 'view-algorithms-tracker'
-    });
-
-    if (restorer) {
-      restorer.restore(algorithmCatalogTracker, {
-        command: JUPYTER_EXT.VIEW_ALGORITHMS_OPEN_COMMAND,
-        name: () => 'view-algorithms-tracker'
-      });
-    }
+    const command = JUPYTER_EXT.LIST_ALGORITHMS_OPEN_COMMAND;
+    let algorithmsWidget: MainAreaWidget<AlgorithmsWidget> | null = null;
 
     commands.addCommand(command, {
-      caption: JUPYTER_EXT.VIEW_ALGORITHMS_NAME,
-      label: JUPYTER_EXT.VIEW_ALGORITHMS_NAME,
-      icon: (args) => (args['isPalette'] ? null : treeViewIcon),
+      caption: 'Algorithm Catalog',
+      label: 'Algorithm Catalog',
+      icon: args => (args['isPalette'] ? undefined : maapIcon),
       execute: () => {
-        const content = new AlgorithmCatalogWidget(app);
-        algorithmCatalogWidget = new MainAreaWidget<AlgorithmCatalogWidget>({ content });
-        algorithmCatalogWidget.title.label = JUPYTER_EXT.VIEW_ALGORITHMS_NAME;
-        algorithmCatalogWidget.title.icon = treeViewIcon;
-        app.shell.add(algorithmCatalogWidget, 'main');
-
-        // Add widget to the tracker so it will persist on browser refresh
-        algorithmCatalogTracker.save(algorithmCatalogWidget)
-        algorithmCatalogTracker.add(algorithmCatalogWidget)
-      },
-    });
-
-    const category = 'MAAP Extensions'
-
-    // if (launcher) {
-    //   launcher.add({
-    //     command,
-    //     category: category
-    //   });
-    // }
-
-    console.log('JupyterLab MAAP Algorithms Registration extension is activated!');
-  }
-};
-
-
-const algorithm_registration_plugin: JupyterFrontEndPlugin<void> = {
-  id: JUPYTER_EXT.REGISTER_ALGORITHM_PLUGIN_ID,
-  autoStart: true,
-  optional: [ILauncher, ICommandPalette, ILayoutRestorer],
-  activate: (app: JupyterFrontEnd, 
-             launcher: ILauncher, 
-             palette: ICommandPalette,
-             restorer: ILayoutRestorer) => {
-
-    const { commands } = app;
-    const command = JUPYTER_EXT.REGISTER_ALGORITHM_OPEN_COMMAND;
-
-    let registerAlgorithmsWidget: MainAreaWidget<RegisterAlgorithmsWidget> | null = null;
-
-    const registerAlgorithmsTracker = new WidgetTracker<MainAreaWidget<RegisterAlgorithmsWidget>>({
-      namespace: 'register-algorithms-tracker'
-    });
-
-    if (restorer) {
-      restorer.restore(registerAlgorithmsTracker, {
-        command: JUPYTER_EXT.REGISTER_ALGORITHM_OPEN_COMMAND,
-        name: () => 'register-algorithms-tracker'
-      });
-    }
-
-    commands.addCommand(command, {
-      caption: JUPYTER_EXT.REGISTER_ALGORITHM_NAME,
-      label: JUPYTER_EXT.REGISTER_ALGORITHM_NAME,
-      icon: (args) => (args['isPalette'] ? null : treeViewIcon),
-      execute: (data) => {
-        console.log("Data coming in: ")
-        console.log(data)
-        const content = new RegisterAlgorithmsWidget(data);
-        registerAlgorithmsWidget = new MainAreaWidget<RegisterAlgorithmsWidget>({ content });
-        registerAlgorithmsWidget.title.label = JUPYTER_EXT.REGISTER_ALGORITHM_NAME;
-        registerAlgorithmsWidget.title.icon = treeViewIcon;
-        app.shell.add(registerAlgorithmsWidget, 'main');
-
-        // Add widget to the tracker so it will persist on browser refresh
-        registerAlgorithmsTracker.save(registerAlgorithmsWidget)
-        registerAlgorithmsTracker.add(registerAlgorithmsWidget)
-      },
+        const content = new AlgorithmsWidget(app, settingRegistry.settings);
+        algorithmsWidget = new MainAreaWidget<AlgorithmsWidget>({ content });
+        algorithmsWidget.title.label = 'Algorithm Catalog';
+        algorithmsWidget.title.icon = maapIcon;
+        app.shell.add(algorithmsWidget, 'main');
+      }
     });
 
     if (launcher) {
       launcher.add({
         command,
-        category: "MAAP Extensions"
+        category: 'MAAP Plugins'
       });
     }
 
-    const category = 'MAAP Extensions'
-
-    palette.addItem({ command: JUPYTER_EXT.REGISTER_ALGORITHM_OPEN_COMMAND, category });
-
-    console.log('JupyterLab register-algorithm plugin is activated!');
+    console.log('JupyterLab MAAP plugin list-algorithms is activated!');
   }
 };
 
-export default [algorithms_menu_plugin, algorithm_catalog_plugin, algorithm_registration_plugin];
+const registerAlgorithmsPlugin: JupyterFrontEndPlugin<void> = {
+  id: JUPYTER_EXT.REGISTER_ALGORITHMS_OPEN_COMMAND,
+  description: 'A MAAP JupyterLab plugin for registering OGC algorithms.',
+  autoStart: true,
+  requires: [
+    IFileBrowserFactory,
+    IDocumentManager,
+    ISettingsResolver,
+    ILauncher
+  ],
+  activate: async (
+    app: JupyterFrontEnd,
+    fileBrowser: IDefaultFileBrowser,
+    docManager: IDocumentManager,
+    settingRegistry: ISettingsResolver,
+    launcher: ILauncher
+  ) => {
+    const { commands } = app;
+
+    let registerAlgorithmsWidget: MainAreaWidget<RegisterAlgorithmsWidget> | null =
+      null;
+
+    const command = JUPYTER_EXT.REGISTER_ALGORITHMS_OPEN_COMMAND;
+
+    commands.addCommand(command, {
+      caption: 'Register Algorithms',
+      label: 'Register Algorithms',
+      icon: args => (args['isPalette'] ? undefined : maapIcon),
+      execute: () => {
+        const content = new RegisterAlgorithmsWidget(
+          app,
+          fileBrowser,
+          docManager,
+          settingRegistry.settings
+        );
+        registerAlgorithmsWidget = new MainAreaWidget<RegisterAlgorithmsWidget>(
+          { content }
+        );
+        registerAlgorithmsWidget.title.label = 'Register Algorithms';
+        registerAlgorithmsWidget.title.icon = maapIcon;
+        app.shell.add(registerAlgorithmsWidget, 'main');
+      }
+    });
+
+    if (launcher) {
+      launcher.add({
+        command,
+        category: 'MAAP Plugins'
+      });
+    }
+
+    console.log('JupyterLab MAAP plugin register-algorithms is activated!');
+  }
+};
+
+const buildsDeploymentsPlugin: JupyterFrontEndPlugin<void> = {
+  id: JUPYTER_EXT.BUILDS_DEPLOYMENTS_OPEN_COMMAND,
+  description:
+    'A MAAP JupyterLab plugin for viewing user builds and deployments.',
+  autoStart: true,
+  requires: [ILauncher, ISettingsResolver],
+  activate: async (
+    app: JupyterFrontEnd,
+    launcher: ILauncher,
+    settingRegistry: ISettingsResolver
+  ) => {
+    const { commands } = app;
+
+    const command = JUPYTER_EXT.BUILDS_DEPLOYMENTS_OPEN_COMMAND;
+    let buildsDeploymentsWidget: MainAreaWidget<BuildsDeploymentsWidget> | null =
+      null;
+
+    commands.addCommand(command, {
+      caption: 'My Builds & Deployments',
+      label: 'My Builds & Deployments',
+      icon: args => (args['isPalette'] ? undefined : maapIcon),
+      execute: () => {
+        const content = new BuildsDeploymentsWidget(
+          app,
+          settingRegistry.settings
+        );
+        buildsDeploymentsWidget = new MainAreaWidget<BuildsDeploymentsWidget>({
+          content
+        });
+        buildsDeploymentsWidget.title.label = 'My Builds & Deployments';
+        buildsDeploymentsWidget.title.icon = maapIcon;
+        app.shell.add(buildsDeploymentsWidget, 'main');
+      }
+    });
+
+    if (launcher) {
+      launcher.add({
+        command,
+        category: 'MAAP Plugins'
+      });
+    }
+
+    console.log('JupyterLab MAAP plugin builds-deployments is activated!');
+  }
+};
+
+export default [
+  settingsResolverPlugin,
+  listAlgorithmsPlugin,
+  registerAlgorithmsPlugin,
+  buildsDeploymentsPlugin
+];
