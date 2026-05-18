@@ -114,16 +114,20 @@ const listAlgorithmsPlugin: JupyterFrontEndPlugin<void> = {
 
 const registerAlgorithmsPlugin: JupyterFrontEndPlugin<void> = {
   id: JUPYTER_EXT.REGISTER_ALGORITHMS_OPEN_COMMAND,
-  description:
-    'A MAAP JupyterLab plugin for registering OGC-compliant algorithms.',
+  description: 'A MAAP JupyterLab plugin for registering OGC algorithms.',
   autoStart: true,
-  optional: [ILauncher],
-  requires: [IFileBrowserFactory, IDocumentManager, ISettingsResolver],
+  requires: [
+    IFileBrowserFactory,
+    IDocumentManager,
+    ISettingsResolver,
+    ILauncher
+  ],
   activate: async (
     app: JupyterFrontEnd,
     fileBrowser: IDefaultFileBrowser,
     docManager: IDocumentManager,
-    settingRegistry: ISettingsResolver
+    settingRegistry: ISettingsResolver,
+    launcher: ILauncher
   ) => {
     const { commands } = app;
 
@@ -151,6 +155,13 @@ const registerAlgorithmsPlugin: JupyterFrontEndPlugin<void> = {
         app.shell.add(registerAlgorithmsWidget, 'main');
       }
     });
+
+    if (launcher) {
+      launcher.add({
+        command,
+        category: 'MAAP Plugins'
+      });
+    }
 
     console.log('JupyterLab MAAP plugin register-algorithms is activated!');
   }

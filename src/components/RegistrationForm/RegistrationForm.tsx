@@ -44,9 +44,15 @@ export const RegistrationForm = ({
   const [showFileDialog, setShowFileDialog] = useState(false);
   const [inputRows, setInputRows] = useState<Array<AlgorithmInputRow>>([]);
   const [useAlgorithmContainer, setUseAlgorithmContainer] = useState(false);
+  const [baseContainerURL, setBaseContainerURL] = useState<string>('');
+  const [loadedBaseContainerURL, setLoadedBaseContainerURL] =
+    useState<string>('');
 
   useEffect(() => {
-    getLatestSettings().then(setSettings);
+    getLatestSettings().then(s => {
+      setSettings(s);
+      setBaseContainerURL(prev => prev || s?.defaultAppImage || '');
+    });
   }, []);
 
   const addInputRow = () => {
@@ -94,9 +100,15 @@ export const RegistrationForm = ({
       );
     }
 
+    console.log('Algo container url: ', config.algorithm_container_url);
+
     config.algorithm_container_url
       ? handleSetUseAlgorithmContainer(true)
       : handleSetUseAlgorithmContainer(false);
+
+    const loaded = config.base_container_url ?? '';
+    setLoadedBaseContainerURL(loaded);
+    setBaseContainerURL(loaded || settings?.defaultAppImage || '');
 
     Object.keys(config).forEach(key => {
       if (typeof config[key] !== 'object' || config[key] === null) {
@@ -124,12 +136,15 @@ export const RegistrationForm = ({
     setUseAlgorithmContainer(value);
     setInputValue(FORM_FIELDS.algorithmContainerURL.pythonic_name, '');
     setInputValue(FORM_FIELDS.buildCommand.pythonic_name, '');
-    setInputValue(FORM_FIELDS.baseContainerURL.pythonic_name, '');
+    setLoadedBaseContainerURL('');
+    setBaseContainerURL(settings?.defaultAppImage ?? '');
   };
 
   const handleClearForm = (event: React.MouseEvent<HTMLButtonElement>) => {
     event.preventDefault();
     clearForm(setInputRows, setUseAlgorithmContainer);
+    setLoadedBaseContainerURL('');
+    setBaseContainerURL(settings?.defaultAppImage ?? '');
   };
 
   const handleFormSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
@@ -226,8 +241,8 @@ export const RegistrationForm = ({
           docManager={docManager}
         />
         <Box sx={{ maxWidth: 800, p: 3 }}>
-          <Typography variant="h5" gutterBottom>
-            Algorithm Registration Form
+          <Typography variant="h4" gutterBottom>
+            Algorithm Registration
           </Typography>
           <button className="st-button" onClick={openFileDialog}>
             Load Algorithm Configuration
@@ -244,7 +259,10 @@ export const RegistrationForm = ({
             for more information.
           </p> */}
           <form onSubmit={handleFormSubmit}>
-            <h3>General Information</h3>
+            <br></br>
+            <Typography variant="h6" gutterBottom>
+              General Information
+            </Typography>
             <table className="st-table margin-bottom-3">
               <tbody>
                 <FormRow
@@ -266,7 +284,9 @@ export const RegistrationForm = ({
                 />
               </tbody>
             </table>
-            <h3>Build Information</h3>
+            <Typography variant="h6" gutterBottom>
+              Build Information
+            </Typography>
             <div style={{ marginBottom: '16px' }}>
               <input
                 type="checkbox"
@@ -292,20 +312,18 @@ export const RegistrationForm = ({
                 >
                   <FormRow
                     key={FORM_FIELDS.baseContainerURL.name}
-                    formInput={{
-                      ...FORM_FIELDS.baseContainerURL,
-                      default: settings?.defaultAppImage
-                    }}
+                    formInput={FORM_FIELDS.baseContainerURL}
+                    value={baseContainerURL}
+                    onChange={setBaseContainerURL}
                     options={[
-                      {
-                        label: `${settings?.defaultAppImage || ''}`,
-                        value: settings?.defaultAppImage || ''
-                      },
-                      {
-                        label: `${settings?.currentAppImage || ''}`,
-                        value: settings?.currentAppImage || ''
-                      }
-                    ]}
+                      settings?.defaultAppImage,
+                      settings?.currentAppImage,
+                      loadedBaseContainerURL
+                    ]
+                      .filter(
+                        (v, i, arr): v is string => !!v && arr.indexOf(v) === i
+                      )
+                      .map(v => ({ label: v, value: v }))}
                   />
                   <FormRow
                     key={FORM_FIELDS.buildCommand.name}
@@ -314,14 +332,18 @@ export const RegistrationForm = ({
                 </div>
               </tbody>
             </table>
-            <h3>Resource Requirements</h3>
+            <Typography variant="h6" gutterBottom>
+              Resource Requirements
+            </Typography>
             <table className="st-table margin-bottom-3">
               <tbody>
                 <FormRow formInput={FORM_FIELDS.ramMin} />
                 <FormRow formInput={FORM_FIELDS.coresMin} />
               </tbody>
             </table>
-            <h3>Metadata</h3>
+            <Typography variant="h6" gutterBottom>
+              Metadata
+            </Typography>
             <table className="st-table margin-bottom-3">
               <tbody>
                 <FormRow formInput={FORM_FIELDS.author} />
@@ -332,7 +354,9 @@ export const RegistrationForm = ({
                 <FormRow formInput={FORM_FIELDS.keywords} />
               </tbody>
             </table>
-            <h3>Inputs</h3>
+            <Typography variant="h6" gutterBottom>
+              Inputs
+            </Typography>
             <table className="st-table inputs-table">
               <thead>
                 <tr>

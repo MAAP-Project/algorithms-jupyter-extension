@@ -6,9 +6,16 @@ import InfoIcon from '@mui/icons-material/Info';
 export declare type FormRowProps = {
   formInput: RegistrationFormInput;
   options?: Array<{ label: string; value: string }>;
+  value?: string;
+  onChange?: (value: string) => void;
 };
 
-export const FormRow = ({ formInput, options }: FormRowProps) => {
+export const FormRow = ({
+  formInput,
+  options,
+  value,
+  onChange
+}: FormRowProps) => {
   return (
     <tr>
       <td>
@@ -29,10 +36,13 @@ export const FormRow = ({ formInput, options }: FormRowProps) => {
             name={formInput.name}
             className="st-input"
             required={formInput.required}
-            defaultValue={
-              formInput?.default ||
-              options.filter(opt => opt.value !== '')[0]?.value
-            }
+            {...(onChange !== undefined
+              ? { value: value ?? '', onChange: e => onChange(e.target.value) }
+              : {
+                  defaultValue:
+                    formInput?.default ||
+                    options.filter(opt => opt.value !== '')[0]?.value
+                })}
           >
             {options
               .filter(opt => opt.value !== '')
