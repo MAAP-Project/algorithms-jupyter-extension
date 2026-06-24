@@ -7,7 +7,7 @@
         "jupyterlab",
         "jupyterlab-extension"
     ],
-    "homepage": "",
+    "homepage": "https://github.com/MAAP-Project/algorithms-jupyter-extension",
     "bugs": {
         "url": "https://github.com/MAAP-Project/algorithms-jupyter-extension.git/issues"
     },
