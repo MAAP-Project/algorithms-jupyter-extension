@@ -106,6 +106,7 @@ export const isValidAlgorithmConfig = (
   checkIsValidForSubmit: boolean
 ): boolean => {
   let msg = '';
+  console.log('Algo config: ', config);
   if (
     config.algorithm_container_url &&
     (config.base_container_url || config.build_command)
