@@ -108,8 +108,8 @@ export const isValidAlgorithmConfig = (
   let msg = '';
   console.log('Algo config: ', config);
   if (
-    config.algorithm_container_url &&
-    (config.base_container_url || config.build_command)
+    !config.algorithm_container_url &&
+    !(config.base_container_url && config.build_command)
   ) {
     msg =
       "INVALID ALGORITHM CONFIG: Either 'algorithm_container_url' or 'base_container_url' and 'build_command' must be provided";
