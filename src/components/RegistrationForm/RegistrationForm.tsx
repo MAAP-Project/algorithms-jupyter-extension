@@ -100,8 +100,6 @@ export const RegistrationForm = ({
       );
     }
 
-    console.log('Algo container url: ', config.algorithm_container_url);
-
     config.algorithm_container_url
       ? handleSetUseAlgorithmContainer(true)
       : handleSetUseAlgorithmContainer(false);
@@ -149,7 +147,6 @@ export const RegistrationForm = ({
 
   const handleFormSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
-
     const formData = new FormData(event.currentTarget);
     const algorithmData: AlgorithmData = {
       algorithmName: '',
@@ -173,6 +170,13 @@ export const RegistrationForm = ({
     formData.forEach((value, key) => {
       algorithmData[key] = value;
     });
+
+    // User either provides their own container, or uses a generic one provided by MAAP.
+    // If both are provided, precedence is given to the custom container the user provides.
+    if (algorithmData.algorithmContainerURL) {
+      algorithmData.baseContainerURL = null;
+      algorithmData.buildCommand = null;
+    }
 
     // Convert numeric fields back to numbers
     if (algorithmData.ramMin) {
