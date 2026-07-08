@@ -624,7 +624,7 @@ export const BuildsDeploymentsGrid = ({
       density: 'compact',
       sorting: [
         {
-          id: 'created',
+          id: 'updated',
           desc: true
         }
       ]
