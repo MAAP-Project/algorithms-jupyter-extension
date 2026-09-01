@@ -67,14 +67,14 @@
         "@mui/material": "^6.4.4",
         "@mui/x-date-pickers": "^7.26.0",
         "@nasa-jpl/stellar": "^2.0.0-alpha.15",
-        "dayjs": "^1.11.13",
+        "dayjs": "^1.11.23",
         "material-react-table": "^3.2.0",
         "react": "^18.2.0",
         "react-dom": "^18.2.0",
         "yaml": "^2.8.0"
     },
     "devDependencies": {
-        "@jupyterlab/builder": "^4.0.0",
+        "@jupyterlab/builder": "^4.5.10",
         "@jupyterlab/testutils": "^4.0.0",
         "@types/jest": "^29.2.0",
         "@types/json-schema": "^7.0.11",
@@ -87,7 +87,7 @@
         "css-loader": "^6.7.1",
         "eslint": "^8.36.0",
         "eslint-config-prettier": "^8.8.0",
-        "eslint-plugin-prettier": "^5.0.0",
+        "eslint-plugin-prettier": "^5.5.6",
         "jest": "^29.2.0",
         "npm-run-all2": "^7.0.1",
         "prettier": "^3.0.0",
@@ -100,7 +100,7 @@
         "stylelint-csstree-validator": "^3.0.0",
         "stylelint-prettier": "^4.0.0",
         "typescript": "^5.7.3",
-        "yjs": "^13.5.0"
+        "yjs": "^13.6.32"
     },
     "sideEffects": [
         "style/*.css",
