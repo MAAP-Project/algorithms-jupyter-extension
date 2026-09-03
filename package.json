@@ -1,6 +1,6 @@
 {
     "name": "maap_algorithms_jupyter_extension",
-    "version": "1.0.2",
+    "version": "1.0.3",
     "description": "A MAAP Jupyter plugin for managing OGC algorithms",
     "keywords": [
         "jupyter",
