@@ -8,7 +8,10 @@ import {
   Button,
   TextField
 } from '@mui/material';
-import { MAAP_PROFILE_URL } from '../../constants';
+import {
+  MAAP_PROFILE_TOKENS_URL,
+  MAAP_PROFILE_TOKENS_URL_UAT
+} from '../../constants';
 import { useMaapContext } from '../../MaapContext';
 
 type TokenModalProps = {
@@ -19,7 +22,7 @@ type TokenModalProps = {
 
 export const TokenModal = ({ open, onClose, onSubmit }: TokenModalProps) => {
   const { getLatestSettings, setMaapToken } = useMaapContext();
-  const [profileUrl, setProfileUrl] = useState<string>(MAAP_PROFILE_URL);
+  const [profileUrl, setProfileUrl] = useState<string>(MAAP_PROFILE_TOKENS_URL);
 
   const handleSubmit = async () => {
     if (onSubmit) {
@@ -32,8 +35,11 @@ export const TokenModal = ({ open, onClose, onSubmit }: TokenModalProps) => {
     const resolveProfileUrl = async () => {
       try {
         const { maapApiUrl } = await getLatestSettings();
-        const maapEnv = new URL(maapApiUrl).hostname.split('.')[1];
-        setProfileUrl(MAAP_PROFILE_URL.replace('{MAAP_ENV}', maapEnv));
+        setProfileUrl(
+          maapApiUrl.includes('uat')
+            ? MAAP_PROFILE_TOKENS_URL_UAT
+            : MAAP_PROFILE_TOKENS_URL
+        );
       } catch (err) {
         console.error('Failed to resolve MAAP profile URL:', err);
       }
