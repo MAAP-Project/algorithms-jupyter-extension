@@ -31,6 +31,13 @@ export const TokenModal = ({ open, onClose, onSubmit }: TokenModalProps) => {
     onClose();
   };
 
+  const handleKeyDown = (e: React.KeyboardEvent) => {
+    if (e.key === 'Enter') {
+      e.preventDefault();
+      handleSubmit();
+    }
+  };
+
   useEffect(() => {
     const resolveProfileUrl = async () => {
       try {
@@ -79,6 +86,7 @@ export const TokenModal = ({ open, onClose, onSubmit }: TokenModalProps) => {
           fullWidth
           variant="outlined"
           onChange={e => setMaapToken(e.target.value)}
+          onKeyDown={handleKeyDown}
           sx={{ mt: 2 }}
         />
 
