@@ -53,13 +53,13 @@ export const TokenModal = ({ open, onClose, onSubmit }: TokenModalProps) => {
   return (
     <Dialog open={open} onClose={onClose}>
       <DialogTitle sx={{ backgroundColor: 'orange', color: 'white' }}>
-        MAAP PGT Token Required
+        MAAP Token Required
       </DialogTitle>
 
       <DialogContent sx={{ paddingBottom: 0 }}>
         <DialogContentText>
           To access your builds and deployments, you need to provide your MAAP
-          PGT Token. You can get this token by visiting{' '}
+          Token. You can get this token by visiting{' '}
           <a
             href={profileUrl}
             target="_blank"
@@ -74,7 +74,7 @@ export const TokenModal = ({ open, onClose, onSubmit }: TokenModalProps) => {
         <TextField
           autoFocus
           margin="dense"
-          label="MAAP PGT Token"
+          label="MAAP Token"
           type="password"
           fullWidth
           variant="outlined"
