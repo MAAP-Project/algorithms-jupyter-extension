@@ -135,7 +135,7 @@ export const MaapProvider: React.FC<IMaapProviderProps> = ({
   const getLatestSettings = useCallback(async (): Promise<MaapSettings> => {
     const latest = readSettings(settings);
 
-    // Optional: update local state so UI reflects latest values
+    // Update local state so UI reflects latest values
     setState(latest);
 
     return latest;
