@@ -23,8 +23,14 @@ type TokenModalProps = {
 export const TokenModal = ({ open, onClose, onSubmit }: TokenModalProps) => {
   const { getLatestSettings, setMaapToken } = useMaapContext();
   const [profileUrl, setProfileUrl] = useState<string>(MAAP_PROFILE_TOKENS_URL);
+  const [token, setToken] = useState<string>('');
 
   const handleSubmit = async () => {
+    // Only save a non-empty token so the saved one is never cleared
+    if (!token.trim()) {
+      return;
+    }
+    await setMaapToken(token);
     if (onSubmit) {
       await onSubmit();
     }
@@ -53,6 +59,7 @@ export const TokenModal = ({ open, onClose, onSubmit }: TokenModalProps) => {
     };
 
     if (open) {
+      setToken('');
       resolveProfileUrl();
     }
   }, [open, getLatestSettings]);
@@ -85,14 +92,19 @@ export const TokenModal = ({ open, onClose, onSubmit }: TokenModalProps) => {
           type="password"
           fullWidth
           variant="outlined"
-          onChange={e => setMaapToken(e.target.value)}
+          value={token}
+          onChange={e => setToken(e.target.value)}
           onKeyDown={handleKeyDown}
           sx={{ mt: 2 }}
         />
 
         <DialogActions>
           <Button onClick={onClose}>Cancel</Button>
-          <Button onClick={handleSubmit} variant="contained">
+          <Button
+            onClick={handleSubmit}
+            variant="contained"
+            disabled={!token.trim()}
+          >
             Set Token
           </Button>
         </DialogActions>

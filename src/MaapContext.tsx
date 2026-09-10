@@ -56,97 +56,89 @@ const DEFAULTS: MaapSettings = {
   currentAppImage: ''
 };
 
+/**
+ * Reads a single setting, preferring the value saved in the user settings.
+ * An empty saved value falls back to the schema default rather than masking it.
+ */
+function readSetting(
+  settings: ISettingRegistry.ISettings,
+  key: keyof MaapSettings
+): string {
+  const { user } = settings.get(key);
+  if (typeof user === 'string' && user.trim() !== '') {
+    return user;
+  }
+  const schemaDefault = settings.default(key);
+  return typeof schemaDefault === 'string' ? schemaDefault : DEFAULTS[key];
+}
+
+function readSettings(settings: ISettingRegistry.ISettings): MaapSettings {
+  return {
+    maapApiUrl: readSetting(settings, 'maapApiUrl'),
+    maapToken: readSetting(settings, 'maapToken'),
+    defaultAppImage: readSetting(settings, 'defaultAppImage'),
+    currentAppImage: readSetting(settings, 'currentAppImage')
+  };
+}
+
 export const MaapProvider: React.FC<IMaapProviderProps> = ({
   children,
   settings
 }) => {
-  const [state, setState] = useState<MaapSettings>(DEFAULTS);
+  const [state, setState] = useState<MaapSettings>(() =>
+    readSettings(settings)
+  );
 
-  // Load initial values from settings once on mount
   useEffect(() => {
-    let cancelled = false;
-
-    (async () => {
-      try {
-        const apiUrlRes = await settings.get('maapApiUrl');
-        const tokenRes = await settings.get('maapToken');
-        const defaultAppImageRes = await settings.get('defaultAppImage');
-        const currentAppImageRes = await settings.get('currentAppImage');
-
-        const maapApiUrl =
-          (apiUrlRes.composite as string) ?? DEFAULTS.maapApiUrl;
-        const maapToken = (tokenRes.composite as string) ?? DEFAULTS.maapToken;
-        const defaultAppImage =
-          (defaultAppImageRes.composite as string) ?? DEFAULTS.defaultAppImage;
-        const currentAppImage =
-          (currentAppImageRes.composite as string) ?? DEFAULTS.currentAppImage;
-
-        if (!cancelled) {
-          setState({ maapApiUrl, maapToken, defaultAppImage, currentAppImage });
-        }
-      } catch (err) {
-        console.error('Failed to load MAAP settings:', err);
-      }
-    })();
-
-    return () => {
-      cancelled = true;
-    };
+    setState(readSettings(settings));
   }, [settings]);
 
-  const setMaapApiUrl = useCallback(
-    async (maapApiUrl: string) => {
-      await settings.set('maapApiUrl', maapApiUrl);
+  /**
+   * Saves a setting to the user settings. Empty values are ignored so an
+   * existing user setting is never overwritten with an empty value.
+   */
+  const saveSetting = useCallback(
+    async (key: keyof MaapSettings, value: string) => {
+      const trimmed = value.trim();
+      if (!trimmed) {
+        return;
+      }
+      await settings.set(key, trimmed);
       // Keep local state consistent for UI consumers
-      setState(prev => ({ ...prev, maapApiUrl }));
+      setState(prev => ({ ...prev, [key]: trimmed }));
     },
     [settings]
+  );
+
+  const setMaapApiUrl = useCallback(
+    (maapApiUrl: string) => saveSetting('maapApiUrl', maapApiUrl),
+    [saveSetting]
   );
 
   const setDefaultAppImage = useCallback(
-    async (defaultAppImage: string) => {
-      await settings.set('defaultAppImage', defaultAppImage);
-      // Keep local state consistent for UI consumers
-      setState(prev => ({ ...prev, defaultAppImage }));
-    },
-    [settings]
+    (defaultAppImage: string) =>
+      saveSetting('defaultAppImage', defaultAppImage),
+    [saveSetting]
   );
 
   const setCurrentAppImage = useCallback(
-    async (currentAppImage: string) => {
-      await settings.set('currentAppImage', currentAppImage);
-      // Keep local state consistent for UI consumers
-      setState(prev => ({ ...prev, currentAppImage }));
-    },
-    [settings]
+    (currentAppImage: string) =>
+      saveSetting('currentAppImage', currentAppImage),
+    [saveSetting]
   );
 
   const setMaapToken = useCallback(
-    async (maapToken: string) => {
-      await settings.set('maapToken', maapToken);
-      // Keep local state consistent for UI consumers
-      setState(prev => ({ ...prev, maapToken }));
-    },
-    [settings]
+    (maapToken: string) => saveSetting('maapToken', maapToken),
+    [saveSetting]
   );
 
   const getLatestSettings = useCallback(async (): Promise<MaapSettings> => {
-    const apiUrlRes = await settings.get('maapApiUrl');
-    const tokenRes = await settings.get('maapToken');
-    const defaultAppImageRes = await settings.get('defaultAppImage');
-    const currentAppImageRes = await settings.get('currentAppImage');
-
-    const maapApiUrl = (apiUrlRes.composite as string) ?? DEFAULTS.maapApiUrl;
-    const maapToken = (tokenRes.composite as string) ?? DEFAULTS.maapToken;
-    const defaultAppImage =
-      (defaultAppImageRes.composite as string) ?? DEFAULTS.defaultAppImage;
-    const currentAppImage =
-      (currentAppImageRes.composite as string) ?? DEFAULTS.currentAppImage;
+    const latest = readSettings(settings);
 
     // Optional: update local state so UI reflects latest values
-    setState({ maapApiUrl, maapToken, defaultAppImage, currentAppImage });
+    setState(latest);
 
-    return { maapApiUrl, maapToken, defaultAppImage, currentAppImage };
+    return latest;
   }, [settings]);
 
   const value = useMemo<IMaapContextType>(
