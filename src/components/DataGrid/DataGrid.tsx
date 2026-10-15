@@ -267,7 +267,12 @@ export const DataGrid = ({ jupyterApp, api }: DataGridProps) => {
             <tbody>
               <tr>
                 <td className="st-label-cell">Process ID</td>
-                <td>{processDetails.processID ?? '-'}</td>
+                <td>
+                  <span>
+                    {processDetails.processID ?? '-'}
+                    <CopyButton hash={processDetails.processID} />
+                  </span>
+                </td>
               </tr>
               <tr>
                 <td className="st-label-cell">Code Repository</td>
