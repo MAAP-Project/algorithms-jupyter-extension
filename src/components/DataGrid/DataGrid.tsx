@@ -15,6 +15,7 @@ import IconButton from '@mui/material/IconButton';
 import Tooltip from '@mui/material/Tooltip';
 import { JupyterFrontEnd } from '@jupyterlab/application';
 import { MaapApi } from '../../utils/api';
+import { formatInputRequired } from './utils';
 
 type DataGridProps = {
   jupyterApp: JupyterFrontEnd;
@@ -345,13 +346,7 @@ export const DataGrid = ({ jupyterApp, api }: DataGridProps) => {
                           <td>{value.description ?? '-'}</td>
                           {/* Optional inputs are marked with a trailing '?' on the type */}
                           <td>{value.type?.replace(/\?$/, '') || '-'}</td>
-                          <td>
-                            {value.type
-                              ? value.type.endsWith('?')
-                                ? 'No'
-                                : 'Yes'
-                              : '-'}
-                          </td>
+                          <td>{formatInputRequired(value)}</td>
                           <td>
                             {value.default
                               ? (value.default['path'] ?? value.default)
