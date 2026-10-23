@@ -62,7 +62,8 @@ export const RegistrationForm = ({
       label: '',
       description: '',
       default: '',
-      type: ''
+      type: '',
+      required: false
     };
     setInputRows([...inputRows, newRow]);
   };
@@ -71,7 +72,11 @@ export const RegistrationForm = ({
     setInputRows(inputRows.filter(row => row.id !== id));
   };
 
-  const updateInputRow = (id: string, field: string, value: string) => {
+  const updateInputRow = (
+    id: string,
+    field: string,
+    value: string | boolean
+  ) => {
     setInputRows(
       inputRows.map(row => (row.id === id ? { ...row, [field]: value } : row))
     );
@@ -124,7 +129,8 @@ export const RegistrationForm = ({
           label: input.label || '',
           description: input.doc || '',
           default: input.default ?? '',
-          type: input.type || ''
+          type: input.type || '',
+          required: input.default !== undefined && input.default !== ''
         }))
       );
     }
@@ -192,7 +198,7 @@ export const RegistrationForm = ({
         label: row.label,
         doc: row.description,
         type: row.type,
-        default: row.default
+        default: row.required ? row.default : ''
       }));
     }
 
@@ -385,13 +391,16 @@ export const RegistrationForm = ({
                   <th>
                     Type <span style={{ color: 'red' }}> *</span>
                   </th>
-                  <th>Default Value</th>
+                  <th className="checkbox-cell">Required?</th>
+                  <th className="default-cell">Default Value</th>
+                  <th className="icon-cell"></th>
                 </tr>
               </thead>
               <tbody>
                 {inputRows.length === 0 ? (
                   <tr>
                     <td
+                      colSpan={8}
                       style={{
                         textAlign: 'center',
                         padding: '20px'
@@ -403,7 +412,7 @@ export const RegistrationForm = ({
                 ) : (
                   inputRows.map(row => (
                     <tr key={row.id}>
-                      <td style={{ minWidth: '50px' }}></td>
+                      <td className="icon-cell"></td>
                       <td>
                         <input
                           type="text"
@@ -465,19 +474,31 @@ export const RegistrationForm = ({
                           ))}
                         </select>
                       </td>
-                      <td>
+                      <td className="checkbox-cell">
                         <input
-                          type="text"
-                          name={`input_${row.id}_default`}
-                          placeholder="Enter default value"
-                          className="st-input compact"
-                          value={row.default}
+                          type="checkbox"
+                          name={`input_${row.id}_required`}
+                          checked={row.required}
                           onChange={e =>
-                            updateInputRow(row.id, 'default', e.target.value)
+                            updateInputRow(row.id, 'required', e.target.checked)
                           }
                         />
                       </td>
-                      <td>
+                      <td className="default-cell">
+                        {row.required && (
+                          <input
+                            type="text"
+                            name={`input_${row.id}_default`}
+                            placeholder="Enter default value"
+                            className="st-input compact"
+                            value={row.default}
+                            onChange={e =>
+                              updateInputRow(row.id, 'default', e.target.value)
+                            }
+                          />
+                        )}
+                      </td>
+                      <td className="icon-cell">
                         <IconButton
                           color="error"
                           size="small"

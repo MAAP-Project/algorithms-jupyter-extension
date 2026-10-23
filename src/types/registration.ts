@@ -21,6 +21,7 @@ export type AlgorithmInput = {
 
 export type AlgorithmInputRow = AlgorithmInput & {
   id: string;
+  required: boolean;
 };
 
 export type AlgorithmData = {
