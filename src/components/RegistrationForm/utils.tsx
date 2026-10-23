@@ -99,18 +99,21 @@ const _validateAlgorithmVersion = (algorithmVersion: string) => {
   return true;
 };
 
+export const getContainerConfigError = (config: AlgorithmConfig): string => {
+  if (!config.algorithm_container_url && !config.base_container_url) {
+    return "INVALID ALGORITHM CONFIG: Either 'algorithm_container_url' or 'base_container_url' and 'build_command' must be provided";
+  }
+  return '';
+};
+
 // need to differentiate between valid for loading into the UI (does not need all fields to be present as user may modify)
 // versus valid for submission, where we need to check for missing fields.)
 export const isValidAlgorithmConfig = (
   config: AlgorithmConfig,
   checkIsValidForSubmit: boolean
 ): boolean => {
-  let msg = '';
   console.log('Algo config: ', config);
-  if (!config.algorithm_container_url && !config.base_container_url) {
-    msg =
-      "INVALID ALGORITHM CONFIG: Either 'algorithm_container_url' or 'base_container_url' and 'build_command' must be provided";
-  }
+  const msg = getContainerConfigError(config);
 
   if (checkIsValidForSubmit) {
     if (!_validateAlgorithmName(config.algorithm_name)) {

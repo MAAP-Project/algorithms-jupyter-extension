@@ -13,7 +13,7 @@ import { FormRow } from './FormRow';
 import { AlgorithmData, AlgorithmInputRow } from '../../types/registration';
 import {
   buildAlgorithmConfig,
-  isValidAlgorithmConfig,
+  getContainerConfigError,
   setInputValue,
   clearForm,
   isOlderConfigVersion,
@@ -95,8 +95,19 @@ export const RegistrationForm = ({
 
   const populateFormWithConfig = (config: AlgorithmConfig) => {
     clearForm(setInputRows, setUseAlgorithmContainer);
-    if (!isValidAlgorithmConfig(config, false)) {
+    if (!config || typeof config !== 'object') {
+      Notification.error(
+        'Selected file is not a valid algorithm configuration.',
+        { autoClose: false }
+      );
       return;
+    }
+
+    // Load the rest of the config as a best effort so the user can fix it
+    const containerError = getContainerConfigError(config);
+    if (containerError) {
+      console.warn(containerError);
+      Notification.warning(containerError, { autoClose: false });
     }
 
     if (isOlderConfigVersion(config)) {

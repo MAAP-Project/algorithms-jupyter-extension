@@ -2,10 +2,14 @@ import * as yaml from 'yaml';
 import {
   buildAlgorithmConfig,
   configInputToInputRow,
+  getContainerConfigError,
   inputRowToConfigInput,
   parseInputDefault
 } from '../utils';
-import { AlgorithmConfigInput } from '../../../types/algorithmConfig';
+import {
+  AlgorithmConfig,
+  AlgorithmConfigInput
+} from '../../../types/algorithmConfig';
 import { AlgorithmData, AlgorithmInputRow } from '../../../types/registration';
 
 const baseAlgorithmData = (): AlgorithmData => ({
@@ -225,5 +229,22 @@ describe('configInputToInputRow', () => {
     );
 
     expect(reloaded).toEqual(original);
+  });
+});
+
+describe('getContainerConfigError', () => {
+  it('returns an error when no container URL is provided', () => {
+    const config = { algorithm_name: 'test' } as AlgorithmConfig;
+
+    expect(getContainerConfigError(config)).toContain(
+      "Either 'algorithm_container_url' or 'base_container_url'"
+    );
+  });
+
+  it.each([
+    [{ algorithm_container_url: 'ghcr.io/maap-project/algo:latest' }],
+    [{ base_container_url: 'ghcr.io/maap-project/maap-base:latest' }]
+  ])('returns no error for %p', partialConfig => {
+    expect(getContainerConfigError(partialConfig as AlgorithmConfig)).toBe('');
   });
 });
