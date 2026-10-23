@@ -129,8 +129,9 @@ export const RegistrationForm = ({
           label: input.label || '',
           description: input.doc || '',
           default: input.default ?? '',
-          type: input.type || '',
-          required: input.default !== undefined && input.default !== ''
+          // Optional inputs are marked with a trailing '?' on the type
+          type: (input.type || '').replace(/\?$/, ''),
+          required: !(input.type || '').endsWith('?')
         }))
       );
     }
@@ -197,7 +198,7 @@ export const RegistrationForm = ({
         name: row.name,
         label: row.label,
         doc: row.description,
-        type: row.type,
+        type: row.required ? row.type : `${row.type}?`,
         default: row.required ? row.default : ''
       }));
     }
