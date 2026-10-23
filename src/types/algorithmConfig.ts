@@ -3,7 +3,7 @@ export type AlgorithmConfigInput = {
   label: string;
   doc: string;
   type: string;
-  default: string | number;
+  default?: string | number | boolean;
 };
 
 export type AlgorithmConfigOutput = {

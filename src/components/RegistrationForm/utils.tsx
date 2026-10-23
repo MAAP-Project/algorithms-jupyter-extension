@@ -142,6 +142,39 @@ export const isOlderConfigVersion = (config: AlgorithmConfig): boolean => {
   );
 };
 
+const NUMERIC_INPUT_TYPES = ['int', 'long', 'float', 'double'];
+
+// Form defaults are strings; convert them to the input's declared type so
+// values like 0 and false are written to the config as numbers/booleans.
+export const parseInputDefault = (
+  value: string | number | boolean | undefined | null,
+  type: string
+): string | number | boolean => {
+  if (value === undefined || value === null) {
+    return '';
+  }
+  if (typeof value !== 'string') {
+    return value;
+  }
+  const trimmed = value.trim();
+  if (trimmed === '') {
+    return '';
+  }
+  const baseType = type.replace(/\?$/, '');
+  if (NUMERIC_INPUT_TYPES.includes(baseType) && !isNaN(Number(trimmed))) {
+    return Number(trimmed);
+  }
+  if (baseType === 'boolean') {
+    if (trimmed.toLowerCase() === 'true') {
+      return true;
+    }
+    if (trimmed.toLowerCase() === 'false') {
+      return false;
+    }
+  }
+  return value;
+};
+
 export const buildAlgorithmConfig = (data: AlgorithmData): string => {
   const configData: AlgorithmConfig = {
     algorithm_name: '',
@@ -180,7 +213,7 @@ export const buildAlgorithmConfig = (data: AlgorithmData): string => {
         label: input.label || '',
         doc: input.doc || '',
         type: input.type || '',
-        default: input.default || ''
+        default: parseInputDefault(input.default, input.type || '')
       });
     });
   }

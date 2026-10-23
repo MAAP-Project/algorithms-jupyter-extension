@@ -128,7 +128,10 @@ export const RegistrationForm = ({
           name: input.name || '',
           label: input.label || '',
           description: input.doc || '',
-          default: input.default ?? '',
+          default:
+            input.default === undefined || input.default === null
+              ? ''
+              : String(input.default),
           // Optional inputs are marked with a trailing '?' on the type
           type: (input.type || '').replace(/\?$/, ''),
           required: !(input.type || '').endsWith('?')
