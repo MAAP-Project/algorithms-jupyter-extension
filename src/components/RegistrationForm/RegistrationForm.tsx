@@ -16,7 +16,9 @@ import {
   isValidAlgorithmConfig,
   setInputValue,
   clearForm,
-  isOlderConfigVersion
+  isOlderConfigVersion,
+  inputRowToConfigInput,
+  configInputToInputRow
 } from './utils';
 import { createDirectory, createFile } from '../../utils/utils';
 import {
@@ -126,16 +128,7 @@ export const RegistrationForm = ({
       setInputRows(
         config.inputs.map((input: AlgorithmConfigInput) => ({
           id: crypto.randomUUID(),
-          name: input.name || '',
-          label: input.label || '',
-          description: input.doc || '',
-          default:
-            input.default === undefined || input.default === null
-              ? ''
-              : String(input.default),
-          // Optional inputs are marked with a trailing '?' on the type
-          type: (input.type || '').replace(/\?$/, ''),
-          required: !(input.type || '').endsWith('?')
+          ...configInputToInputRow(input)
         }))
       );
     }
@@ -198,13 +191,7 @@ export const RegistrationForm = ({
     }
 
     if (inputRows.length > 0) {
-      algorithmData.inputs = inputRows.map(row => ({
-        name: row.name,
-        label: row.label,
-        doc: row.description,
-        type: row.required ? row.type : `${row.type}?`,
-        default: row.required ? row.default : ''
-      }));
+      algorithmData.inputs = inputRows.map(inputRowToConfigInput);
     }
 
     const yamlContent = buildAlgorithmConfig(algorithmData);

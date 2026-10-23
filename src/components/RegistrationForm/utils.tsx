@@ -3,7 +3,7 @@ import {
   AlgorithmConfig,
   AlgorithmConfigInput
 } from '../../types/algorithmConfig';
-import { AlgorithmData } from '../../types/registration';
+import { AlgorithmData, AlgorithmInputRow } from '../../types/registration';
 import { getPythonFromJSName } from '../../utils/utils';
 import * as yaml from 'yaml';
 
@@ -174,6 +174,33 @@ export const parseInputDefault = (
   }
   return value;
 };
+
+// Convert a row from the registration form's inputs table into a config input.
+// Optional inputs are marked with a trailing '?' on the type.
+export const inputRowToConfigInput = (
+  row: AlgorithmInputRow
+): AlgorithmConfigInput => ({
+  name: row.name,
+  label: row.label,
+  doc: row.description,
+  type: row.required ? row.type : `${row.type}?`,
+  default: row.required ? row.default : ''
+});
+
+// Convert a config input into a row for the registration form's inputs table.
+export const configInputToInputRow = (
+  input: AlgorithmConfigInput
+): Omit<AlgorithmInputRow, 'id'> => ({
+  name: input.name || '',
+  label: input.label || '',
+  description: input.doc || '',
+  default:
+    input.default === undefined || input.default === null
+      ? ''
+      : String(input.default),
+  type: (input.type || '').replace(/\?$/, ''),
+  required: !(input.type || '').endsWith('?')
+});
 
 export const buildAlgorithmConfig = (data: AlgorithmData): string => {
   const configData: AlgorithmConfig = {

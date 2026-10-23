@@ -1,3 +1,10 @@
 {
-  "extends": "./tsconfig"
+  "extends": "./tsconfig",
+  "compilerOptions": {
+    "composite": false,
+    "noEmit": true,
+    "types": ["jest"]
+  },
+  "include": ["src/*", "src/**/*"],
+  "exclude": []
 }
