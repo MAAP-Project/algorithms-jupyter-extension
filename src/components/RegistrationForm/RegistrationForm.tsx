@@ -1,7 +1,8 @@
 import React, { useEffect, useState } from 'react';
-import { Box, Typography, IconButton } from '@mui/material';
+import { Box, Typography, IconButton, Tooltip } from '@mui/material';
 import AddIcon from '@mui/icons-material/Add';
 import DeleteIcon from '@mui/icons-material/Delete';
+import InfoIcon from '@mui/icons-material/Info';
 import { MaapSettings, useMaapContext } from '../../MaapContext';
 import { IDefaultFileBrowser } from '@jupyterlab/filebrowser';
 import { JupyterFrontEnd } from '@jupyterlab/application';
@@ -396,7 +397,17 @@ export const RegistrationForm = ({
                     Type <span style={{ color: 'red' }}> *</span>
                   </th>
                   <th className="checkbox-cell">Required?</th>
-                  <th className="default-cell">Default Value</th>
+                  <th className="default-cell">
+                    Default Value
+                    <Tooltip title="Default values are not needed for optional inputs. If an input is required and no default value is provided, a value must be provided when the job is submitted.">
+                      <IconButton
+                        size="small"
+                        style={{ marginLeft: '8px', padding: '1px' }}
+                      >
+                        <InfoIcon style={{ fontSize: '14px' }} />
+                      </IconButton>
+                    </Tooltip>
+                  </th>
                   <th className="icon-cell"></th>
                 </tr>
               </thead>
