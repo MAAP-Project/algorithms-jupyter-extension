@@ -8,7 +8,10 @@ import {
   Button,
   TextField
 } from '@mui/material';
-import { MAAP_PROFILE_URL } from '../../constants';
+import {
+  MAAP_PROFILE_TOKENS_URL,
+  MAAP_PROFILE_TOKENS_URL_UAT
+} from '../../constants';
 import { useMaapContext } from '../../MaapContext';
 
 type TokenModalProps = {
@@ -19,27 +22,44 @@ type TokenModalProps = {
 
 export const TokenModal = ({ open, onClose, onSubmit }: TokenModalProps) => {
   const { getLatestSettings, setMaapToken } = useMaapContext();
-  const [profileUrl, setProfileUrl] = useState<string>(MAAP_PROFILE_URL);
+  const [profileUrl, setProfileUrl] = useState<string>(MAAP_PROFILE_TOKENS_URL);
+  const [token, setToken] = useState<string>('');
 
   const handleSubmit = async () => {
+    // Only save a non-empty token so the saved one is never cleared
+    if (!token.trim()) {
+      return;
+    }
+    await setMaapToken(token);
     if (onSubmit) {
       await onSubmit();
     }
     onClose();
   };
 
+  const handleKeyDown = (e: React.KeyboardEvent) => {
+    if (e.key === 'Enter') {
+      e.preventDefault();
+      handleSubmit();
+    }
+  };
+
   useEffect(() => {
     const resolveProfileUrl = async () => {
       try {
         const { maapApiUrl } = await getLatestSettings();
-        const maapEnv = new URL(maapApiUrl).hostname.split('.')[1];
-        setProfileUrl(MAAP_PROFILE_URL.replace('{MAAP_ENV}', maapEnv));
+        setProfileUrl(
+          maapApiUrl.includes('uat')
+            ? MAAP_PROFILE_TOKENS_URL_UAT
+            : MAAP_PROFILE_TOKENS_URL
+        );
       } catch (err) {
         console.error('Failed to resolve MAAP profile URL:', err);
       }
     };
 
     if (open) {
+      setToken('');
       resolveProfileUrl();
     }
   }, [open, getLatestSettings]);
@@ -47,13 +67,13 @@ export const TokenModal = ({ open, onClose, onSubmit }: TokenModalProps) => {
   return (
     <Dialog open={open} onClose={onClose}>
       <DialogTitle sx={{ backgroundColor: 'orange', color: 'white' }}>
-        MAAP PGT Token Required
+        MAAP Token Required
       </DialogTitle>
 
       <DialogContent sx={{ paddingBottom: 0 }}>
         <DialogContentText>
           To access your builds and deployments, you need to provide your MAAP
-          PGT Token. You can get this token by visiting{' '}
+          Token. You can get this token by visiting{' '}
           <a
             href={profileUrl}
             target="_blank"
@@ -68,17 +88,23 @@ export const TokenModal = ({ open, onClose, onSubmit }: TokenModalProps) => {
         <TextField
           autoFocus
           margin="dense"
-          label="MAAP PGT Token"
+          label="MAAP Token"
           type="password"
           fullWidth
           variant="outlined"
-          onChange={e => setMaapToken(e.target.value)}
+          value={token}
+          onChange={e => setToken(e.target.value)}
+          onKeyDown={handleKeyDown}
           sx={{ mt: 2 }}
         />
 
         <DialogActions>
           <Button onClick={onClose}>Cancel</Button>
-          <Button onClick={handleSubmit} variant="contained">
+          <Button
+            onClick={handleSubmit}
+            variant="contained"
+            disabled={!token.trim()}
+          >
             Set Token
           </Button>
         </DialogActions>
