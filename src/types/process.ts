@@ -12,6 +12,7 @@ export type ProcessInput = {
   description: string;
   type: string;
   placeholder: string; // placeholder is what HySDS stores label as
+  optional?: boolean;
   default?: string;
 };
 

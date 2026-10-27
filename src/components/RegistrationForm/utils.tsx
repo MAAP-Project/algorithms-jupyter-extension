@@ -3,7 +3,7 @@ import {
   AlgorithmConfig,
   AlgorithmConfigInput
 } from '../../types/algorithmConfig';
-import { AlgorithmData } from '../../types/registration';
+import { AlgorithmData, AlgorithmInputRow } from '../../types/registration';
 import { getPythonFromJSName } from '../../utils/utils';
 import * as yaml from 'yaml';
 
@@ -99,18 +99,21 @@ const _validateAlgorithmVersion = (algorithmVersion: string) => {
   return true;
 };
 
+export const getContainerConfigError = (config: AlgorithmConfig): string => {
+  if (!config.algorithm_container_url && !config.base_container_url) {
+    return "INVALID ALGORITHM CONFIG: Either 'algorithm_container_url' or 'base_container_url' and 'build_command' must be provided";
+  }
+  return '';
+};
+
 // need to differentiate between valid for loading into the UI (does not need all fields to be present as user may modify)
 // versus valid for submission, where we need to check for missing fields.)
 export const isValidAlgorithmConfig = (
   config: AlgorithmConfig,
   checkIsValidForSubmit: boolean
 ): boolean => {
-  let msg = '';
   console.log('Algo config: ', config);
-  if (!config.algorithm_container_url && !config.base_container_url) {
-    msg =
-      "INVALID ALGORITHM CONFIG: Either 'algorithm_container_url' or 'base_container_url' and 'build_command' must be provided";
-  }
+  const msg = getContainerConfigError(config);
 
   if (checkIsValidForSubmit) {
     if (!_validateAlgorithmName(config.algorithm_name)) {
@@ -141,6 +144,66 @@ export const isOlderConfigVersion = (config: AlgorithmConfig): boolean => {
     Object.prototype.hasOwnProperty.call(config.inputs ?? {}, key)
   );
 };
+
+const NUMERIC_INPUT_TYPES = ['int', 'long', 'float', 'double'];
+
+// Form defaults are strings; convert them to the input's declared type so
+// values like 0 and false are written to the config as numbers/booleans.
+export const parseInputDefault = (
+  value: string | number | boolean | undefined | null,
+  type: string
+): string | number | boolean => {
+  if (value === undefined || value === null) {
+    return '';
+  }
+  if (typeof value !== 'string') {
+    return value;
+  }
+  const trimmed = value.trim();
+  if (trimmed === '') {
+    return '';
+  }
+  const baseType = type.replace(/\?$/, '');
+  if (NUMERIC_INPUT_TYPES.includes(baseType) && !isNaN(Number(trimmed))) {
+    return Number(trimmed);
+  }
+  if (baseType === 'boolean') {
+    if (trimmed.toLowerCase() === 'true') {
+      return true;
+    }
+    if (trimmed.toLowerCase() === 'false') {
+      return false;
+    }
+  }
+  return value;
+};
+
+// Convert a row from the registration form's inputs table into a config input.
+// Optional inputs are marked with a trailing '?' on the type.
+export const inputRowToConfigInput = (
+  row: AlgorithmInputRow
+): AlgorithmConfigInput => ({
+  name: row.name,
+  label: row.label,
+  doc: row.description,
+  type: row.required ? row.type : `${row.type}?`,
+  default: row.required ? row.default : ''
+});
+
+// Convert a config input into a row for the registration form's inputs table.
+export const configInputToInputRow = (
+  input: AlgorithmConfigInput
+): Omit<AlgorithmInputRow, 'id'> => ({
+  name: input.name || '',
+  label: input.label || '',
+  description: input.doc || '',
+  default:
+    input.default === undefined || input.default === null
+      ? ''
+      : String(input.default),
+  type: (input.type || '').replace(/\?$/, ''),
+  required: !(input.type || '').endsWith('?')
+});
 
 export const buildAlgorithmConfig = (data: AlgorithmData): string => {
   const configData: AlgorithmConfig = {
@@ -180,7 +243,7 @@ export const buildAlgorithmConfig = (data: AlgorithmData): string => {
         label: input.label || '',
         doc: input.doc || '',
         type: input.type || '',
-        default: input.default || ''
+        default: parseInputDefault(input.default, input.type || '')
       });
     });
   }

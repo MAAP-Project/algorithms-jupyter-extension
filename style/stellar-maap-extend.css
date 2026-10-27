@@ -36,20 +36,47 @@
   align-items: center;
 }
 
-.inputs-table tr {
+/* Stellar renders .st-table rows as independent flex boxes, which breaks
+   column alignment between the header and body. Restore native table layout
+   so header and input cells share the same columns. */
+.inputs-table.st-table {
   display: table;
+  width: auto;
 }
 
-.inputs-table th:not(.icon-cell) {
+.inputs-table thead {
+  display: table-header-group;
+}
+
+.inputs-table tbody {
+  display: table-row-group;
+}
+
+.inputs-table tr {
+  display: table-row;
+}
+
+.inputs-table th,
+.inputs-table td {
   display: table-cell;
   vertical-align: middle;
+  width: auto;
+}
+
+.inputs-table th.icon-cell,
+.inputs-table td.icon-cell {
+  width: var(--icon-width);
+  text-align: center;
+}
+
+.inputs-table th.checkbox-cell,
+.inputs-table td.checkbox-cell {
+  text-align: center;
+  white-space: nowrap;
+}
+
+/* Keep the column width stable while the default input is hidden */
+.inputs-table th.default-cell,
+.inputs-table td.default-cell {
   min-width: calc(var(--input-width-compact) + var(--st-grid-unit2x));
-}
-
-.inputs-table th:last-child {
-  min-width: calc(var(--input-width-compact) + var(--icon-width));
-}
-
-.inputs-table th.icon-cell {
-  min-width: var(--icon-width);
 }

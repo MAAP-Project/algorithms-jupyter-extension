@@ -1,7 +1,8 @@
 import React, { useEffect, useState } from 'react';
-import { Box, Typography, IconButton } from '@mui/material';
+import { Box, Typography, IconButton, Tooltip } from '@mui/material';
 import AddIcon from '@mui/icons-material/Add';
 import DeleteIcon from '@mui/icons-material/Delete';
+import InfoIcon from '@mui/icons-material/Info';
 import { MaapSettings, useMaapContext } from '../../MaapContext';
 import { IDefaultFileBrowser } from '@jupyterlab/filebrowser';
 import { JupyterFrontEnd } from '@jupyterlab/application';
@@ -12,10 +13,12 @@ import { FormRow } from './FormRow';
 import { AlgorithmData, AlgorithmInputRow } from '../../types/registration';
 import {
   buildAlgorithmConfig,
-  isValidAlgorithmConfig,
+  getContainerConfigError,
   setInputValue,
   clearForm,
-  isOlderConfigVersion
+  isOlderConfigVersion,
+  inputRowToConfigInput,
+  configInputToInputRow
 } from './utils';
 import { createDirectory, createFile } from '../../utils/utils';
 import {
@@ -62,7 +65,8 @@ export const RegistrationForm = ({
       label: '',
       description: '',
       default: '',
-      type: ''
+      type: '',
+      required: false
     };
     setInputRows([...inputRows, newRow]);
   };
@@ -71,7 +75,11 @@ export const RegistrationForm = ({
     setInputRows(inputRows.filter(row => row.id !== id));
   };
 
-  const updateInputRow = (id: string, field: string, value: string) => {
+  const updateInputRow = (
+    id: string,
+    field: string,
+    value: string | boolean
+  ) => {
     setInputRows(
       inputRows.map(row => (row.id === id ? { ...row, [field]: value } : row))
     );
@@ -87,8 +95,19 @@ export const RegistrationForm = ({
 
   const populateFormWithConfig = (config: AlgorithmConfig) => {
     clearForm(setInputRows, setUseAlgorithmContainer);
-    if (!isValidAlgorithmConfig(config, false)) {
+    if (!config || typeof config !== 'object') {
+      Notification.error(
+        'Selected file is not a valid algorithm configuration.',
+        { autoClose: false }
+      );
       return;
+    }
+
+    // Load the rest of the config as a best effort so the user can fix it
+    const containerError = getContainerConfigError(config);
+    if (containerError) {
+      console.warn(containerError);
+      Notification.warning(containerError, { autoClose: false });
     }
 
     if (isOlderConfigVersion(config)) {
@@ -120,11 +139,7 @@ export const RegistrationForm = ({
       setInputRows(
         config.inputs.map((input: AlgorithmConfigInput) => ({
           id: crypto.randomUUID(),
-          name: input.name || '',
-          label: input.label || '',
-          description: input.doc || '',
-          default: input.default ?? '',
-          type: input.type || ''
+          ...configInputToInputRow(input)
         }))
       );
     }
@@ -187,13 +202,7 @@ export const RegistrationForm = ({
     }
 
     if (inputRows.length > 0) {
-      algorithmData.inputs = inputRows.map(row => ({
-        name: row.name,
-        label: row.label,
-        doc: row.description,
-        type: row.type,
-        default: row.default
-      }));
+      algorithmData.inputs = inputRows.map(inputRowToConfigInput);
     }
 
     const yamlContent = buildAlgorithmConfig(algorithmData);
@@ -385,13 +394,26 @@ export const RegistrationForm = ({
                   <th>
                     Type <span style={{ color: 'red' }}> *</span>
                   </th>
-                  <th>Default Value</th>
+                  <th className="checkbox-cell">Required?</th>
+                  <th className="default-cell">
+                    Default Value
+                    <Tooltip title="Default values are not needed for optional inputs. If an input is required and no default value is provided, a value must be provided when the job is submitted.">
+                      <IconButton
+                        size="small"
+                        style={{ marginLeft: '8px', padding: '1px' }}
+                      >
+                        <InfoIcon style={{ fontSize: '14px' }} />
+                      </IconButton>
+                    </Tooltip>
+                  </th>
+                  <th className="icon-cell"></th>
                 </tr>
               </thead>
               <tbody>
                 {inputRows.length === 0 ? (
                   <tr>
                     <td
+                      colSpan={8}
                       style={{
                         textAlign: 'center',
                         padding: '20px'
@@ -403,7 +425,7 @@ export const RegistrationForm = ({
                 ) : (
                   inputRows.map(row => (
                     <tr key={row.id}>
-                      <td style={{ minWidth: '50px' }}></td>
+                      <td className="icon-cell"></td>
                       <td>
                         <input
                           type="text"
@@ -465,19 +487,31 @@ export const RegistrationForm = ({
                           ))}
                         </select>
                       </td>
-                      <td>
+                      <td className="checkbox-cell">
                         <input
-                          type="text"
-                          name={`input_${row.id}_default`}
-                          placeholder="Enter default value"
-                          className="st-input compact"
-                          value={row.default}
+                          type="checkbox"
+                          name={`input_${row.id}_required`}
+                          checked={row.required}
                           onChange={e =>
-                            updateInputRow(row.id, 'default', e.target.value)
+                            updateInputRow(row.id, 'required', e.target.checked)
                           }
                         />
                       </td>
-                      <td>
+                      <td className="default-cell">
+                        {row.required && (
+                          <input
+                            type="text"
+                            name={`input_${row.id}_default`}
+                            placeholder="Enter default value"
+                            className="st-input compact"
+                            value={row.default}
+                            onChange={e =>
+                              updateInputRow(row.id, 'default', e.target.value)
+                            }
+                          />
+                        )}
+                      </td>
+                      <td className="icon-cell">
                         <IconButton
                           color="error"
                           size="small"
