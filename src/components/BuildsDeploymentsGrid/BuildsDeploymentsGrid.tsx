@@ -7,7 +7,14 @@ import {
 } from 'material-react-table';
 import { Box, Typography, Chip } from '@mui/material';
 import { openRegisterAlgorithm } from '../../utils/utils';
-import { Build, BuildDeploymentItem } from '../../types/build';
+import { Build, BuildDeploymentItem, Deployment } from '../../types/build';
+import {
+  extractAlgorithmId,
+  extractDeploymentId,
+  getTypeColor,
+  getTypeLabel,
+  transformDeploymentsToItems
+} from './utils';
 import { ExpandedState } from '@tanstack/react-table';
 import IconButton from '@mui/material/IconButton';
 import Tooltip from '@mui/material/Tooltip';
@@ -72,25 +79,6 @@ export const BuildsDeploymentsGrid = ({
   };
 
   /**
-   * Utility function to extract deployment ID from API href URLs
-   * Handles both "/ogc/deploymentJobs/123" and "/api/ogc/deploymentJobs/123" formats
-   */
-  const extractDeploymentId = (deploymentHref: string): string | null => {
-    try {
-      // Extract deployment ID from href like "/ogc/deploymentJobs/123" or "/api/ogc/deploymentJobs/123"
-      const match = deploymentHref.match(/\/deploymentJobs\/(\w+)/);
-      return match ? match[1] : null;
-    } catch (error) {
-      console.error(
-        'Error extracting deployment ID from href:',
-        deploymentHref,
-        error
-      );
-      return null;
-    }
-  };
-
-  /**
    * Determines the initial deployment status for a build item
    * Key feature: Preserves existing final deployment statuses to prevent UI flickering during refresh
    */
@@ -129,6 +117,14 @@ export const BuildsDeploymentsGrid = ({
           return item;
         }
 
+        // Deployment-only rows already carry their status from the list endpoint
+        if (
+          item.type === 'deployment' &&
+          isDeploymentInFinalState(item.deploymentStatus || '')
+        ) {
+          return item;
+        }
+
         const deploymentId = extractDeploymentId(item.deploymentLink.href);
         if (!deploymentId) {
           return item;
@@ -142,7 +138,11 @@ export const BuildsDeploymentsGrid = ({
             deploymentStatus: deploymentData.status,
             deploymentPipelineLink:
               deploymentData.pipeline?.processPipelineLink || undefined,
-            deploymentError: deploymentData.error || null
+            deploymentError: deploymentData.error || null,
+            algorithmId:
+              extractAlgorithmId(deploymentData.processLocation?.href) ||
+              item.algorithmId,
+            cwlLink: deploymentData.cwl || item.cwlLink
           };
         } catch (err: any) {
           const message = err instanceof Error ? err.message : String(err);
@@ -204,6 +204,8 @@ export const BuildsDeploymentsGrid = ({
         deploymentLink: build.deploymentLink, // Keep as-is (deployment endpoint link)
         deploymentPipelineLink:
           existingItem?.deploymentPipelineLink || undefined, // Preserve existing pipeline link
+        algorithmId: existingItem?.algorithmId, // Preserve existing algorithm ID
+        cwlLink: existingItem?.cwlLink, // Preserve existing CWL link
         deploymentError: build.deploymentError,
         // Key: Pass existing deployment status to prevent "Loading..." for final states
         deploymentStatus: getDefaultDeploymentStatus(
@@ -212,6 +214,40 @@ export const BuildsDeploymentsGrid = ({
         )
       };
     });
+  };
+
+  /**
+   * Fetches builds and deployments and combines them into grid items.
+   * Deployments that were created by a build are shown on the build's row;
+   * the rest are shown as standalone deployment rows.
+   * A failure to list deployments is non-fatal so builds still display.
+   */
+  const fetchAllItems = async (
+    existingItems?: BuildDeploymentItem[]
+  ): Promise<BuildDeploymentItem[]> => {
+    const [buildsResponse, deployments] = await Promise.all([
+      api.getBuilds(),
+      api
+        .getDeployments()
+        .then(response => response.deploymentJobs || [])
+        .catch((err: any) => {
+          const message = err instanceof Error ? err.message : String(err);
+          if (message.includes('HTTP 401')) {
+            throw err;
+          }
+          console.warn('Failed to fetch deployments:', err);
+          Notification.warning(`Failed to load deployments: ${err}`, {
+            autoClose: 5000
+          });
+          return [] as Deployment[];
+        })
+    ]);
+
+    const builds = buildsResponse.builds;
+    return [
+      ...transformBuildsToItems(builds, existingItems),
+      ...transformDeploymentsToItems(deployments, builds)
+    ];
   };
 
   /**
@@ -266,13 +302,9 @@ export const BuildsDeploymentsGrid = ({
 
     setIsRefreshing(true);
     try {
-      // First, fetch fresh data to get any new builds
-      const buildsResponse = await api.getBuilds();
-      const builds = buildsResponse.builds;
-
-      // Transform builds while preserving existing deployment statuses
-      const freshBuildItems = transformBuildsToItems(builds, items);
-      const freshAllItems = freshBuildItems;
+      // First, fetch fresh data to get any new builds and deployments,
+      // preserving existing deployment statuses
+      const freshAllItems = await fetchAllItems(items);
 
       // Create a map of existing items for comparison
       const existingItemsMap = new Map(items.map(item => [item.id, item]));
@@ -282,19 +314,48 @@ export const BuildsDeploymentsGrid = ({
       const newItems = freshAllItems.filter(
         item => !existingItemsMap.has(item.id)
       );
-      const itemsToRefresh = freshAllItems.filter(
-        item =>
-          existingItemsMap.has(item.id) &&
-          (isNonFinalState(item.status) ||
-            (item.status.toLowerCase() === 'successful' &&
-              item.deploymentStatus &&
-              !isDeploymentInFinalState(item.deploymentStatus)))
-      );
+      const itemsToRefresh = freshAllItems.filter(item => {
+        if (!existingItemsMap.has(item.id)) {
+          return false;
+        }
+        if (item.type === 'deployment') {
+          return !isDeploymentInFinalState(item.deploymentStatus || '');
+        }
+        return (
+          isNonFinalState(item.status) ||
+          (item.status.toLowerCase() === 'successful' &&
+            item.deploymentStatus &&
+            !isDeploymentInFinalState(item.deploymentStatus))
+        );
+      });
 
       // For items that need status refresh, fetch updated build and deployment data
       const refreshPromises = itemsToRefresh.map(async item => {
         try {
-          // Always get build status first (since we only have builds now)
+          // Deployment-only rows have no build; refresh the deployment status directly
+          if (item.type === 'deployment') {
+            const deploymentId = item.deploymentLink?.href
+              ? extractDeploymentId(item.deploymentLink.href)
+              : null;
+            if (!deploymentId) {
+              return { id: item.id, status: item.status };
+            }
+            const deploymentData = await api.getDeploymentStatus(deploymentId);
+            return {
+              id: item.id,
+              status: item.status,
+              deploymentPipelineLink:
+                deploymentData?.pipeline?.processPipelineLink ||
+                item.deploymentPipelineLink,
+              deploymentStatus: deploymentData?.status || item.deploymentStatus,
+              algorithmId:
+                extractAlgorithmId(deploymentData?.processLocation?.href) ||
+                item.algorithmId,
+              cwlLink: deploymentData?.cwl || item.cwlLink
+            };
+          }
+
+          // Get build status first, then its deployment status if linked
           const buildData = await api.getBuildStatus(item.id);
 
           let deploymentData: any = null;
@@ -326,7 +387,11 @@ export const BuildsDeploymentsGrid = ({
               item.deploymentPipelineLink,
             deploymentError: buildData.deploymentError,
             deploymentStatus:
-              deploymentData?.status || getDefaultDeploymentStatus(buildData)
+              deploymentData?.status || getDefaultDeploymentStatus(buildData),
+            algorithmId:
+              extractAlgorithmId(deploymentData?.processLocation?.href) ||
+              item.algorithmId,
+            cwlLink: deploymentData?.cwl || item.cwlLink
           };
         } catch (error) {
           const message =
@@ -338,12 +403,15 @@ export const BuildsDeploymentsGrid = ({
             return;
           }
           console.error(
-            `Failed to refresh status for build ${item.id}:`,
+            `Failed to refresh status for ${item.type} ${item.id}:`,
             error
           );
-          Notification.error(`Failed to refresh status for build ${item.id}`, {
-            autoClose: false
-          });
+          Notification.error(
+            `Failed to refresh status for ${item.type} ${item.id}`,
+            {
+              autoClose: false
+            }
+          );
           return { id: item.id, status: item.status }; // Keep current status on error
         }
       });
@@ -372,7 +440,9 @@ export const BuildsDeploymentsGrid = ({
             deploymentError:
               refreshedItem.deploymentError || item.deploymentError,
             deploymentStatus:
-              refreshedItem.deploymentStatus || item.deploymentStatus
+              refreshedItem.deploymentStatus || item.deploymentStatus,
+            algorithmId: refreshedItem.algorithmId || item.algorithmId,
+            cwlLink: refreshedItem.cwlLink || item.cwlLink
           };
         }
         return item;
@@ -420,13 +490,11 @@ export const BuildsDeploymentsGrid = ({
    */
   const fetchData = async () => {
     try {
-      const buildsResponse = await api.getBuilds();
-
-      // Transform builds, preserving any existing deployment data
-      const buildItems = transformBuildsToItems(buildsResponse.builds, items);
+      // Fetch builds and deployments, preserving any existing deployment data
+      const allItems = await fetchAllItems(items);
 
       // Sort by created date (most recent first)
-      const sortedItems = buildItems.sort((a, b) => {
+      const sortedItems = allItems.sort((a, b) => {
         const dateA = new Date(a.created).getTime();
         const dateB = new Date(b.created).getTime();
         return dateB - dateA;
@@ -434,7 +502,7 @@ export const BuildsDeploymentsGrid = ({
 
       setItems(sortedItems);
 
-      // Fetch deployment data asynchronously for builds with deployment links
+      // Fetch deployment data asynchronously for items with deployment links
       // This updates deployment statuses from "Loading..." to actual values
       const itemsWithDeploymentData =
         await fetchDeploymentDataForBuilds(sortedItems);
@@ -447,7 +515,9 @@ export const BuildsDeploymentsGrid = ({
         setShowTokenModal(true);
         return;
       }
-      Notification.error(`Failed to load builds: ${err}`, { autoClose: false });
+      Notification.error(`Failed to load builds and deployments: ${err}`, {
+        autoClose: false
+      });
     }
   };
 
@@ -510,17 +580,31 @@ export const BuildsDeploymentsGrid = ({
   const columns = useMemo<MRT_ColumnDef<BuildDeploymentItem>[]>(
     () => [
       {
-        accessorKey: 'type',
+        id: 'type',
+        accessorFn: row => getTypeLabel(row),
         header: 'Type',
-        size: 80,
-        Cell: ({ row }) => (
-          <Chip label="Build" size="small" variant="outlined" color="primary" />
-        )
+        size: 130,
+        Cell: ({ row }) => {
+          const label = getTypeLabel(row.original);
+          return (
+            <Chip
+              label={label}
+              size="small"
+              variant="outlined"
+              color={getTypeColor(label)}
+            />
+          );
+        }
       },
       {
         accessorKey: 'name',
         header: 'Name',
         size: 200
+      },
+      {
+        accessorKey: 'version',
+        header: 'Version',
+        size: 100
       },
       {
         accessorKey: 'status',
@@ -581,11 +665,6 @@ export const BuildsDeploymentsGrid = ({
         }
       },
       {
-        accessorKey: 'version',
-        header: 'Version',
-        size: 100
-      },
-      {
         accessorKey: 'created',
         header: 'Created',
         size: 150,
@@ -598,7 +677,9 @@ export const BuildsDeploymentsGrid = ({
         }
       },
       {
-        accessorKey: 'updated',
+        id: 'updated',
+        // Deployment-only rows have no updated time; sort them by created instead
+        accessorFn: row => row.updated || row.created,
         header: 'Updated',
         size: 150,
         Cell: ({ row }) => {
@@ -671,9 +752,17 @@ export const BuildsDeploymentsGrid = ({
     }),
     onExpandedChange: row => handleRowExpand(row),
     renderTopToolbarCustomActions: () => (
-      <Box sx={{ display: 'flex', alignItems: 'center', height: '100%' }}>
+      <Box
+        sx={{
+          display: 'flex',
+          alignItems: 'center',
+          flexWrap: 'wrap',
+          rowGap: 1,
+          height: '100%'
+        }}
+      >
         <Typography variant="h6" sx={{ ml: 2, mr: 2 }}>
-          My Builds
+          My Builds & Deployments
         </Typography>
         <Tooltip title="Refresh non-final states" placement="top" arrow>
           <IconButton
@@ -687,6 +776,7 @@ export const BuildsDeploymentsGrid = ({
         </Tooltip>
         <button
           className="st-button"
+          style={{ whiteSpace: 'nowrap', flexShrink: 0 }}
           onClick={() => openRegisterAlgorithm(jupyterApp, null)}
         >
           Register New Algorithm
@@ -714,22 +804,26 @@ export const BuildsDeploymentsGrid = ({
           }}
         >
           <table className="st-table">
-            <h4>Build Details</h4>
+            <h4>
+              {item.type === 'deployment' ? 'Deployment' : 'Build'} Details
+            </h4>
             <tbody>
               <tr>
-                <td className="st-label-cell">ID</td>
-                <td>{item.id}</td>
+                <td className="st-label-cell">Algorithm ID</td>
+                <td>{item.algorithmId || 'N/A'}</td>
               </tr>
-              <tr>
-                <td className="st-label-cell">Build Status</td>
-                <td>
-                  <Chip
-                    label={item.status}
-                    size="small"
-                    color={getStatusColor(item.status, item.type)}
-                  />
-                </td>
-              </tr>
+              {item.type === 'build' && (
+                <tr>
+                  <td className="st-label-cell">Build Status</td>
+                  <td>
+                    <Chip
+                      label={item.status}
+                      size="small"
+                      color={getStatusColor(item.status, item.type)}
+                    />
+                  </td>
+                </tr>
+              )}
               {item.deploymentStatus && (
                 <tr>
                   <td className="st-label-cell">Deployment Status</td>
@@ -757,6 +851,21 @@ export const BuildsDeploymentsGrid = ({
                   </td>
                 </tr>
               )}
+              {item.cwlLink?.href && (
+                <tr>
+                  <td className="st-label-cell">CWL</td>
+                  <td>
+                    <a
+                      href={item.cwlLink.href}
+                      style={{ color: '#1976d2' }}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                    >
+                      {item.cwlLink.href}
+                    </a>
+                  </td>
+                </tr>
+              )}
               {item.version && (
                 <tr>
                   <td className="st-label-cell">Version/Branch</td>
@@ -777,7 +886,9 @@ export const BuildsDeploymentsGrid = ({
               )}
               <tr>
                 <td className="st-label-cell">Created</td>
-                <td>{new Date(item.created).toLocaleString()}</td>
+                <td>
+                  {item.created ? new Date(item.created).toLocaleString() : '-'}
+                </td>
               </tr>
               {item.updated && (
                 <tr>
@@ -805,7 +916,7 @@ export const BuildsDeploymentsGrid = ({
                       window.open(item.pipelineLink?.href, '_blank')
                     }
                   >
-                    View Pipeline
+                    View Build Pipeline
                   </button>
                 )}
                 {item.deploymentPipelineLink && (
