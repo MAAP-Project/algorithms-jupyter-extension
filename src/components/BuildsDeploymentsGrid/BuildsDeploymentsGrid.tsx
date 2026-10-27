@@ -752,7 +752,15 @@ export const BuildsDeploymentsGrid = ({
     }),
     onExpandedChange: row => handleRowExpand(row),
     renderTopToolbarCustomActions: () => (
-      <Box sx={{ display: 'flex', alignItems: 'center', height: '100%' }}>
+      <Box
+        sx={{
+          display: 'flex',
+          alignItems: 'center',
+          flexWrap: 'wrap',
+          rowGap: 1,
+          height: '100%'
+        }}
+      >
         <Typography variant="h6" sx={{ ml: 2, mr: 2 }}>
           My Builds & Deployments
         </Typography>
@@ -768,6 +776,7 @@ export const BuildsDeploymentsGrid = ({
         </Tooltip>
         <button
           className="st-button"
+          style={{ whiteSpace: 'nowrap', flexShrink: 0 }}
           onClick={() => openRegisterAlgorithm(jupyterApp, null)}
         >
           Register New Algorithm
