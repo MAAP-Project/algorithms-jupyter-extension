@@ -16,7 +16,3 @@
 @import url('./stellar/typography.css');
 @import url('./stellar/variables.css');
 @import url('./stellar-maap-extend.css');
-
-.lm-Widget {
-  overflow: scroll !important;
-}
