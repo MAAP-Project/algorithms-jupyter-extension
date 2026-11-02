@@ -378,7 +378,7 @@ export const DataGrid = ({ jupyterApp, api }: DataGridProps) => {
     <>
       <div
         className="ag-theme-stellar algorithms-table"
-        style={{ height: '100%', width: '100%' }}
+        style={{ height: '100%', width: '100%', overflow: 'scroll' }}
       >
         <MaterialReactTable table={table} />
       </div>
