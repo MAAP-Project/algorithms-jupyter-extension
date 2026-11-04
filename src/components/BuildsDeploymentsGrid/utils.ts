@@ -1,4 +1,19 @@
 import { Build, BuildDeploymentItem, Deployment } from '../../types/build';
+import { ProcessDetailed } from '../../types/process';
+
+/**
+ * Extracts the repository name from a git repository URL,
+ * e.g. "https://github.com/org/my-algo.git" -> "my-algo"
+ */
+export const getRepoNameFromUrl = (repoUrl?: string): string | undefined => {
+  const name = repoUrl
+    ?.trim()
+    .replace(/\/+$/, '')
+    .split('/')
+    .pop()
+    ?.replace(/\.git$/, '');
+  return name || undefined;
+};
 
 /**
  * Utility function to extract deployment ID from API href URLs
@@ -81,8 +96,13 @@ export const normalizeDeploymentDate = (created?: string): string => {
  */
 export const transformDeploymentsToItems = (
   deployments: Deployment[],
-  builds: Build[]
+  builds: Build[],
+  existingItems?: BuildDeploymentItem[]
 ): BuildDeploymentItem[] => {
+  const existingItemsMap = new Map(
+    (existingItems || []).map(item => [item.id, item])
+  );
+
   const buildDeploymentIds = new Set(
     builds
       .map(build =>
@@ -106,11 +126,16 @@ export const transformDeploymentsToItems = (
     )
     .map(({ deployment, deploymentId }) => {
       const { name, version } = parseDeploymentCwlPath(deployment);
+      const id = `deployment-${deploymentId}`;
+      // Preserve repository info previously resolved from the process details
+      const existingItem = existingItemsMap.get(id);
+      const repoName = getRepoNameFromUrl(existingItem?.repository_url);
       return {
-        id: `deployment-${deploymentId}`,
+        id,
         type: 'deployment' as const,
-        name: name || `Deployment ${deploymentId}`,
-        version,
+        name: repoName || name || `Deployment ${deploymentId}`,
+        version: existingItem?.repository_url ? existingItem.version : version,
+        repository_url: existingItem?.repository_url,
         status: 'N/A',
         created: normalizeDeploymentDate(deployment.created),
         links: [],
@@ -121,6 +146,27 @@ export const transformDeploymentsToItems = (
         cwlLink: deployment.cwl
       };
     });
+};
+
+/**
+ * Fills in the repository URL, repository name, and version of a
+ * deployment-only row from its OGC process details, since the deployment
+ * endpoints do not return the git repository the algorithm came from
+ */
+export const applyProcessDetailsToItem = (
+  item: BuildDeploymentItem,
+  process?: ProcessDetailed | null
+): BuildDeploymentItem => {
+  if (!process) {
+    return item;
+  }
+  const repositoryUrl = process.githubUrl || item.repository_url;
+  return {
+    ...item,
+    name: getRepoNameFromUrl(repositoryUrl) || item.name,
+    repository_url: repositoryUrl,
+    version: process.version || item.version
+  };
 };
 
 /**

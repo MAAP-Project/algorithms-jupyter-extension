@@ -1,6 +1,8 @@
 import {
+  applyProcessDetailsToItem,
   extractAlgorithmId,
   extractDeploymentId,
+  getRepoNameFromUrl,
   getTypeColor,
   getTypeLabel,
   normalizeDeploymentDate,
@@ -228,6 +230,24 @@ describe('transformDeploymentsToItems', () => {
     expect(row.cwlLink).toBeUndefined();
   });
 
+  it('preserves repository info resolved on a previous load', () => {
+    const existing = item({
+      id: 'deployment-615',
+      type: 'deployment',
+      name: 'my-algo-repo',
+      version: '2.0.0',
+      repository_url: 'https://github.com/org/my-algo-repo.git'
+    });
+    const [row] = transformDeploymentsToItems(
+      [deployment(615, { cwl: undefined })],
+      [],
+      [existing]
+    );
+    expect(row.name).toBe('my-algo-repo');
+    expect(row.version).toBe('2.0.0');
+    expect(row.repository_url).toBe('https://github.com/org/my-algo-repo.git');
+  });
+
   it('leaves the algorithm ID unset before a process has been created', () => {
     const [row] = transformDeploymentsToItems(
       [deployment(615, { status: 'running', processLocation: undefined })],
@@ -261,5 +281,53 @@ describe('getTypeColor', () => {
     ['Build & Deploy', 'info']
   ])('uses %s -> %s', (label, color) => {
     expect(getTypeColor(label)).toBe(color);
+  });
+});
+
+describe('getRepoNameFromUrl', () => {
+  it('extracts the repository name from a git URL', () => {
+    expect(getRepoNameFromUrl('https://github.com/org/my-algo.git')).toBe(
+      'my-algo'
+    );
+    expect(getRepoNameFromUrl('https://github.com/org/my-algo/')).toBe(
+      'my-algo'
+    );
+  });
+
+  it('returns undefined for missing or empty URLs', () => {
+    expect(getRepoNameFromUrl(undefined)).toBeUndefined();
+    expect(getRepoNameFromUrl('')).toBeUndefined();
+  });
+});
+
+describe('applyProcessDetailsToItem', () => {
+  const row = item({
+    id: 'deployment-615',
+    type: 'deployment',
+    name: 'Deployment 615',
+    algorithmId: '388'
+  });
+
+  it('uses the process repository and version', () => {
+    expect(
+      applyProcessDetailsToItem(row, {
+        githubUrl: 'https://github.com/org/my-algo.git',
+        version: '1.2.3'
+      })
+    ).toEqual({
+      ...row,
+      name: 'my-algo',
+      repository_url: 'https://github.com/org/my-algo.git',
+      version: '1.2.3'
+    });
+  });
+
+  it('keeps existing values when the process lacks them', () => {
+    const withVersion = { ...row, version: 'v4.1.4' };
+    expect(applyProcessDetailsToItem(withVersion, {})).toEqual(withVersion);
+  });
+
+  it('returns the item unchanged when the process could not be fetched', () => {
+    expect(applyProcessDetailsToItem(row, null)).toBe(row);
   });
 });

@@ -9,8 +9,10 @@ import { Box, Typography, Chip } from '@mui/material';
 import { openRegisterAlgorithm } from '../../utils/utils';
 import { Build, BuildDeploymentItem, Deployment } from '../../types/build';
 import {
+  applyProcessDetailsToItem,
   extractAlgorithmId,
   extractDeploymentId,
+  getRepoNameFromUrl,
   getTypeColor,
   getTypeLabel,
   transformDeploymentsToItems
@@ -191,9 +193,7 @@ export const BuildsDeploymentsGrid = ({
       return {
         id: build.build_id,
         type: 'build' as const,
-        name:
-          build.repository_url?.split('/').pop()?.replace('.git', '') ||
-          build.build_id,
+        name: getRepoNameFromUrl(build.repository_url) || build.build_id,
         status: build.status,
         created: build.created,
         updated: build.updated,
@@ -246,8 +246,51 @@ export const BuildsDeploymentsGrid = ({
     const builds = buildsResponse.builds;
     return [
       ...transformBuildsToItems(builds, existingItems),
-      ...transformDeploymentsToItems(deployments, builds)
+      ...transformDeploymentsToItems(deployments, builds, existingItems)
     ];
+  };
+
+  /**
+   * Resolves the git repository and version for deployment-only rows from
+   * their OGC process details. Rows already resolved are skipped, and
+   * processes shared by several rows are only fetched once.
+   */
+  const fetchProcessDetailsForDeployments = async (
+    items: BuildDeploymentItem[]
+  ): Promise<BuildDeploymentItem[]> => {
+    const processIds = new Set(
+      items
+        .filter(
+          item =>
+            item.type === 'deployment' &&
+            item.algorithmId &&
+            !item.repository_url
+        )
+        .map(item => item.algorithmId as string)
+    );
+    if (processIds.size === 0) {
+      return items;
+    }
+
+    // getProcess logs and returns null on failure, so one bad process
+    // does not prevent the others from resolving
+    const processes = new Map(
+      await Promise.all(
+        [...processIds].map(
+          async processId =>
+            [processId, await api.getProcess(processId)] as const
+        )
+      )
+    );
+
+    return items.map(item =>
+      item.type === 'deployment' &&
+      item.algorithmId &&
+      !item.repository_url &&
+      processes.has(item.algorithmId)
+        ? applyProcessDetailsToItem(item, processes.get(item.algorithmId))
+        : item
+    );
   };
 
   /**
@@ -457,6 +500,18 @@ export const BuildsDeploymentsGrid = ({
 
       setItems(sortedItems);
 
+      // Resolve repository info for any new or not-yet-resolved deployment rows
+      if (
+        sortedItems.some(
+          item =>
+            item.type === 'deployment' &&
+            item.algorithmId &&
+            !item.repository_url
+        )
+      ) {
+        setItems(await fetchProcessDetailsForDeployments(sortedItems));
+      }
+
       if (
         newItems.length > 0 ||
         refreshedData.some(
@@ -507,6 +562,11 @@ export const BuildsDeploymentsGrid = ({
       const itemsWithDeploymentData =
         await fetchDeploymentDataForBuilds(sortedItems);
       setItems(itemsWithDeploymentData);
+
+      // Resolve the git repository and version for deployment-only rows
+      setItems(
+        await fetchProcessDetailsForDeployments(itemsWithDeploymentData)
+      );
     } catch (err) {
       const message = err instanceof Error ? err.message : String(err);
       const is401 = message.includes('HTTP 401');
@@ -784,7 +844,9 @@ export const BuildsDeploymentsGrid = ({
       </Box>
     ),
     renderDetailPanel: ({ row }) => {
-      const item = rowDetails[row.id] || row.original;
+      // Prefer the live row so details resolved after expanding (e.g. the
+      // repository of a deployment-only row) are reflected
+      const item = row.original || rowDetails[row.id];
 
       if (!item) {
         return (
@@ -836,10 +898,10 @@ export const BuildsDeploymentsGrid = ({
                   </td>
                 </tr>
               )}
-              {item.repository_url && (
-                <tr>
-                  <td className="st-label-cell">Repository</td>
-                  <td>
+              <tr>
+                <td className="st-label-cell">Repository</td>
+                <td>
+                  {item.repository_url ? (
                     <a
                       href={item.repository_url}
                       style={{ color: '#1976d2' }}
@@ -848,9 +910,11 @@ export const BuildsDeploymentsGrid = ({
                     >
                       {item.repository_url}
                     </a>
-                  </td>
-                </tr>
-              )}
+                  ) : (
+                    'N/A'
+                  )}
+                </td>
+              </tr>
               {item.cwlLink?.href && (
                 <tr>
                   <td className="st-label-cell">CWL</td>
@@ -866,12 +930,10 @@ export const BuildsDeploymentsGrid = ({
                   </td>
                 </tr>
               )}
-              {item.version && (
-                <tr>
-                  <td className="st-label-cell">Version/Branch</td>
-                  <td>{item.version}</td>
-                </tr>
-              )}
+              <tr>
+                <td className="st-label-cell">Version/Branch</td>
+                <td>{item.version || 'N/A'}</td>
+              </tr>
               {item.description && (
                 <tr>
                   <td className="st-label-cell">Description</td>
