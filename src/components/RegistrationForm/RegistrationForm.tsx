@@ -244,7 +244,7 @@ export const RegistrationForm = ({
         onClose={() => setShowTokenModal(false)}
         onSubmit={() => setShowTokenModal(false)}
       />
-      <div style={{ overflow: 'scroll' }}>
+      <div style={{ overflow: 'scroll', height: '100%' }}>
         <CustomFileDialog
           open={showFileDialog}
           onClose={() => setShowFileDialog(false)}
