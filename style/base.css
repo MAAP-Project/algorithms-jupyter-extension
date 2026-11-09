@@ -17,6 +17,11 @@
 @import url('./stellar/variables.css');
 @import url('./stellar-maap-extend.css');
 
-.lm-Widget {
-  overflow: scroll !important;
+/*
+  Make our main-area widgets scroll. Lumino applies `overflow: hidden` to
+  `.lm-Widget`; the doubled class beats it regardless of stylesheet order,
+  without affecting other JupyterLab widgets.
+*/
+.lm-Widget.maap-ScrollableWidget {
+  overflow: auto;
 }
