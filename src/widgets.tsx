@@ -46,6 +46,11 @@ const BuildsDeploymentsPanel: React.FC<{ jupyterApp: JupyterFrontEnd }> = ({
 // JupyterLab Widgets
 // -------------------------
 
+// Lumino sets `overflow: hidden` on every widget node and sizes main-area
+// content to a fixed height, so the widget node itself must be the scroll
+// container. Scoped to our widgets only (see style/base.css).
+const SCROLLABLE_CLASS = 'maap-ScrollableWidget';
+
 export class AlgorithmsWidget extends ReactWidget {
   jupyterApp: JupyterFrontEnd;
   settings: ISettingRegistry.ISettings;
@@ -55,6 +60,7 @@ export class AlgorithmsWidget extends ReactWidget {
     settings: ISettingRegistry.ISettings
   ) {
     super();
+    this.addClass(SCROLLABLE_CLASS);
     this.jupyterApp = jupyterApp;
     this.settings = settings;
   }
@@ -81,6 +87,7 @@ export class RegisterAlgorithmsWidget extends ReactWidget {
     settings: ISettingRegistry.ISettings
   ) {
     super();
+    this.addClass(SCROLLABLE_CLASS);
     this.jupyterApp = jupyterApp;
     this.fileBrowser = fileBrowser;
     this.docManager = docManager;
@@ -89,15 +96,13 @@ export class RegisterAlgorithmsWidget extends ReactWidget {
 
   render(): JSX.Element {
     return (
-      <div style={{ overflow: 'scroll' }}>
-        <MaapProvider settings={this.settings}>
-          <RegisterAlgorithmsPanel
-            jupyterApp={this.jupyterApp}
-            fileBrowser={this.fileBrowser}
-            docManager={this.docManager}
-          />
-        </MaapProvider>
-      </div>
+      <MaapProvider settings={this.settings}>
+        <RegisterAlgorithmsPanel
+          jupyterApp={this.jupyterApp}
+          fileBrowser={this.fileBrowser}
+          docManager={this.docManager}
+        />
+      </MaapProvider>
     );
   }
 }
@@ -111,6 +116,7 @@ export class BuildsDeploymentsWidget extends ReactWidget {
     settings: ISettingRegistry.ISettings
   ) {
     super();
+    this.addClass(SCROLLABLE_CLASS);
     this.jupyterApp = jupyterApp;
     this.settings = settings;
   }
