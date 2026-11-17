@@ -93,13 +93,13 @@ export class RegisterAlgorithmsWidget extends ReactWidget {
 
   render(): JSX.Element {
     return (
-        <MaapProvider settings={this.settings}>
-          <RegisterAlgorithmsPanel
-            jupyterApp={this.jupyterApp}
-            fileBrowser={this.fileBrowser}
-            docManager={this.docManager}
-          />
-        </MaapProvider>
+      <MaapProvider settings={this.settings}>
+        <RegisterAlgorithmsPanel
+          jupyterApp={this.jupyterApp}
+          fileBrowser={this.fileBrowser}
+          docManager={this.docManager}
+        />
+      </MaapProvider>
     );
   }
 }
