@@ -46,6 +46,8 @@ const BuildsDeploymentsPanel: React.FC<{ jupyterApp: JupyterFrontEnd }> = ({
 // JupyterLab Widgets
 // -------------------------
 
+const SCROLLABLE_CLASS = 'maap-ScrollableWidget';
+
 export class AlgorithmsWidget extends ReactWidget {
   jupyterApp: JupyterFrontEnd;
   settings: ISettingRegistry.ISettings;
@@ -55,6 +57,7 @@ export class AlgorithmsWidget extends ReactWidget {
     settings: ISettingRegistry.ISettings
   ) {
     super();
+    this.addClass(SCROLLABLE_CLASS);
     this.jupyterApp = jupyterApp;
     this.settings = settings;
   }
@@ -81,6 +84,7 @@ export class RegisterAlgorithmsWidget extends ReactWidget {
     settings: ISettingRegistry.ISettings
   ) {
     super();
+    this.addClass(SCROLLABLE_CLASS);
     this.jupyterApp = jupyterApp;
     this.fileBrowser = fileBrowser;
     this.docManager = docManager;
@@ -89,7 +93,6 @@ export class RegisterAlgorithmsWidget extends ReactWidget {
 
   render(): JSX.Element {
     return (
-      <div style={{ overflow: 'scroll' }}>
         <MaapProvider settings={this.settings}>
           <RegisterAlgorithmsPanel
             jupyterApp={this.jupyterApp}
@@ -97,7 +100,6 @@ export class RegisterAlgorithmsWidget extends ReactWidget {
             docManager={this.docManager}
           />
         </MaapProvider>
-      </div>
     );
   }
 }
@@ -111,6 +113,7 @@ export class BuildsDeploymentsWidget extends ReactWidget {
     settings: ISettingRegistry.ISettings
   ) {
     super();
+    this.addClass(SCROLLABLE_CLASS);
     this.jupyterApp = jupyterApp;
     this.settings = settings;
   }
