@@ -41,31 +41,23 @@ export type BuildsResponse = {
   builds: Build[];
 };
 
+// Shape of each entry returned by GET /ogc/deploymentJobs
 export type Deployment = {
-  job_id: number;
-  created?: string;
+  created?: string; // e.g. "2026-10-27 15:33:29.933517" (no timezone)
   status: string;
-  execution_venue?: string;
-  pipeline_id?: number;
-  cwl_link: string;
-  id: string;
-  version: string;
-  deployer: number;
-  author?: string;
-  process_id?: string;
-  title?: string;
-  description?: string;
-  process_name_hysds?: string;
-  keywords?: string;
-  github_url?: string;
-  git_commit_hash?: string;
-  ram_min?: number;
-  cores_min?: number;
-  base_command?: string;
+  pipeline?: {
+    executionVenue?: string;
+    pipelineId?: number;
+    processPipelineLink?: PipelineLink;
+  };
+  cwl?: Link;
+  links?: DeploymentLink;
+  processLocation?: Link;
 };
 
 export type DeploymentsResponse = {
   deploymentJobs: Deployment[];
+  total?: number;
 };
 
 export type BuildDeploymentItem = {
@@ -85,4 +77,6 @@ export type BuildDeploymentItem = {
   deploymentStatus?: string;
   description?: string;
   author?: string;
+  algorithmId?: string;
+  cwlLink?: Link;
 };
