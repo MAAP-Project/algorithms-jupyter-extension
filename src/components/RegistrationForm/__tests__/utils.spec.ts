@@ -2,9 +2,11 @@ import * as yaml from 'yaml';
 import {
   buildAlgorithmConfig,
   configInputToInputRow,
+  createInputRow,
   getContainerConfigError,
   inputRowToConfigInput,
-  parseInputDefault
+  parseInputDefault,
+  updateInputRowField
 } from '../utils';
 import {
   AlgorithmConfig,
@@ -246,5 +248,69 @@ describe('getContainerConfigError', () => {
     [{ base_container_url: 'ghcr.io/maap-project/maap-base:latest' }]
   ])('returns no error for %p', partialConfig => {
     expect(getContainerConfigError(partialConfig as AlgorithmConfig)).toBe('');
+  });
+});
+
+describe('createInputRow', () => {
+  it('creates an optional string input by default', () => {
+    expect(createInputRow('row-1')).toEqual({
+      id: 'row-1',
+      name: '',
+      label: '',
+      description: '',
+      default: '',
+      type: 'string',
+      required: false
+    });
+  });
+});
+
+describe('updateInputRowField', () => {
+  it('updates the given field', () => {
+    const row = inputRow({ default: '5' });
+    expect(updateInputRowField(row, 'name', 'count')).toEqual({
+      ...row,
+      name: 'count'
+    });
+    expect(updateInputRowField(row, 'required', false)).toEqual({
+      ...row,
+      required: false
+    });
+  });
+
+  it('clears the default when the type changes', () => {
+    const row = inputRow({ type: 'string', default: 'hello' });
+    expect(updateInputRowField(row, 'type', 'int')).toEqual({
+      ...row,
+      type: 'int',
+      default: ''
+    });
+  });
+
+  it('keeps the default when the same type is selected again', () => {
+    const row = inputRow({ type: 'int', default: '5' });
+    expect(updateInputRowField(row, 'type', 'int')).toEqual(row);
+  });
+
+  it('does not modify the original row', () => {
+    const row = inputRow({ type: 'string', default: 'hello' });
+    updateInputRowField(row, 'type', 'int');
+    expect(row).toEqual(inputRow({ type: 'string', default: 'hello' }));
+  });
+});
+
+describe('configInputToInputRow type fallback', () => {
+  it('treats an input with no type as a required string', () => {
+    expect(
+      configInputToInputRow({
+        name: 'label',
+        label: 'Label',
+        doc: 'Label',
+        type: ''
+      })
+    ).toMatchObject({
+      type: 'string',
+      required: true
+    });
   });
 });

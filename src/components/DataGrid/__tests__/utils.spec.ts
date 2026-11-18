@@ -1,4 +1,8 @@
-import { formatInputRequired, isInputRequired } from '../utils';
+import {
+  formatInputDefault,
+  formatInputRequired,
+  isInputRequired
+} from '../utils';
 import { ProcessInput } from '../../../types/process';
 
 const processInput = (overrides: Partial<ProcessInput> = {}): ProcessInput => ({
@@ -31,5 +35,32 @@ describe('formatInputRequired', () => {
     [{}, 'Yes']
   ])('formats %p as %p', (overrides, expected) => {
     expect(formatInputRequired(processInput(overrides))).toBe(expected);
+  });
+});
+
+describe('formatInputDefault', () => {
+  it.each([
+    [true, 'true'],
+    [false, 'false'],
+    [0, '0'],
+    [10, '10'],
+    [0.5, '0.5'],
+    ['hello', 'hello'],
+    ['false', 'false'],
+    [{ path: 's3://bucket/granule.h5' }, 's3://bucket/granule.h5'],
+    [{}, '-'],
+    ['', '-'],
+    [null, '-'],
+    [undefined, '-']
+  ])('formats a default of %p as %p', (value, expected) => {
+    expect(
+      formatInputDefault(
+        processInput({ default: value as ProcessInput['default'] })
+      )
+    ).toBe(expected);
+  });
+
+  it('formats a missing default as -', () => {
+    expect(formatInputDefault(processInput())).toBe('-');
   });
 });

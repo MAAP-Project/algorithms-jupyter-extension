@@ -178,6 +178,30 @@ export const parseInputDefault = (
   return value;
 };
 
+// A new, empty row for the registration form's inputs table.
+export const createInputRow = (id: string): AlgorithmInputRow => ({
+  id,
+  name: '',
+  label: '',
+  description: '',
+  default: '',
+  type: 'string',
+  required: false
+});
+
+// Apply a field change to an inputs table row. Changing the type clears the
+// default so a value entered for the previous type doesn't carry over.
+export const updateInputRowField = (
+  row: AlgorithmInputRow,
+  field: keyof AlgorithmInputRow,
+  value: string | boolean
+): AlgorithmInputRow => {
+  if (field === 'type' && value !== row.type) {
+    return { ...row, type: value as string, default: '' };
+  }
+  return { ...row, [field]: value };
+};
+
 // Convert a row from the registration form's inputs table into a config input.
 // Optional inputs are marked with a trailing '?' on the type.
 export const inputRowToConfigInput = (
@@ -201,7 +225,7 @@ export const configInputToInputRow = (
     input.default === undefined || input.default === null
       ? ''
       : String(input.default),
-  type: (input.type || '').replace(/\?$/, ''),
+  type: (input.type || 'string').replace(/\?$/, ''),
   required: !(input.type || '').endsWith('?')
 });
 
