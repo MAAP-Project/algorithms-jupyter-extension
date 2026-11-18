@@ -18,8 +18,11 @@ import {
   clearForm,
   isOlderConfigVersion,
   inputRowToConfigInput,
-  configInputToInputRow
+  configInputToInputRow,
+  createInputRow,
+  updateInputRowField
 } from './utils';
+import { DefaultValueInput } from './DefaultValueInput';
 import { createDirectory, createFile } from '../../utils/utils';
 import {
   AlgorithmConfig,
@@ -59,16 +62,7 @@ export const RegistrationForm = ({
   }, []);
 
   const addInputRow = () => {
-    const newRow: AlgorithmInputRow = {
-      id: crypto.randomUUID(),
-      name: '',
-      label: '',
-      description: '',
-      default: '',
-      type: '',
-      required: false
-    };
-    setInputRows([...inputRows, newRow]);
+    setInputRows([...inputRows, createInputRow(crypto.randomUUID())]);
   };
 
   const removeInputRow = (id: string) => {
@@ -77,11 +71,13 @@ export const RegistrationForm = ({
 
   const updateInputRow = (
     id: string,
-    field: string,
+    field: keyof AlgorithmInputRow,
     value: string | boolean
   ) => {
     setInputRows(
-      inputRows.map(row => (row.id === id ? { ...row, [field]: value } : row))
+      inputRows.map(row =>
+        row.id === id ? updateInputRowField(row, field, value) : row
+      )
     );
   };
 
@@ -479,7 +475,6 @@ export const RegistrationForm = ({
                             updateInputRow(row.id, 'type', e.target.value)
                           }
                         >
-                          <option value="">Select input type</option>
                           {ALGORITHM_INPUT_TYPES.map(type => (
                             <option key={type} value={type}>
                               {type}
@@ -499,14 +494,12 @@ export const RegistrationForm = ({
                       </td>
                       <td className="default-cell">
                         {row.required && (
-                          <input
-                            type="text"
+                          <DefaultValueInput
                             name={`input_${row.id}_default`}
-                            placeholder="Enter default value"
-                            className="st-input compact"
+                            type={row.type}
                             value={row.default}
-                            onChange={e =>
-                              updateInputRow(row.id, 'default', e.target.value)
+                            onChange={value =>
+                              updateInputRow(row.id, 'default', value)
                             }
                           />
                         )}

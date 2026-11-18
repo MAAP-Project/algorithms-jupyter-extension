@@ -13,7 +13,8 @@ export type ProcessInput = {
   type: string;
   placeholder: string; // placeholder is what HySDS stores label as
   optional?: boolean;
-  default?: string;
+  // File/Directory defaults are objects with a path
+  default?: string | number | boolean | { path?: string } | null;
 };
 
 export type InputObj = {
